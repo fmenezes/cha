@@ -1,7 +1,8 @@
 #include <stdio.h>
+#include "parser.tab.h"
 
 int main()
 {
-   printf ("hello world!");
+   yyparse();
    return 0;
 }
