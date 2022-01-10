@@ -6,8 +6,6 @@
 int yylex(void);
 
 void yyerror(char *);
-
-int lineNum = 1;
 %}
 
 %token INTEGER POWER
@@ -29,7 +27,7 @@ int lineNum = 1;
 %%
 
 program :
-	program expr '\n' { printf("%d\n", $2); }
+	program expr '\n' { printf(" =%d\n", $2); }
 	|
 	;
 

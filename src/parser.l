@@ -3,7 +3,6 @@
 #include <string.h>
 #include "parser.tab.h"
 
-extern int lineNum;
 void yyerror(char *);
 %}
 
@@ -23,7 +22,6 @@ void yyerror(char *);
 	}
 
 "\n" {
-	lineNum++;
 	return *yytext;
 	}
 
