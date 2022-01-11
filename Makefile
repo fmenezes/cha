@@ -10,8 +10,8 @@ flex: src/parser.l
 
 .PHONY: build
 build: bison flex
-	clang++ src/parser.yy.c src/parser.tab.c src/nodes.cpp src/main.cpp -o ni
+	clang++ src/parser.yy.c src/parser.tab.c src/nodes.cpp src/main.cpp -o bin/ni
 
 .PHONY: clean
 clean:
-	rm -rf ./ni src/parser.yy.c src/parser.tab.c  src/parser.tab.h
+	rm -rf bin/ni src/parser.yy.c src/parser.tab.c src/parser.tab.h
