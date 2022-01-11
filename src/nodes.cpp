@@ -29,3 +29,10 @@ std::string ni::NUnaryOperation::to_string() const
     o << "[NUnaryOperation " << this->op << " " << this->value->to_string() << "]";
     return o.str();
 }
+
+std::string ni::NVariableDeclaration::to_string() const
+{
+    std::stringstream o;
+    o << "[NVariableDeclaration " << this->identifier << "]";
+    return o.str();
+}

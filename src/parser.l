@@ -7,13 +7,22 @@ void yyerror(char *);
 
 %%
 
+"var" {
+		return VAR;
+	}
+
+[_a-zA-Z][_a-zA-Z0-9]* {
+		yylval.str = yytext;
+		return IDENTIFIER;
+	}
+
 [0-9]+ {
-	yylval.str = yytext;
-	return INTEGER;
+		yylval.str = yytext;
+		return INTEGER;
 	}
 
 "**" {
-	return POWER;
+		return POWER;
 	}
 
 [-+()=*/!] {
@@ -21,7 +30,7 @@ void yyerror(char *);
 	}
 
 "\n" {
-	return *yytext;
+		return *yytext;
 	}
 
 [ \t]+ ;

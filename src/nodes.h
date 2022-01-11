@@ -40,4 +40,13 @@ namespace ni
 
         virtual std::string to_string() const;
     };
+
+    class NVariableDeclaration : public Node
+    {
+    public:
+        std::string identifier;
+        NVariableDeclaration(const std::string &identifier) : identifier(identifier){};
+
+        virtual std::string to_string() const;
+    };
 }

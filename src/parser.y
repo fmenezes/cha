@@ -18,10 +18,10 @@ using namespace std::string_literals;
 	int token;
 }
 
-%token <str> INTEGER
-%token <token> POWER
+%token <str> INTEGER IDENTIFIER
+%token <token> POWER VAR
 
-%type <node> expr const
+%type <node> expr const statement
 
 %left '+' '-'
 %left '*' '/'
@@ -33,8 +33,13 @@ using namespace std::string_literals;
 %%
 
 program :
-	program expr '\n'	{ std::cout << $2->to_string() << std::endl; }
+	program statement '\n'	{ std::cout << $2->to_string() << std::endl; }
 	|
+	;
+
+statement :
+	VAR IDENTIFIER	{ $$ = new ni::NVariableDeclaration(std::string($2)); }
+	| expr			{ $$ = $1; }
 	;
 
 expr :
