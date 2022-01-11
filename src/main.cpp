@@ -1,4 +1,6 @@
-#include <stdio.h>
+#include <iostream>
+#include <string>
+#include "nodes.h"
 #include "parser.tab.h"
 
 int main()

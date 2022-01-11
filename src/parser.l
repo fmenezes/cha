@@ -1,6 +1,5 @@
 %{
-#include <stdlib.h> // for atoi call
-#include <string.h>
+#include "nodes.h"
 #include "parser.tab.h"
 
 void yyerror(char *);
@@ -9,7 +8,7 @@ void yyerror(char *);
 %%
 
 [0-9]+ {
-	yylval.val = atoi(yytext);
+	yylval.str = yytext;
 	return INTEGER;
 	}
 
