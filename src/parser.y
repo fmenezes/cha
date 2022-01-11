@@ -14,7 +14,7 @@ using namespace std::string_literals;
 %union
 {
 	ni::Node *node;
-	char *str;
+	std::string *str;
 	int token;
 }
 
@@ -38,8 +38,9 @@ program :
 	;
 
 statement :
-	VAR IDENTIFIER	{ $$ = new ni::NVariableDeclaration(std::string($2)); }
-	| expr			{ $$ = $1; }
+	VAR IDENTIFIER			{ $$ = new ni::NVariableDeclaration(*$2); }
+	| IDENTIFIER '=' expr	{ $$ = new ni::NVariableAssignment(*$1, $3); }
+	| expr					{ $$ = $1; }
 	;
 
 expr :
@@ -54,7 +55,7 @@ expr :
 	;
 
 const :
-	INTEGER				{ $$ = new ni::NInteger(std::string($1)); }
+	INTEGER				{ $$ = new ni::NInteger(*$1); }
 
 %%
 

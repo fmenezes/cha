@@ -12,12 +12,12 @@ void yyerror(char *);
 	}
 
 [_a-zA-Z][_a-zA-Z0-9]* {
-		yylval.str = yytext;
+		yylval.str = new std::string(yytext, yyleng);
 		return IDENTIFIER;
 	}
 
 [0-9]+ {
-		yylval.str = yytext;
+		yylval.str = new std::string(yytext, yyleng);
 		return INTEGER;
 	}
 

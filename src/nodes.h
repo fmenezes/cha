@@ -49,4 +49,14 @@ namespace ni
 
         virtual std::string to_string() const;
     };
+
+    class NVariableAssignment : public Node
+    {
+    public:
+        std::string identifier;
+        Node *value;
+        NVariableAssignment(const std::string &identifier, Node* value) : identifier(identifier), value(std::move(value)){};
+
+        virtual std::string to_string() const;
+    };
 }

@@ -36,3 +36,10 @@ std::string ni::NVariableDeclaration::to_string() const
     o << "[NVariableDeclaration " << this->identifier << "]";
     return o.str();
 }
+
+std::string ni::NVariableAssignment::to_string() const
+{
+    std::stringstream o;
+    o << "[NVariableAssignment " << this->identifier << " " << this->value->to_string() << "]";
+    return o.str();
+}
