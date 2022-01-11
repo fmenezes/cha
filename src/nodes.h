@@ -21,10 +21,10 @@ namespace ni
     class NUnaryOperation : public Node
     {
     public:
-        Node *right;
+        Node *value;
         std::string op;
 
-        NUnaryOperation(const std::string &op, Node *right) : op(op), right(std::move(right)){};
+        NUnaryOperation(const std::string &op, Node *value) : op(op), value(std::move(value)){};
 
         virtual std::string to_string() const;
     };

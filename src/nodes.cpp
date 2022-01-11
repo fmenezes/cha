@@ -26,6 +26,6 @@ std::string ni::NBinaryOperation::to_string() const
 std::string ni::NUnaryOperation::to_string() const
 {
     std::stringstream o;
-    o << "[NUnaryOperation " << this->op << " " << this->right->to_string() << "]";
+    o << "[NUnaryOperation " << this->op << " " << this->value->to_string() << "]";
     return o.str();
 }
