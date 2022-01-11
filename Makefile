@@ -1,13 +1,17 @@
-.PHONY: ni
-ni: src/parser.y src/parser.l
-	bison -d src/parser.y  -o src/parser.tab.c
+default: build
+
+.PHONY: bison
+bison: src/parser.y
+	bison -d src/parser.y -b src/parser
+
+.PHONY: flex
+flex: src/parser.l
 	flex -o src/parser.yy.c src/parser.l
-	clang++ src/parser.yy.c src/parser.tab.c src/nodes.cpp src/main.cpp -o ni
 
 .PHONY: build
-build: ni
+build: bison flex
+	clang++ src/parser.yy.c src/parser.tab.c src/nodes.cpp src/main.cpp -o ni
 
 .PHONY: clean
 clean:
-	rm -rf ./ni
-
+	rm -rf ./ni src/parser.yy.c src/parser.tab.c  src/parser.tab.h
