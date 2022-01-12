@@ -55,7 +55,16 @@ namespace ni
     public:
         std::string identifier;
         Node *value;
-        NVariableAssignment(const std::string &identifier, Node* value) : identifier(identifier), value(std::move(value)){};
+        NVariableAssignment(const std::string &identifier, Node *value) : identifier(identifier), value(std::move(value)){};
+
+        virtual std::string to_string() const;
+    };
+
+    class NVariableLookup : public Node
+    {
+    public:
+        std::string identifier;
+        NVariableLookup(const std::string &identifier) : identifier(identifier){};
 
         virtual std::string to_string() const;
     };

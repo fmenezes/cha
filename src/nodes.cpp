@@ -43,3 +43,10 @@ std::string ni::NVariableAssignment::to_string() const
     o << "[NVariableAssignment " << this->identifier << " " << this->value->to_string() << "]";
     return o.str();
 }
+
+std::string ni::NVariableLookup::to_string() const
+{
+    std::stringstream o;
+    o << "[NVariableLookup " << this->identifier << "]";
+    return o.str();
+}

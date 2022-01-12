@@ -45,6 +45,7 @@ statement :
 
 expr :
 	const				{ $$ = $1; }
+	| IDENTIFIER		{ $$ = new ni::NVariableLookup(*$1); }
 	| expr '+' expr		{ $$ = new ni::NBinaryOperation("+"s, $1, $3); }
 	| expr '-' expr		{ $$ = new ni::NBinaryOperation("-"s, $1, $3); }
 	| expr '*' expr		{ $$ = new ni::NBinaryOperation("*"s, $1, $3); }
