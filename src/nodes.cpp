@@ -1,4 +1,5 @@
 #include <sstream>
+#include <iostream>
 
 #include "nodes.h"
 
@@ -48,5 +49,15 @@ std::string ni::NVariableLookup::to_string() const
 {
     std::stringstream o;
     o << "[NVariableLookup " << this->identifier << "]";
+    return o.str();
+}
+
+std::string ni::NStatementList::to_string() const
+{
+    std::stringstream o;
+    o << "NStatementList:";
+    for(auto i : this->statements) {
+        o << "\n" << i->to_string();
+    }
     return o.str();
 }
