@@ -82,7 +82,7 @@ namespace ni
         virtual std::string to_string() const;
     };
 
-    class NProgram : public Node
+    class NProgram
     {
     public:
         Node *value;
