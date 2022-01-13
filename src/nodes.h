@@ -2,12 +2,15 @@
 #include <string>
 #include <vector>
 
+#include <llvm/IR/Value.h>
+
 namespace ni
 {
     class Node
     {
     public:
         virtual std::string to_string() const = 0;
+        virtual llvm::Value* codegen() const = 0;
     };
 
     class NInteger : public Node
@@ -17,6 +20,7 @@ namespace ni
         NInteger(const std::string &value) : value(value){};
 
         virtual std::string to_string() const;
+        virtual llvm::Value *codegen() const;
     };
 
     class NUnaryOperation : public Node
@@ -28,6 +32,7 @@ namespace ni
         NUnaryOperation(const std::string &op, Node *value) : op(op), value(std::move(value)){};
 
         virtual std::string to_string() const;
+        virtual llvm::Value *codegen() const;
     };
 
     class NBinaryOperation : public Node
@@ -40,6 +45,7 @@ namespace ni
         NBinaryOperation(const std::string &op, Node *left, Node *right) : op(op), left(std::move(left)), right(std::move(right)){};
 
         virtual std::string to_string() const;
+        virtual llvm::Value *codegen() const;
     };
 
     class NVariableDeclaration : public Node
@@ -49,6 +55,7 @@ namespace ni
         NVariableDeclaration(const std::string &identifier) : identifier(identifier){};
 
         virtual std::string to_string() const;
+        virtual llvm::Value *codegen() const;
     };
 
     class NStatementList : public Node
@@ -61,6 +68,7 @@ namespace ni
         }
 
         virtual std::string to_string() const;
+        virtual llvm::Value *codegen() const;
     };
 
     class NVariableAssignment : public Node
@@ -71,6 +79,7 @@ namespace ni
         NVariableAssignment(const std::string &identifier, Node *value) : identifier(identifier), value(std::move(value)){};
 
         virtual std::string to_string() const;
+        virtual llvm::Value *codegen() const;
     };
 
     class NVariableLookup : public Node
@@ -80,6 +89,7 @@ namespace ni
         NVariableLookup(const std::string &identifier) : identifier(identifier){};
 
         virtual std::string to_string() const;
+        virtual llvm::Value *codegen() const;
     };
 
     class NProgram
@@ -88,8 +98,9 @@ namespace ni
         Node *value;
         NProgram(Node *value) : value(std::move(value)){};
 
-        virtual std::string to_string() const;
+        std::string to_string() const;
 
         void parse();
+        llvm::Value *codegen() const;
     };
 }
