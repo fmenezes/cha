@@ -37,6 +37,7 @@ llvm::Value *ni::NStatementList::codegen() const
     return NULL;
 }
 
-llvm::Value *ni::NProgram::codegen() const {
+llvm::Value *ni::NProgram::codegen() const
+{
     return NULL;
 }
