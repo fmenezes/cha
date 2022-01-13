@@ -10,6 +10,6 @@ jobs:
         with:
           fetch-depth: 0
       - name: Install dependencies
-        run: sudo apt-get update && sudo apt-get install build-essential flex bison clang -y
+        run: sudo apt-get update && sudo apt-get install build-essential flex bison clang llvm-12-dev -y
       - run: make
       - run: ./bin/ni < examples/test.ni
