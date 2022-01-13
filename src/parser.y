@@ -14,6 +14,7 @@ using namespace std::string_literals;
 %union
 {
 	ni::Node *node;
+	ni::NStatementList *statementlist;
 	std::string *str;
 	int token;
 }
@@ -21,7 +22,8 @@ using namespace std::string_literals;
 %token <str> INTEGER IDENTIFIER
 %token <token> POWER VAR
 
-%type <node> expr const statement
+%type <node> expr const statement 
+%type <statementlist> statements
 
 %left '+' '-'
 %left '*' '/'
@@ -33,8 +35,14 @@ using namespace std::string_literals;
 %%
 
 program :
-	program statement '\n'	{ std::cout << $2->to_string() << std::endl; }
+	statements { std::cout << $1->to_string() << std::endl; }
 	|
+	;
+
+
+statements :
+	statement '\n'	{ $$ = new ni::NStatementList($1); }
+	| statements statement '\n'	{ $1->statements.push_back($2); }
 	;
 
 statement :
@@ -64,3 +72,5 @@ void yyerror(char *s)
 {
 	printf("%s\n", s);
 }
+
+

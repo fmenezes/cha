@@ -2,8 +2,16 @@
 #include "nodes.h"
 #include "parser.tab.h"
 
+
 void yyerror(char *);
 %}
+
+
+/* RegEx */
+number [0-9]+
+string [_a-zA-Z]+
+identifier {string}[_a-zA-Z0-9]*
+
 
 %%
 
@@ -11,12 +19,12 @@ void yyerror(char *);
 		return VAR;
 	}
 
-[_a-zA-Z][_a-zA-Z0-9]* {
+{identifier} {
 		yylval.str = new std::string(yytext, yyleng);
 		return IDENTIFIER;
 	}
 
-[0-9]+ {
+{number} {
 		yylval.str = new std::string(yytext, yyleng);
 		return INTEGER;
 	}

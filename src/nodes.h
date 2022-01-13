@@ -1,5 +1,6 @@
 #include <iostream>
 #include <string>
+#include <vector>
 
 namespace ni
 {
@@ -49,6 +50,19 @@ namespace ni
 
         virtual std::string to_string() const;
     };
+
+
+    class NStatementList : public Node
+    {
+    public:
+        std::vector<Node *> statements;
+        NStatementList(Node *statement) {
+            statements.push_back(statement);
+        }
+
+        virtual std::string to_string() const;
+    };
+
 
     class NVariableAssignment : public Node
     {
