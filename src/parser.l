@@ -9,14 +9,13 @@ void yyerror(char *);
 
 /* RegEx */
 number [0-9]+
-string [_a-zA-Z]
+string [_a-zA-Z]+
 identifier {string}[_a-zA-Z0-9]*
-var "var"
 
 
 %%
 
-{var} {
+"var" {
 		return VAR;
 	}
 
