@@ -1,0 +1,15 @@
+name: build
+on: push
+
+jobs:
+  build:
+    name: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Install dependencies
+        run: sudo apt-get update && sudo apt-get install build-essential flex bison clang -y
+      - run: make
+      - run: ./bin/ni < examples/test.ni
