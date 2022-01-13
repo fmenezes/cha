@@ -8,18 +8,19 @@ void yyerror(char *);
 
 
 /* RegEx */
-number ([0-9])+
-var ([_a-zA-Z][_a-zA-Z0-9])*
-
+number [0-9]+
+string [_a-zA-Z]
+identifier {string}[_a-zA-Z0-9]*
+var "var"
 
 
 %%
 
-"var" {
+{var} {
 		return VAR;
 	}
 
-[_a-zA-Z][_a-zA-Z0-9]* {
+{identifier} {
 		yylval.str = new std::string(yytext, yyleng);
 		return IDENTIFIER;
 	}
