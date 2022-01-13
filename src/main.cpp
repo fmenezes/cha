@@ -1,10 +1,12 @@
 #include <iostream>
 #include <string>
 #include "nodes.h"
-#include "parser.tab.h"
+
+ni::NProgram *program;
 
 int main()
 {
-   yyparse();
+   program->parse();
+   std::cout << program->to_string();
    return 0;
 }

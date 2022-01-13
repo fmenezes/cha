@@ -51,18 +51,17 @@ namespace ni
         virtual std::string to_string() const;
     };
 
-
     class NStatementList : public Node
     {
     public:
         std::vector<Node *> statements;
-        NStatementList(Node *statement) {
+        NStatementList(Node *statement)
+        {
             statements.push_back(statement);
         }
 
         virtual std::string to_string() const;
     };
-
 
     class NVariableAssignment : public Node
     {
@@ -81,5 +80,16 @@ namespace ni
         NVariableLookup(const std::string &identifier) : identifier(identifier){};
 
         virtual std::string to_string() const;
+    };
+
+    class NProgram : public Node
+    {
+    public:
+        Node *value;
+        NProgram(Node *value) : value(std::move(value)){};
+
+        virtual std::string to_string() const;
+
+        void parse();
     };
 }

@@ -15,3 +15,7 @@ build: bison flex
 .PHONY: clean
 clean:
 	rm -rf bin/ni src/parser.yy.c src/parser.tab.c src/parser.tab.h
+
+.PHONY: test
+test:
+	./bin/ni < examples/test.ni

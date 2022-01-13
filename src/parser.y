@@ -9,6 +9,8 @@ void yyerror(char *);
 
 using namespace std::string_literals;
 
+extern ni::NProgram *program;
+
 %}
 
 %union
@@ -35,7 +37,7 @@ using namespace std::string_literals;
 %%
 
 program :
-	statements { std::cout << $1->to_string() << std::endl; }
+	statements { program = new ni::NProgram($1); }
 	|
 	;
 
