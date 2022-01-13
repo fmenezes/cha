@@ -4,13 +4,6 @@
 #include "nodes.h"
 #include "parser.tab.h"
 
-std::string ni::Node::to_string() const
-{
-    std::stringstream o;
-    o << "[Node]";
-    return o.str();
-}
-
 std::string ni::NInteger::to_string() const
 {
     std::stringstream o;

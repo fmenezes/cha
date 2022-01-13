@@ -7,7 +7,7 @@ namespace ni
     class Node
     {
     public:
-        virtual std::string to_string() const;
+        virtual std::string to_string() const = 0;
     };
 
     class NInteger : public Node
