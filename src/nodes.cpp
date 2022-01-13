@@ -2,13 +2,7 @@
 #include <iostream>
 
 #include "nodes.h"
-
-std::string ni::Node::to_string() const
-{
-    std::stringstream o;
-    o << "[Node]";
-    return o.str();
-}
+#include "parser.tab.h"
 
 std::string ni::NInteger::to_string() const
 {
@@ -55,9 +49,21 @@ std::string ni::NVariableLookup::to_string() const
 std::string ni::NStatementList::to_string() const
 {
     std::stringstream o;
-    o << "NStatementList:";
+    o << "[NStatementList";
     for(auto i : this->statements) {
-        o << "\n" << i->to_string();
+        o << "\n " << i->to_string();
     }
+    o << "]";
     return o.str();
+}
+
+std::string ni::NProgram::to_string() const
+{
+    std::stringstream o;
+    o << "[NProgram " << this->value->to_string() << "]";
+    return o.str();
+}
+
+void ni::NProgram::parse() {
+    yyparse();
 }
