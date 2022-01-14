@@ -10,7 +10,7 @@ namespace ni
     {
     public:
         virtual std::string to_string() const = 0;
-        virtual llvm::Value* codegen() const = 0;
+        virtual llvm::Value *codegen() const = 0;
     };
 
     class NInteger : public Node

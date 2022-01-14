@@ -10,6 +10,38 @@ jobs:
         with:
           fetch-depth: 0
       - name: Install dependencies
-        run: sudo apt-get update && sudo apt-get install build-essential flex bison clang llvm-12-dev -y
+        run: sudo apt-get update && sudo apt-get install build-essential flex bison clang-12 llvm-12-dev -y
+      - name: set llvm version
+        env:
+          LLVM_VERSION: 12
+        run: |
+          update-alternatives \
+            --install /usr/bin/llvm-config       llvm-config      /usr/bin/llvm-config-${LLVM_VERSION} 1 \
+            --slave   /usr/bin/llvm-ar           llvm-ar          /usr/bin/llvm-ar-${LLVM_VERSION} \
+            --slave   /usr/bin/llvm-as           llvm-as          /usr/bin/llvm-as-${LLVM_VERSION} \
+            --slave   /usr/bin/llvm-bcanalyzer   llvm-bcanalyzer  /usr/bin/llvm-bcanalyzer-${LLVM_VERSION} \
+            --slave   /usr/bin/llvm-cov          llvm-cov         /usr/bin/llvm-cov-${LLVM_VERSION} \
+            --slave   /usr/bin/llvm-diff         llvm-diff        /usr/bin/llvm-diff-${LLVM_VERSION} \
+            --slave   /usr/bin/llvm-dis          llvm-dis         /usr/bin/llvm-dis-${LLVM_VERSION} \
+            --slave   /usr/bin/llvm-dwarfdump    llvm-dwarfdump   /usr/bin/llvm-dwarfdump-${LLVM_VERSION} \
+            --slave   /usr/bin/llvm-extract      llvm-extract     /usr/bin/llvm-extract-${LLVM_VERSION} \
+            --slave   /usr/bin/llvm-link         llvm-link        /usr/bin/llvm-link-${LLVM_VERSION} \
+            --slave   /usr/bin/llvm-mc           llvm-mc          /usr/bin/llvm-mc-${LLVM_VERSION} \
+            --slave   /usr/bin/llvm-nm           llvm-nm          /usr/bin/llvm-nm-${LLVM_VERSION} \
+            --slave   /usr/bin/llvm-objdump      llvm-objdump     /usr/bin/llvm-objdump-${LLVM_VERSION} \
+            --slave   /usr/bin/llvm-ranlib       llvm-ranlib      /usr/bin/llvm-ranlib-${LLVM_VERSION} \
+            --slave   /usr/bin/llvm-readobj      llvm-readobj     /usr/bin/llvm-readobj-${LLVM_VERSION} \
+            --slave   /usr/bin/llvm-rtdyld       llvm-rtdyld      /usr/bin/llvm-rtdyld-${LLVM_VERSION} \
+            --slave   /usr/bin/llvm-size         llvm-size        /usr/bin/llvm-size-${LLVM_VERSION} \
+            --slave   /usr/bin/llvm-stress       llvm-stress      /usr/bin/llvm-stress-${LLVM_VERSION} \
+            --slave   /usr/bin/llvm-symbolizer   llvm-symbolizer  /usr/bin/llvm-symbolizer-${LLVM_VERSION} \
+            --slave   /usr/bin/llvm-tblgen       llvm-tblgen      /usr/bin/llvm-tblgen-${LLVM_VERSION} \
+            --slave   /usr/bin/llvm-objcopy      llvm-objcopy     /usr/bin/llvm-objcopy-${LLVM_VERSION} \
+            --slave   /usr/bin/llvm-strip        llvm-strip       /usr/bin/llvm-strip-${LLVM_VERSION} \
+            --slave   /usr/bin/clang             clang            /usr/bin/clang-${LLVM_VERSION} \
+            --slave   /usr/bin/clang++           clang++          /usr/bin/clang++-${LLVM_VERSION}  \
+            --slave   /usr/bin/asan_symbolize    asan_symbolize   /usr/bin/asan_symbolize-${LLVM_VERSION} \
+            --slave   /usr/bin/clang-cpp         clang-cpp        /usr/bin/clang-cpp-${LLVM_VERSION}
+      - run: llvm-config --version
       - run: make
       - run: ./bin/ni < examples/test.ni
