@@ -25,42 +25,45 @@
 
 #include "nodes.h"
 
-llvm::Value *ni::NInteger::codegen(llvm::LLVMContext *ctx) const
+llvm::Value *ni::NInteger::codegen(llvm::LLVMContext *ctx, llvm::raw_fd_ostream *llFile) const
 {
     return llvm::ConstantInt::get(*ctx, llvm::APSInt(this->value));
 }
 
-llvm::Value *ni::NUnaryOperation::codegen(llvm::LLVMContext *ctx) const
+llvm::Value *ni::NUnaryOperation::codegen(llvm::LLVMContext *ctx, llvm::raw_fd_ostream *llFile) const
 {
     return NULL;
 }
 
-llvm::Value *ni::NBinaryOperation::codegen(llvm::LLVMContext *ctx) const
+llvm::Value *ni::NBinaryOperation::codegen(llvm::LLVMContext *ctx, llvm::raw_fd_ostream *llFile) const
 {
     return NULL;
 }
 
-llvm::Value *ni::NVariableDeclaration::codegen(llvm::LLVMContext *ctx) const
+llvm::Value *ni::NVariableDeclaration::codegen(llvm::LLVMContext *ctx, llvm::raw_fd_ostream *llFile) const
 {
     return NULL;
 }
 
-llvm::Value *ni::NVariableAssignment::codegen(llvm::LLVMContext *ctx) const
+llvm::Value *ni::NVariableAssignment::codegen(llvm::LLVMContext *ctx, llvm::raw_fd_ostream *llFile) const
 {
     return NULL;
 }
 
-llvm::Value *ni::NVariableLookup::codegen(llvm::LLVMContext *ctx) const
+llvm::Value *ni::NVariableLookup::codegen(llvm::LLVMContext *ctx, llvm::raw_fd_ostream *llFile) const
 {
     return NULL;
 }
 
-llvm::Value *ni::NStatementList::codegen(llvm::LLVMContext *ctx) const
+llvm::Value *ni::NStatementList::codegen(llvm::LLVMContext *ctx, llvm::raw_fd_ostream *llFile) const
 {
     llvm::Value *last;
     for (auto &statement : this->statements)
     {
-        last = statement->codegen(ctx);
+        last = statement->codegen(ctx, llFile);
+        if (last != NULL) {
+            last->print(*llFile);
+        }
     }
     return last;
 }
@@ -93,10 +96,19 @@ int ni::NProgram::codegen(std::string& error) const
 
     TheModule->setDataLayout(TheTargetMachine->createDataLayout());
 
-    auto Filename = "output.o";
     std::error_code EC;
-    llvm::raw_fd_ostream dest(Filename, EC, llvm::sys::fs::OF_None);
+    auto destFilename = "output.o";
+    llvm::raw_fd_ostream dest(destFilename, EC, llvm::sys::fs::OF_None);
+    if (EC)
+    {
+        std::stringstream e;
+        e << "Could not open file: " << EC.message();
+        error = e.str();
+        return 1;
+    }
 
+    auto llFilename = "output.ll";
+    llvm::raw_fd_ostream llDest(llFilename, EC, llvm::sys::fs::OF_None);
     if (EC)
     {
         std::stringstream e;
@@ -106,9 +118,7 @@ int ni::NProgram::codegen(std::string& error) const
     }
 
     llvm::legacy::PassManager pass;
-    auto FileType = llvm::CGFT_ObjectFile;
-
-    if (TheTargetMachine->addPassesToEmitFile(pass, dest, nullptr, FileType))
+    if (TheTargetMachine->addPassesToEmitFile(pass, dest, nullptr, llvm::CGFT_ObjectFile))
     {
         std::stringstream e;
         e << "Could not open file: " << EC.message();
@@ -116,8 +126,13 @@ int ni::NProgram::codegen(std::string& error) const
         return 1;
     }
 
+    this->value->codegen(TheContext, &llDest);
+
     pass.run(*TheModule);
     dest.flush();
+    dest.close();
+    llDest.flush();
+    llDest.close();
 
     return 0;
 }
