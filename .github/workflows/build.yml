@@ -15,7 +15,7 @@ jobs:
         env:
           LLVM_VERSION: 12
         run: |
-          update-alternatives \
+          sudo update-alternatives \
             --install /usr/bin/llvm-config       llvm-config      /usr/bin/llvm-config-${LLVM_VERSION} 1 \
             --slave   /usr/bin/llvm-ar           llvm-ar          /usr/bin/llvm-ar-${LLVM_VERSION} \
             --slave   /usr/bin/llvm-as           llvm-as          /usr/bin/llvm-as-${LLVM_VERSION} \
@@ -38,7 +38,7 @@ jobs:
             --slave   /usr/bin/llvm-tblgen       llvm-tblgen      /usr/bin/llvm-tblgen-${LLVM_VERSION} \
             --slave   /usr/bin/llvm-objcopy      llvm-objcopy     /usr/bin/llvm-objcopy-${LLVM_VERSION} \
             --slave   /usr/bin/llvm-strip        llvm-strip       /usr/bin/llvm-strip-${LLVM_VERSION}
-          update-alternatives \
+          sudo update-alternatives \
             --install /usr/bin/clang             clang            /usr/bin/clang-${LLVM_VERSION} 1 \
             --slave   /usr/bin/clang++           clang++          /usr/bin/clang++-${LLVM_VERSION}  \
             --slave   /usr/bin/asan_symbolize    asan_symbolize   /usr/bin/asan_symbolize-${LLVM_VERSION} \
