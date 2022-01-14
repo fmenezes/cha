@@ -50,7 +50,8 @@ std::string ni::NStatementList::to_string() const
 {
     std::stringstream o;
     o << "[NStatementList";
-    for(auto i : this->statements) {
+    for (auto i : this->statements)
+    {
         o << "\n " << i->to_string();
     }
     o << "]";
@@ -64,6 +65,7 @@ std::string ni::NProgram::to_string() const
     return o.str();
 }
 
-void ni::NProgram::parse() {
+void ni::NProgram::parse()
+{
     yyparse();
 }

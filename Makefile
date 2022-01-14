@@ -1,3 +1,5 @@
+LLVM_CONFIG := $(shell llvm-config --cxxflags --ldflags --system-libs --libs)
+
 default: build
 
 .PHONY: bison
@@ -10,7 +12,7 @@ flex: src/parser.l
 
 .PHONY: build
 build: bison flex
-	clang++ src/parser.yy.c src/parser.tab.c src/nodes.cpp src/main.cpp -o bin/ni
+	clang++ $(LLVM_CONFIG) src/parser.yy.c src/parser.tab.c src/nodes.cpp src/codegen.cpp src/main.cpp -o bin/ni
 
 .PHONY: clean
 clean:
