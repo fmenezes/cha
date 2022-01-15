@@ -4,6 +4,7 @@
 #include "nodes.h"
 #include "parser.tab.h"
 
+
 std::string ni::NInteger::to_string() const
 {
     std::stringstream o;

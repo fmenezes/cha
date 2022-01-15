@@ -25,44 +25,59 @@
 
 #include "nodes.h"
 
-llvm::Value *ni::NInteger::codegen(llvm::LLVMContext *ctx, llvm::raw_fd_ostream *llFile) const
+llvm::Value *ni::NInteger::codegen(ni::Context *ctx) const
 {
-    return llvm::ConstantInt::get(*ctx, llvm::APSInt(this->value));
+    return llvm::ConstantInt::get(*ctx->ctx, llvm::APSInt(this->value));
 }
 
-llvm::Value *ni::NUnaryOperation::codegen(llvm::LLVMContext *ctx, llvm::raw_fd_ostream *llFile) const
-{
-    return NULL;
-}
-
-llvm::Value *ni::NBinaryOperation::codegen(llvm::LLVMContext *ctx, llvm::raw_fd_ostream *llFile) const
+llvm::Value *ni::NUnaryOperation::codegen(ni::Context *ctx) const
 {
     return NULL;
 }
 
-llvm::Value *ni::NVariableDeclaration::codegen(llvm::LLVMContext *ctx, llvm::raw_fd_ostream *llFile) const
+llvm::Value *ni::NBinaryOperation::codegen(ni::Context *ctx) const
+{
+    auto L = this->left->codegen(ctx);
+    auto R = this->right->codegen(ctx);
+    if (this->op.compare("+") == 0)
+    {
+        return ctx->builder->CreateAdd(L, R, "addtmp");
+    }
+    else if (this->op.compare("-") == 0)
+    {
+        return ctx->builder->CreateSub(L, R, "subtmp");
+    }
+    else if (this->op.compare("*") == 0)
+    {
+        return ctx->builder->CreateMul(L, R, "multmp");
+    }
+    return NULL;
+
+}
+
+llvm::Value *ni::NVariableDeclaration::codegen(ni::Context *ctx) const
 {
     return NULL;
 }
 
-llvm::Value *ni::NVariableAssignment::codegen(llvm::LLVMContext *ctx, llvm::raw_fd_ostream *llFile) const
+llvm::Value *ni::NVariableAssignment::codegen(ni::Context *ctx) const
 {
     return NULL;
 }
 
-llvm::Value *ni::NVariableLookup::codegen(llvm::LLVMContext *ctx, llvm::raw_fd_ostream *llFile) const
+llvm::Value *ni::NVariableLookup::codegen(ni::Context *ctx) const
 {
     return NULL;
 }
 
-llvm::Value *ni::NStatementList::codegen(llvm::LLVMContext *ctx, llvm::raw_fd_ostream *llFile) const
+llvm::Value *ni::NStatementList::codegen(ni::Context *ctx) const
 {
     llvm::Value *last;
     for (auto &statement : this->statements)
     {
-        last = statement->codegen(ctx, llFile);
+        last = statement->codegen(ctx);
         if (last != NULL) {
-            last->print(*llFile);
+            last->print(*ctx->llFile);
         }
     }
     return last;
@@ -87,7 +102,7 @@ int ni::NProgram::codegen(std::string& error) const
         return 1;
     }
 
-    auto CPU = "x86-64";
+    auto CPU = "generic";
     auto Features = "";
     llvm::TargetOptions opt;
     auto RM = llvm::Optional<llvm::Reloc::Model>();
@@ -126,7 +141,8 @@ int ni::NProgram::codegen(std::string& error) const
         return 1;
     }
 
-    this->value->codegen(TheContext, &llDest);
+    ni::Context ctx(&llDest, TheContext, Builder);
+    this->value->codegen(&ctx);
 
     pass.run(*TheModule);
     dest.flush();
