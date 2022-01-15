@@ -56,7 +56,7 @@ llvm::Value *ni::NBinaryOperation::codegen(ni::Context *ctx) const
 
 llvm::Value *ni::NVariableDeclaration::codegen(ni::Context *ctx) const
 {
-    // llvm::AllocaInst *Alloca = ctx->builder->CreateAlloca(llvm::Type::getInt8Ty(*ctx->ctx), 0, this->identifier.c_str());
+    llvm::AllocaInst *Alloca = ctx->builder->CreateAlloca(llvm::Type::getInt32Ty(*ctx->ctx), 0, this->identifier.c_str());
     return NULL;
 }
 
@@ -149,7 +149,7 @@ int ni::NProgram::codegen(std::string &error) const
     llvm::BasicBlock *BB = llvm::BasicBlock::Create(*TheContext, "entry", F);
     Builder->SetInsertPoint(BB);
 
-    ni::Context ctx(&llDest, TheContext, Builder);
+     ni::Context ctx(&llDest, TheContext, Builder);
 
     auto value = this->value->codegen(&ctx);
 
