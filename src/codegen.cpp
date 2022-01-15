@@ -137,14 +137,13 @@ int ni::NProgram::codegen(std::string &error) const
         error = e.str();
         return 1;
     }
-    std::cout << "**** teste ****" << std::endl;
 
     std::vector<llvm::Type *> Args;
 
-     llvm::FunctionType *FT =
+    llvm::FunctionType *FT =
         llvm::FunctionType::get(llvm::Type::getVoidTy(*TheContext), Args, false);
 
-     llvm::Function *F =
+    llvm::Function *F =
         llvm::Function::Create(FT, llvm::Function::ExternalLinkage, 0, "main", TheModule);
 
     llvm::BasicBlock *BB = llvm::BasicBlock::Create(*TheContext, "entry", F);
