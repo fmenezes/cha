@@ -27,7 +27,9 @@
 
 llvm::Value *ni::NInteger::codegen(ni::Context *ctx) const
 {
-    return NULL; // llvm::ConstantInt::get(*ctx->ctx, llvm::APSInt(this->value));
+    long long v = std::stoll(this->value);
+    auto a = llvm::APInt(32, v);
+    return llvm::ConstantInt::get(*ctx->ctx, llvm::APSInt(a, false));
 }
 
 llvm::Value *ni::NUnaryOperation::codegen(ni::Context *ctx) const
@@ -39,6 +41,7 @@ llvm::Value *ni::NBinaryOperation::codegen(ni::Context *ctx) const
 {
     auto L = this->left->codegen(ctx);
     auto R = this->right->codegen(ctx);
+
     if (this->op.compare("+") == 0)
     {
         return ctx->builder->CreateAdd(L, R, "addtmp");
@@ -51,27 +54,42 @@ llvm::Value *ni::NBinaryOperation::codegen(ni::Context *ctx) const
     {
         return ctx->builder->CreateMul(L, R, "multmp");
     }
+
     return NULL;
 }
 
 llvm::Value *ni::NVariableDeclaration::codegen(ni::Context *ctx) const
 {
+
     llvm::AllocaInst *Alloca = ctx->builder->CreateAlloca(llvm::Type::getInt32Ty(*ctx->ctx), 0, this->identifier.c_str());
-    return NULL;
+    ctx->vars[this->identifier] = std::move(Alloca);
+
+    return ctx->builder->CreateLoad(Alloca->getAllocatedType(), Alloca, this->identifier.c_str());
 }
 
 llvm::Value *ni::NVariableAssignment::codegen(ni::Context *ctx) const
 {
-    return NULL;
+    if (ctx->vars[this->identifier] == NULL) {
+        std::cerr << this->identifier << " Not found." << std::endl;
+        exit(1);
+    }
+    auto value = this->value->codegen(ctx);
+    ctx->builder->CreateStore(value, ctx->vars[this->identifier]);
+    return value;
 }
 
 llvm::Value *ni::NVariableLookup::codegen(ni::Context *ctx) const
 {
-    return NULL;
+    if (ctx->vars[this->identifier] == NULL) {
+        std::cerr << this->identifier << " Not found." << std::endl;
+        exit(1);
+    }
+    return ctx->builder->CreateLoad(ctx->vars[this->identifier]->getAllocatedType(), ctx->vars[this->identifier], this->identifier.c_str());
 }
 
 llvm::Value *ni::NStatementList::codegen(ni::Context *ctx) const
 {
+
     llvm::Value *last;
     for (auto &statement : this->statements)
     {
@@ -141,7 +159,7 @@ int ni::NProgram::codegen(std::string &error) const
     std::vector<llvm::Type *> Args;
 
     llvm::FunctionType *FT =
-        llvm::FunctionType::get(llvm::Type::getVoidTy(*TheContext), Args, false);
+        llvm::FunctionType::get(llvm::Type::getInt32Ty(*TheContext), Args, false);
 
     llvm::Function *F =
         llvm::Function::Create(FT, llvm::Function::ExternalLinkage, 0, "main", TheModule);
@@ -149,15 +167,15 @@ int ni::NProgram::codegen(std::string &error) const
     llvm::BasicBlock *BB = llvm::BasicBlock::Create(*TheContext, "entry", F);
     Builder->SetInsertPoint(BB);
 
-     ni::Context ctx(&llDest, TheContext, Builder);
+    ni::Context ctx(&llDest, TheContext, Builder);
 
     auto value = this->value->codegen(&ctx);
 
-    Builder->CreateRetVoid();
-
-    pass.run(*TheModule);
+    Builder->CreateRet(value);
 
     TheModule->print(llDest, nullptr);
+
+    pass.run(*TheModule);
 
     dest.flush();
     dest.close();

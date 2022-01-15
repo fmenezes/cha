@@ -15,6 +15,7 @@ namespace ni
         llvm::LLVMContext *ctx;
         llvm::raw_fd_ostream *llFile;
         llvm::IRBuilder<llvm::ConstantFolder, llvm::IRBuilderDefaultInserter>* builder;
+        std::map<std::string, llvm::AllocaInst *> vars;
         Context(llvm::raw_fd_ostream *llFile, llvm::LLVMContext *ctx, llvm::IRBuilder<>* builder) : llFile(llFile), ctx(ctx), builder(builder){};
     };
     class Node
