@@ -27,7 +27,7 @@
 
 llvm::Value *ni::NInteger::codegen(ni::Context *ctx) const
 {
-    return llvm::ConstantInt::get(*ctx->ctx, llvm::APSInt(this->value));
+    return NULL; // llvm::ConstantInt::get(*ctx->ctx, llvm::APSInt(this->value));
 }
 
 llvm::Value *ni::NUnaryOperation::codegen(ni::Context *ctx) const
@@ -52,11 +52,11 @@ llvm::Value *ni::NBinaryOperation::codegen(ni::Context *ctx) const
         return ctx->builder->CreateMul(L, R, "multmp");
     }
     return NULL;
-
 }
 
 llvm::Value *ni::NVariableDeclaration::codegen(ni::Context *ctx) const
 {
+    // llvm::AllocaInst *Alloca = ctx->builder->CreateAlloca(llvm::Type::getInt8Ty(*ctx->ctx), 0, this->identifier.c_str());
     return NULL;
 }
 
@@ -76,14 +76,11 @@ llvm::Value *ni::NStatementList::codegen(ni::Context *ctx) const
     for (auto &statement : this->statements)
     {
         last = statement->codegen(ctx);
-        if (last != NULL) {
-            last->print(*ctx->llFile);
-        }
     }
     return last;
 }
 
-int ni::NProgram::codegen(std::string& error) const
+int ni::NProgram::codegen(std::string &error) const
 {
     llvm::InitializeAllTargetInfos();
     llvm::InitializeAllTargets();
@@ -93,7 +90,7 @@ int ni::NProgram::codegen(std::string& error) const
 
     llvm::LLVMContext *TheContext = new llvm::LLVMContext();
     llvm::Module *TheModule = new llvm::Module("main", *TheContext);
-    llvm::IRBuilder<>* Builder = new llvm::IRBuilder<>(*TheContext);
+    llvm::IRBuilder<> *Builder = new llvm::IRBuilder<>(*TheContext);
     auto TargetTriple = llvm::sys::getDefaultTargetTriple();
     TheModule->setTargetTriple(TargetTriple);
     auto Target = llvm::TargetRegistry::lookupTarget(TargetTriple, error);
@@ -140,11 +137,33 @@ int ni::NProgram::codegen(std::string& error) const
         error = e.str();
         return 1;
     }
+    std::cout << "**** teste ****" << std::endl;
+
+    std::vector<llvm::Type *> Args;
+
+     llvm::FunctionType *FT =
+        llvm::FunctionType::get(llvm::Type::getVoidTy(*TheContext), Args, false);
+
+     llvm::Function *F =
+        llvm::Function::Create(FT, llvm::Function::ExternalLinkage, 0, "main", TheModule);
+
+    llvm::BasicBlock *BB = llvm::BasicBlock::Create(*TheContext, "entry", F);
+    Builder->SetInsertPoint(BB);
 
     ni::Context ctx(&llDest, TheContext, Builder);
-    this->value->codegen(&ctx);
+    std::cout << "**** teste ****" << std::endl;
+
+    auto value = this->value->codegen(&ctx);
+    std::cout << "**** teste ****" << std::endl;
+
+    Builder->CreateRetVoid();
+    std::cout << "**** teste ****" << std::endl;
+
 
     pass.run(*TheModule);
+    std::cout << "**** teste ****" << std::endl;
+    TheModule->print(llDest, nullptr);
+
     dest.flush();
     dest.close();
     llDest.flush();
