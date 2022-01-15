@@ -149,18 +149,7 @@ int ni::NProgram::codegen(std::string &error) const
     llvm::BasicBlock *BB = llvm::BasicBlock::Create(*TheContext, "entry", F);
     Builder->SetInsertPoint(BB);
 
-    std::vector<llvm::Type *> Args;
-
-    llvm::FunctionType *FT =
-        llvm::FunctionType::get(llvm::Type::getVoidTy(*TheContext), Args, false);
-
-    llvm::Function *F =
-        llvm::Function::Create(FT, llvm::Function::ExternalLinkage, 0, "main", TheModule);
-
-    llvm::BasicBlock *BB = llvm::BasicBlock::Create(*TheContext, "entry", F);
-    Builder->SetInsertPoint(BB);
-
-    ni::Context ctx(&llDest, TheContext, Builder);
+     ni::Context ctx(&llDest, TheContext, Builder);
 
     auto value = this->value->codegen(&ctx);
 
