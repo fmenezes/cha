@@ -16,7 +16,7 @@ test_ld:
 
 .PHONY: clang
 clang:
-	clang++ $(LLVM_CONFIG) src/parser.yy.c src/parser.tab.c src/nodes.cpp src/codegen.cpp src/main.cpp -o bin/ni
+	clang++ $(LLVM_CONFIG) src/parser.yy.c src/parser.tab.c src/codegen.cpp src/main.cpp -o bin/ni
 
 .PHONY: build
 build: bison flex clang 

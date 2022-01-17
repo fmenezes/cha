@@ -24,6 +24,14 @@
 #include "llvm/Target/TargetOptions.h"
 
 #include "nodes.h"
+#include "parser.tab.h"
+
+
+void ni::NProgram::parse()
+{
+    yyparse();
+}
+
 
 llvm::Value *ni::NInteger::codegen(ni::Context *ctx) const
 {
