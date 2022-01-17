@@ -16,7 +16,7 @@ jobs:
           sudo apt-get update && sudo apt-get install build-essential flex bison -y
           curl -O "https://apt.llvm.org/llvm.sh"
           chmod +x llvm.sh
-          sudo ./llvm.sh ${LLVM_VERSION}
+          sudo ./llvm.sh ${LLVM_VERSION} all
       - name: set llvm version
         run: |
           sudo update-alternatives \
