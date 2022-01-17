@@ -14,14 +14,13 @@ namespace ni
     public:
         llvm::LLVMContext *ctx;
         llvm::raw_fd_ostream *llFile;
-        llvm::IRBuilder<llvm::ConstantFolder, llvm::IRBuilderDefaultInserter>* builder;
+        llvm::IRBuilder<llvm::ConstantFolder, llvm::IRBuilderDefaultInserter> *builder;
         std::map<std::string, llvm::AllocaInst *> vars;
-        Context(llvm::raw_fd_ostream *llFile, llvm::LLVMContext *ctx, llvm::IRBuilder<>* builder) : llFile(llFile), ctx(ctx), builder(builder){};
+        Context(llvm::raw_fd_ostream *llFile, llvm::LLVMContext *ctx, llvm::IRBuilder<> *builder) : llFile(llFile), ctx(ctx), builder(builder){};
     };
     class Node
     {
     public:
-        virtual std::string to_string() const = 0;
         virtual llvm::Value *codegen(Context *ctx) const = 0;
     };
 
@@ -31,7 +30,6 @@ namespace ni
         std::string value;
         NInteger(const std::string &value) : value(value){};
 
-        virtual std::string to_string() const;
         virtual llvm::Value *codegen(Context *ctx) const;
     };
 
@@ -43,7 +41,6 @@ namespace ni
 
         NUnaryOperation(const std::string &op, Node *value) : op(op), value(std::move(value)){};
 
-        virtual std::string to_string() const;
         virtual llvm::Value *codegen(Context *ctx) const;
     };
 
@@ -56,7 +53,6 @@ namespace ni
 
         NBinaryOperation(const std::string &op, Node *left, Node *right) : op(op), left(std::move(left)), right(std::move(right)){};
 
-        virtual std::string to_string() const;
         virtual llvm::Value *codegen(Context *ctx) const;
     };
 
@@ -66,7 +62,6 @@ namespace ni
         std::string identifier;
         NVariableDeclaration(const std::string &identifier) : identifier(identifier){};
 
-        virtual std::string to_string() const;
         virtual llvm::Value *codegen(Context *ctx) const;
     };
 
@@ -79,7 +74,6 @@ namespace ni
             statements.push_back(statement);
         }
 
-        virtual std::string to_string() const;
         virtual llvm::Value *codegen(Context *ctx) const;
     };
 
@@ -90,7 +84,6 @@ namespace ni
         Node *value;
         NVariableAssignment(const std::string &identifier, Node *value) : identifier(identifier), value(std::move(value)){};
 
-        virtual std::string to_string() const;
         virtual llvm::Value *codegen(Context *ctx) const;
     };
 
@@ -100,7 +93,6 @@ namespace ni
         std::string identifier;
         NVariableLookup(const std::string &identifier) : identifier(identifier){};
 
-        virtual std::string to_string() const;
         virtual llvm::Value *codegen(Context *ctx) const;
     };
 
@@ -109,8 +101,6 @@ namespace ni
     public:
         Node *value;
         NProgram(Node *value) : value(std::move(value)){};
-
-        std::string to_string() const;
 
         void parse();
         int codegen(std::string &error) const;
