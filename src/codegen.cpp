@@ -32,11 +32,6 @@ llvm::Value *ni::NInteger::codegen(ni::Context *ctx) const
     return llvm::ConstantInt::get(*ctx->ctx, llvm::APSInt(a, false));
 }
 
-llvm::Value *ni::NUnaryOperation::codegen(ni::Context *ctx) const
-{
-    return NULL;
-}
-
 llvm::Value *ni::NBinaryOperation::codegen(ni::Context *ctx) const
 {
     auto L = this->left->codegen(ctx);
