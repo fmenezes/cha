@@ -22,15 +22,13 @@ extern ni::NProgram *program;
 }
 
 %token <str> INTEGER IDENTIFIER
-%token <token> POWER VAR
+%token <token> VAR
 
 %type <node> expr const statement 
 %type <statementlist> statements
 
 %left '+' '-'
 %left '*' '/'
-%precedence  '!'
-%right POWER
 
 %start program
 
@@ -60,8 +58,6 @@ expr :
 	| expr '-' expr		{ $$ = new ni::NBinaryOperation("-"s, $1, $3); }
 	| expr '*' expr		{ $$ = new ni::NBinaryOperation("*"s, $1, $3); }
 	| expr '/' expr		{ $$ = new ni::NBinaryOperation("/"s, $1, $3); }
-	| '!' expr			{ $$ = new ni::NUnaryOperation("!"s, $2); }
-	| expr POWER expr	{ $$ = new ni::NBinaryOperation("**"s, $1, $3); }
 	| '(' expr ')'		{ $$ = $2; }
 	;
 

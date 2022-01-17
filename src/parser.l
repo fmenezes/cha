@@ -9,8 +9,7 @@ void yyerror(char *);
 
 /* RegEx */
 number [0-9]+
-string [_a-zA-Z]+
-identifier {string}[_a-zA-Z0-9]*
+identifier [_a-zA-Z][_a-zA-Z0-9]*
 
 
 %%
@@ -29,11 +28,7 @@ identifier {string}[_a-zA-Z0-9]*
 		return INTEGER;
 	}
 
-"**" {
-		return POWER;
-	}
-
-[-+()=*/!] {
+[-+()=*] {
 		return *yytext;
 	}
 
