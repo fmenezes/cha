@@ -4,3 +4,5 @@ src/parser.tab.c
 src/parser.tab.h
 *.o
 *.ll
+*.s
+*.out
