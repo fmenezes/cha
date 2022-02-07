@@ -26,10 +26,10 @@
 #include "nodes.hh"
 #include "parser.tab.hh"
 
-void ni::NProgram::parse()
+int ni::NProgram::parse()
 {
     yy::parser p(*this);
-    p.parse();
+    return p.parse();
 }
 
 llvm::Value *ni::NInteger::codegen(ni::Context *ctx) const

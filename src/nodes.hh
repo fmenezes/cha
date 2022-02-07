@@ -91,8 +91,8 @@ namespace ni
     public:
         std::vector<ni::Node *> value;
 
-        void parse();
-        void parse(const std::string& f);
+        int parse();
+        int parse(const std::string& f);
         int codegen(std::string &error) const;
     };
 
