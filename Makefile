@@ -3,8 +3,8 @@ LLVM_CONFIG := $(shell llvm-config --cxxflags --ldflags --system-libs --libs)
 default: build
 
 .PHONY: bison
-bison: src/parser.y
-	bison -d src/parser.y -b src/parser
+bison: src/parser.yy
+	bison -d src/parser.yy -b src/parser
 
 .PHONY: flex
 flex: src/parser.l
@@ -16,14 +16,14 @@ test_ld:
 
 .PHONY: clang
 clang:
-	clang++ $(LLVM_CONFIG) src/parser.yy.c src/parser.tab.c src/codegen.cpp src/main.cpp -o bin/ni
+	clang++ $(LLVM_CONFIG) src/parser.yy.c src/parser.tab.cc src/codegen.cpp src/main.cpp -o bin/ni
 
 .PHONY: build
 build: bison flex clang 
 
 .PHONY: clean
 clean:
-	rm -rf bin/ni src/parser.yy.c src/parser.tab.c src/parser.tab.h a.out output.*
+	rm -rf bin/ni src/parser.yy.c src/parser.tab.* a.out output.*
 
 .PHONY: test_ni
 test_ni:

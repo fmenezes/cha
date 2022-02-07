@@ -1,3 +1,5 @@
+#pragma once
+
 #include <iostream>
 #include <string>
 #include <vector>
@@ -65,18 +67,6 @@ namespace ni
         virtual llvm::Value *codegen(Context *ctx) const;
     };
 
-    class NStatementList : public Node
-    {
-    public:
-        std::vector<Node *> statements;
-        NStatementList(Node *statement)
-        {
-            statements.push_back(statement);
-        }
-
-        virtual llvm::Value *codegen(Context *ctx) const;
-    };
-
     class NVariableAssignment : public Node
     {
     public:
@@ -99,10 +89,10 @@ namespace ni
     class NProgram
     {
     public:
-        Node *value;
-        NProgram(Node *value) : value(std::move(value)){};
+        std::vector<ni::Node *> value;
 
         void parse();
+        void parse(const std::string& f);
         int codegen(std::string &error) const;
     };
 

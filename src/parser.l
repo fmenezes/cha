@@ -1,47 +1,71 @@
 %{
-#include "nodes.h"
-#include "parser.tab.h"
+#include "nodes.hh"
+#include "parser.tab.hh"
+#include "parserdecl.h"
 
-
-void yyerror(char *);
 %}
 
+%option noyywrap nounput noinput batch
 
 /* RegEx */
 number [0-9]+
 identifier [_a-zA-Z][_a-zA-Z0-9]*
-
-
 %%
 
 "var" {
-		return VAR;
+		return yy::parser::make_VAR();
 	}
 
 {identifier} {
-		yylval.str = new std::string(yytext, yyleng);
-		return IDENTIFIER;
+		return yy::parser::make_IDENTIFIER(std::string(yytext, yyleng));
 	}
 
 {number} {
-		yylval.str = new std::string(yytext, yyleng);
-		return INTEGER;
+		return yy::parser::make_INTEGER(std::string(yytext, yyleng));
 	}
 
-[-+()=*] {
-		return *yytext;
+"+" {
+		return yy::parser::make_PLUS();
+	}
+
+"-" {
+		return yy::parser::make_MINUS();
+	}
+
+
+"*" {
+		return yy::parser::make_MULTIPLY();
+	}
+
+"=" {
+		return yy::parser::make_EQUALS();
+	}
+
+"(" {
+		return yy::parser::make_OPENPAR();
+	}
+
+")" {
+		return yy::parser::make_CLOSEPAR();
 	}
 
 "\n" {
-		return *yytext;
+		return yy::parser::make_NEWLINE();
 	}
 
 [ \t]+ ;
 
-.	{ yyerror("invalid character"); }
+.	{ throw yy::parser::syntax_error("invalid character: " + std::string(yytext, yyleng)); }
 
 %%
-
-int yywrap() {
-	return 1;
+void ni::NProgram::parse(const std::string& f)
+{
+	if (!(yyin = fopen (f.c_str (), "r")))
+	{
+		std::cerr << "cannot open " << f << std::endl;
+		exit (EXIT_FAILURE);
+	}
+	this->parse();
+	fclose(yyin);
 }
+

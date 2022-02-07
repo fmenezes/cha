@@ -1,16 +1,23 @@
 #include <iostream>
 #include <string>
-#include "nodes.h"
+#include "nodes.hh"
 
-ni::NProgram *program;
-
-int main()
+int main(int argc, char *argv[])
 {
-   program->parse();
-   std::string error;
-   if (program->codegen(error) == 1)
+   ni::NProgram program;
+   if (argc == 2)
    {
-      std::cerr << error;
+      auto f = std::string(argv[1]);
+      program.parse(f);
+   }
+   else
+   {
+      program.parse();
+   }
+   std::string error;
+   if (program.codegen(error) == 1)
+   {
+      std::cerr << error << std::endl;
    }
    return 0;
 }

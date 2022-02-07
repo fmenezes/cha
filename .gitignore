@@ -1,7 +1,6 @@
-bin/ni
+bin/*
 src/parser.yy.c
-src/parser.tab.c
-src/parser.tab.h
+src/parser.tab.*
 *.o
 *.ll
 *.s

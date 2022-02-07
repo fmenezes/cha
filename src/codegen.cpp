@@ -23,15 +23,14 @@
 #include "llvm/Target/TargetMachine.h"
 #include "llvm/Target/TargetOptions.h"
 
-#include "nodes.h"
-#include "parser.tab.h"
-
+#include "nodes.hh"
+#include "parser.tab.hh"
 
 void ni::NProgram::parse()
 {
-    yyparse();
+    yy::parser p(*this);
+    p.parse();
 }
-
 
 llvm::Value *ni::NInteger::codegen(ni::Context *ctx) const
 {
@@ -63,7 +62,6 @@ llvm::Value *ni::NBinaryOperation::codegen(ni::Context *ctx) const
 
 llvm::Value *ni::NVariableDeclaration::codegen(ni::Context *ctx) const
 {
-
     llvm::AllocaInst *Alloca = ctx->builder->CreateAlloca(llvm::Type::getInt32Ty(*ctx->ctx), 0, this->identifier.c_str());
     ctx->vars[this->identifier] = std::move(Alloca);
 
@@ -72,7 +70,8 @@ llvm::Value *ni::NVariableDeclaration::codegen(ni::Context *ctx) const
 
 llvm::Value *ni::NVariableAssignment::codegen(ni::Context *ctx) const
 {
-    if (ctx->vars[this->identifier] == NULL) {
+    if (ctx->vars[this->identifier] == NULL)
+    {
         std::cerr << this->identifier << " Not found." << std::endl;
         exit(1);
     }
@@ -83,22 +82,12 @@ llvm::Value *ni::NVariableAssignment::codegen(ni::Context *ctx) const
 
 llvm::Value *ni::NVariableLookup::codegen(ni::Context *ctx) const
 {
-    if (ctx->vars[this->identifier] == NULL) {
+    if (ctx->vars[this->identifier] == NULL)
+    {
         std::cerr << this->identifier << " Not found." << std::endl;
         exit(1);
     }
     return ctx->builder->CreateLoad(ctx->vars[this->identifier]->getAllocatedType(), ctx->vars[this->identifier], this->identifier.c_str());
-}
-
-llvm::Value *ni::NStatementList::codegen(ni::Context *ctx) const
-{
-
-    llvm::Value *last;
-    for (auto &statement : this->statements)
-    {
-        last = statement->codegen(ctx);
-    }
-    return last;
 }
 
 int ni::NProgram::codegen(std::string &error) const
@@ -172,9 +161,13 @@ int ni::NProgram::codegen(std::string &error) const
 
     ni::Context ctx(&llDest, TheContext, Builder);
 
-    auto value = this->value->codegen(&ctx);
-
-    Builder->CreateRet(value);
+    llvm::Value *last;
+    for (auto &statement : this->value)
+    {
+        last = statement->codegen(&ctx);
+    }
+    
+    Builder->CreateRet(last);
 
     TheModule->print(llDest, nullptr);
 
