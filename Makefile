@@ -6,12 +6,12 @@ BISON := bison
 
 FLEX := flex
 
-LDFLAGS := --entry main
+LDFLAGS := -lSystem --entry main
 
 ifneq ($(OS),Windows_NT)
 	detected_OS := $(shell sh -c 'uname 2>/dev/null || echo Unknown')
 	ifeq ($(detected_OS),Darwin)
-		LDFLAGS += -lSystem -L/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/lib
+		LDFLAGS += -L/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/lib
 	endif
 endif
 
