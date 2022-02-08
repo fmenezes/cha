@@ -1,25 +1,31 @@
 LLVM_CONFIG := $(shell llvm-config --cxxflags --ldflags --system-libs --libs)
 
+CXXFLAGS = $(LLVM_CONFIG) -fexceptions
+
+BISON := bison
+
+FLEX := flex
+
 default: build
 
 .PHONY: bison
 bison: src/parser.yy
-	bison -d src/parser.yy -b src/parser
+	$(BISON) $(BISONFLAGS) -d src/parser.yy -b src/parser
 
 .PHONY: flex
 flex: src/parser.l
-	flex -o src/parser.yy.c src/parser.l
+	$(FLEX) $(FLEXFLAGS) -o src/parser.yy.c src/parser.l
 
 .PHONY: test_ld
 test_ld:
 	ld output.o -lSystem -L/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/lib
 
-.PHONY: clang
-clang:
-	clang++ $(LLVM_CONFIG) src/parser.yy.c src/parser.tab.cc src/codegen.cpp src/main.cpp -fexceptions -o bin/ni
+.PHONY: ni
+ni:
+	$(CXX) $(CXXFLAGS) src/parser.yy.c src/parser.tab.cc src/codegen.cpp src/main.cpp -o bin/ni
 
 .PHONY: build
-build: bison flex clang 
+build: bison flex ni
 
 .PHONY: clean
 clean:
@@ -31,3 +37,8 @@ test_ni:
 
 .PHONY: test
 test: test_ni
+
+.PHONY: debug
+debug: CXXFLAGS += -g -DDEBUG
+debug: BISONFLAGS += -t
+debug: build
