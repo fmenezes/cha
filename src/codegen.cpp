@@ -32,65 +32,67 @@ int ni::NProgram::parse()
     return p.parse();
 }
 
-llvm::Value *ni::NInteger::codegen(ni::Context *ctx) const
+llvm::Value *ni::NInteger::codegen(ni::NProgram &p)
 {
     long long v = std::stoll(this->value);
     auto a = llvm::APInt(32, v);
-    return llvm::ConstantInt::get(*ctx->ctx, llvm::APSInt(a, false));
+    return llvm::ConstantInt::get(*p.llvmContext.get(), llvm::APSInt(a, false));
 }
 
-llvm::Value *ni::NBinaryOperation::codegen(ni::Context *ctx) const
+llvm::Value *ni::NBinaryOperation::codegen(ni::NProgram &p)
 {
-    auto L = this->left->codegen(ctx);
-    auto R = this->right->codegen(ctx);
+    auto L = this->left->codegen(p);
+    auto R = this->right->codegen(p);
 
     if (this->op.compare("+") == 0)
     {
-        return ctx->builder->CreateAdd(L, R, "addtmp");
+        return p.llvmIRBuilder->CreateAdd(L, R, "addtmp");
     }
     else if (this->op.compare("-") == 0)
     {
-        return ctx->builder->CreateSub(L, R, "subtmp");
+        return p.llvmIRBuilder->CreateSub(L, R, "subtmp");
     }
     else if (this->op.compare("*") == 0)
     {
-        return ctx->builder->CreateMul(L, R, "multmp");
+        return p.llvmIRBuilder->CreateMul(L, R, "multmp");
     }
 
     return NULL;
 }
 
-llvm::Value *ni::NVariableDeclaration::codegen(ni::Context *ctx) const
+llvm::Value *ni::NVariableDeclaration::codegen(ni::NProgram &p)
 {
-    llvm::AllocaInst *Alloca = ctx->builder->CreateAlloca(llvm::Type::getInt32Ty(*ctx->ctx), 0, this->identifier.c_str());
-    ctx->vars[this->identifier] = std::move(Alloca);
+    std::unique_ptr<llvm::AllocaInst> allocaVar(p.llvmIRBuilder->CreateAlloca(llvm::Type::getInt32Ty(*p.llvmContext.get()), 0, this->identifier.c_str()));
+    p.vars[this->identifier] = std::move(allocaVar);
 
-    return ctx->builder->CreateLoad(Alloca->getAllocatedType(), Alloca, this->identifier.c_str());
+    return p.llvmIRBuilder->CreateLoad(p.vars[this->identifier]->getAllocatedType(), p.vars[this->identifier].get(), this->identifier.c_str());
 }
 
-llvm::Value *ni::NVariableAssignment::codegen(ni::Context *ctx) const
+llvm::Value *ni::NVariableAssignment::codegen(ni::NProgram &p)
 {
-    if (ctx->vars[this->identifier] == NULL)
+    auto s = p.vars.find(this->identifier);
+    if (s == p.vars.end())
     {
         std::cerr << this->identifier << " Not found." << std::endl;
         exit(1);
     }
-    auto value = this->value->codegen(ctx);
-    ctx->builder->CreateStore(value, ctx->vars[this->identifier]);
+    auto value = this->value->codegen(p);
+    p.llvmIRBuilder->CreateStore(value, s->second.get());
     return value;
 }
 
-llvm::Value *ni::NVariableLookup::codegen(ni::Context *ctx) const
+llvm::Value *ni::NVariableLookup::codegen(ni::NProgram &p)
 {
-    if (ctx->vars[this->identifier] == NULL)
+    auto s = p.vars.find(this->identifier);
+    if (s == p.vars.end())
     {
         std::cerr << this->identifier << " Not found." << std::endl;
         exit(1);
     }
-    return ctx->builder->CreateLoad(ctx->vars[this->identifier]->getAllocatedType(), ctx->vars[this->identifier], this->identifier.c_str());
+    return p.llvmIRBuilder->CreateLoad(s->second->getAllocatedType(), s->second.get(), this->identifier.c_str());
 }
 
-int ni::NProgram::codegen(std::string &error) const
+int ni::NProgram::codegen(std::string &error)
 {
     llvm::InitializeAllTargetInfos();
     llvm::InitializeAllTargets();
@@ -98,11 +100,11 @@ int ni::NProgram::codegen(std::string &error) const
     llvm::InitializeAllAsmParsers();
     llvm::InitializeAllAsmPrinters();
 
-    llvm::LLVMContext *TheContext = new llvm::LLVMContext();
-    llvm::Module *TheModule = new llvm::Module("main", *TheContext);
-    llvm::IRBuilder<> *Builder = new llvm::IRBuilder<>(*TheContext);
+    this->llvmContext = std::make_unique<llvm::LLVMContext>();
+    this->llvmModule = std::make_unique<llvm::Module>("main", *this->llvmContext.get());
+    this->llvmIRBuilder = std::make_unique<llvm::IRBuilder<>>(*this->llvmContext.get());
     auto TargetTriple = llvm::sys::getDefaultTargetTriple();
-    TheModule->setTargetTriple(TargetTriple);
+    this->llvmModule->setTargetTriple(TargetTriple);
     auto Target = llvm::TargetRegistry::lookupTarget(TargetTriple, error);
     if (!Target)
     {
@@ -116,7 +118,7 @@ int ni::NProgram::codegen(std::string &error) const
     auto TheTargetMachine =
         Target->createTargetMachine(TargetTriple, CPU, Features, opt, RM);
 
-    TheModule->setDataLayout(TheTargetMachine->createDataLayout());
+    this->llvmModule->setDataLayout(TheTargetMachine->createDataLayout());
 
     std::error_code EC;
     auto destFilename = "output.o";
@@ -151,32 +153,35 @@ int ni::NProgram::codegen(std::string &error) const
     std::vector<llvm::Type *> Args;
 
     llvm::FunctionType *FT =
-        llvm::FunctionType::get(llvm::Type::getInt32Ty(*TheContext), Args, false);
+        llvm::FunctionType::get(llvm::Type::getInt32Ty(*this->llvmContext.get()), Args, false);
 
     llvm::Function *F =
-        llvm::Function::Create(FT, llvm::Function::ExternalLinkage, 0, "main", TheModule);
+        llvm::Function::Create(FT, llvm::Function::ExternalLinkage, 0, "main", this->llvmModule.get());
 
-    llvm::BasicBlock *BB = llvm::BasicBlock::Create(*TheContext, "entry", F);
-    Builder->SetInsertPoint(BB);
-
-    ni::Context ctx(&llDest, TheContext, Builder);
+    llvm::BasicBlock *BB = llvm::BasicBlock::Create(*this->llvmContext.get(), "entry", F);
+    this->llvmIRBuilder->SetInsertPoint(BB);
 
     llvm::Value *last;
     for (auto &statement : this->instructions)
     {
-        last = statement->codegen(&ctx);
+        last = statement->codegen(*this);
     }
-    
-    Builder->CreateRet(last);
 
-    TheModule->print(llDest, nullptr);
+    this->llvmIRBuilder->CreateRet(last);
 
-    pass.run(*TheModule);
+    this->llvmModule->print(llDest, nullptr);
+
+    pass.run(*this->llvmModule.get());
 
     dest.flush();
     dest.close();
     llDest.flush();
     llDest.close();
+
+    this->vars.clear();
+    this->llvmIRBuilder.release();
+    this->llvmModule.release();
+    this->llvmContext.release();
 
     return 0;
 }
