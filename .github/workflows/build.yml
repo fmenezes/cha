@@ -51,4 +51,4 @@ jobs:
       - run: make
         env:
           CXX: clang++
-      - run: ./bin/ni < examples/test.ni
+      - run: make test
