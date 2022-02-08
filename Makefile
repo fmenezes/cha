@@ -6,15 +6,6 @@ BISON := bison
 
 FLEX := flex
 
-LDFLAGS := -lSystem --entry main
-
-ifneq ($(OS),Windows_NT)
-	detected_OS := $(shell sh -c 'uname 2>/dev/null || echo Unknown')
-	ifeq ($(detected_OS),Darwin)
-		LDFLAGS += -L/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/lib
-	endif
-endif
-
 default: build
 
 .PHONY: bison
@@ -27,7 +18,7 @@ flex: src/parser.l
 
 .PHONY: test_ld
 test_ld:
-	$(LD) output.o $(LDFLAGS)
+	$(CXX) output.o -o a.out
 
 .PHONY: ni
 ni:
