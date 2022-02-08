@@ -49,4 +49,6 @@ jobs:
             --install   /usr/bin/clang++         clang++          /usr/bin/clang++-${LLVM_VERSION} 1
       - run: llvm-config --version
       - run: make
-      - run: ./bin/ni < examples/test.ni
+        env:
+          CXX: clang++
+      - run: make test

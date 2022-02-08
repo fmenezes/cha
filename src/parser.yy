@@ -1,0 +1,73 @@
+%{
+#include <iostream>
+#include <string>
+#include <memory>
+#include "nodes.hh"
+
+using namespace std::string_literals;
+
+extern ni::NProgram *program;
+%}
+
+%require "3.2"
+%language "c++"
+
+%define api.value.type variant
+%define api.token.constructor
+
+%nterm <std::unique_ptr<ni::Node>> expr;
+%nterm <std::unique_ptr<ni::Node>> const;
+%nterm <std::unique_ptr<ni::Node>> statement;
+%nterm <std::vector<std::unique_ptr<ni::Node>>> statements;
+
+%code {
+# include "parserdecl.h"
+}
+
+%param { ni::NProgram& p }
+
+%token <std::string> INTEGER IDENTIFIER
+%token VAR NEWLINE PLUS MINUS MULTIPLY OPENPAR CLOSEPAR EQUALS
+
+%left PLUS MINUS
+%left MULTIPLY
+
+%start program
+
+%%
+
+program :
+	statements { p.instructions = std::move($1); }
+	|
+	;
+
+
+statements :
+	statement NEWLINE	{ $$.push_back(std::move($1)); }
+	| statements statement NEWLINE	{ $$ = std::move($1); $$.push_back(std::move($2)); }
+	;
+
+statement :
+	VAR IDENTIFIER				{ $$ = std::make_unique<ni::NVariableDeclaration>($2); }
+	| IDENTIFIER EQUALS expr	{ $$ = std::make_unique<ni::NVariableAssignment>($1, $3); }
+	| expr						{ $$ = std::move($1); }
+	;
+
+expr :
+	const					{ $$ = std::move($1); }
+	| IDENTIFIER			{ $$ = std::make_unique<ni::NVariableLookup>($1); }
+	| expr PLUS expr		{ $$ = std::make_unique<ni::NBinaryOperation>("+"s, $1, $3); }
+	| expr MINUS expr		{ $$ = std::make_unique<ni::NBinaryOperation>("-"s, $1, $3); }
+	| expr MULTIPLY expr	{ $$ = std::make_unique<ni::NBinaryOperation>("*"s, $1, $3); }
+	| OPENPAR expr CLOSEPAR	{ $$ = std::move($2); }
+	;
+
+const :
+	INTEGER				{ $$ = std::make_unique<ni::NInteger>($1); }
+
+%%
+
+void yy::parser::error (const std::string& m)
+{
+  std::cerr << m << '\n';
+}
