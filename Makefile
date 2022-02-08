@@ -6,6 +6,8 @@ BISON := bison
 
 FLEX := flex
 
+LDFLAGS := --entry main
+
 ifneq ($(OS),Windows_NT)
 	detected_OS := $(shell sh -c 'uname 2>/dev/null || echo Unknown')
 	ifeq ($(detected_OS),Darwin)
