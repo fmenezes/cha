@@ -36,7 +36,8 @@ test_ni:
 	./bin/ni < examples/test.ni
 
 .PHONY: test
-test: test_ni
+test: test_ni test_ld
+	./scripts/test.sh
 
 .PHONY: debug
 debug: CXXFLAGS += -g -DDEBUG
