@@ -25,7 +25,7 @@ ni:
 	$(CXX) $(CXXFLAGS) src/parser.yy.c src/parser.tab.cc src/codegen.cpp src/main.cpp -o bin/ni
 
 .PHONY: build
-build: bison flex ni
+build: clean bison flex ni
 
 .PHONY: clean
 clean:

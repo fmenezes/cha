@@ -3,6 +3,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <memory>
 
 #include "llvm/IR/Value.h"
 #include "llvm/Support/raw_ostream.h"
@@ -24,6 +25,8 @@ namespace ni
     {
     public:
         virtual llvm::Value *codegen(Context *ctx) const = 0;
+
+        virtual ~Node() {};
     };
 
     class NInteger : public Node
@@ -49,11 +52,11 @@ namespace ni
     class NBinaryOperation : public Node
     {
     public:
-        Node *left;
-        Node *right;
+        std::unique_ptr<Node> left;
+        std::unique_ptr<Node> right;
         std::string op;
 
-        NBinaryOperation(const std::string &op, Node *left, Node *right) : op(op), left(std::move(left)), right(std::move(right)){};
+        NBinaryOperation(const std::string &op, std::unique_ptr<Node> &left, std::unique_ptr<Node> &right) : op(op), left(std::move(left)), right(std::move(right)){};
 
         virtual llvm::Value *codegen(Context *ctx) const;
     };
@@ -71,8 +74,8 @@ namespace ni
     {
     public:
         std::string identifier;
-        Node *value;
-        NVariableAssignment(const std::string &identifier, Node *value) : identifier(identifier), value(std::move(value)){};
+        std::unique_ptr<Node> value;
+        NVariableAssignment(const std::string &identifier, std::unique_ptr<Node> &value) : identifier(identifier), value(std::move(value)){};
 
         virtual llvm::Value *codegen(Context *ctx) const;
     };
@@ -89,10 +92,10 @@ namespace ni
     class NProgram
     {
     public:
-        std::vector<ni::Node *> value;
+        std::vector<std::unique_ptr<Node>> value;
 
         int parse();
-        int parse(const std::string& f);
+        int parse(const std::string &f);
         int codegen(std::string &error) const;
     };
 

@@ -1,6 +1,7 @@
 %{
 #include <iostream>
 #include <string>
+#include <memory>
 #include "nodes.hh"
 
 using namespace std::string_literals;
@@ -14,10 +15,10 @@ extern ni::NProgram *program;
 %define api.value.type variant
 %define api.token.constructor
 
-%nterm <ni::Node*> expr;
-%nterm <ni::Node*> const;
-%nterm <ni::Node*> statement;
-%nterm <std::vector<ni::Node*>> statements;
+%nterm <std::unique_ptr<ni::Node>> expr;
+%nterm <std::unique_ptr<ni::Node>> const;
+%nterm <std::unique_ptr<ni::Node>> statement;
+%nterm <std::vector<std::unique_ptr<ni::Node>>> statements;
 
 %code {
 # include "parserdecl.h"
@@ -36,33 +37,33 @@ extern ni::NProgram *program;
 %%
 
 program :
-	statements { p.value = $1; }
+	statements { p.value = std::move($1); }
 	|
 	;
 
 
 statements :
-	statement NEWLINE	{ $$.push_back($1); }
-	| statements statement NEWLINE	{ $$ = $1; $$.push_back($2); }
+	statement NEWLINE	{ $$.push_back(std::move($1)); }
+	| statements statement NEWLINE	{ $$ = std::move($1); $$.push_back(std::move($2)); }
 	;
 
 statement :
-	VAR IDENTIFIER				{ $$ = new ni::NVariableDeclaration($2); }
-	| IDENTIFIER EQUALS expr	{ $$ = new ni::NVariableAssignment($1, $3); }
-	| expr						{ $$ = $1; }
+	VAR IDENTIFIER				{ $$ = std::make_unique<ni::NVariableDeclaration>($2); }
+	| IDENTIFIER EQUALS expr	{ $$ = std::make_unique<ni::NVariableAssignment>($1, $3); }
+	| expr						{ $$ = std::move($1); }
 	;
 
 expr :
-	const					{ $$ = $1; }
-	| IDENTIFIER			{ $$ = new ni::NVariableLookup($1); }
-	| expr PLUS expr		{ $$ = new ni::NBinaryOperation("+"s, $1, $3); }
-	| expr MINUS expr		{ $$ = new ni::NBinaryOperation("-"s, $1, $3); }
-	| expr MULTIPLY expr	{ $$ = new ni::NBinaryOperation("*"s, $1, $3); }
-	| OPENPAR expr CLOSEPAR	{ $$ = $2; }
+	const					{ $$ = std::move($1); }
+	| IDENTIFIER			{ $$ = std::make_unique<ni::NVariableLookup>($1); }
+	| expr PLUS expr		{ $$ = std::make_unique<ni::NBinaryOperation>("+"s, $1, $3); }
+	| expr MINUS expr		{ $$ = std::make_unique<ni::NBinaryOperation>("-"s, $1, $3); }
+	| expr MULTIPLY expr	{ $$ = std::make_unique<ni::NBinaryOperation>("*"s, $1, $3); }
+	| OPENPAR expr CLOSEPAR	{ $$ = std::move($2); }
 	;
 
 const :
-	INTEGER				{ $$ = new ni::NInteger($1); }
+	INTEGER				{ $$ = std::make_unique<ni::NInteger>($1); }
 
 %%
 
