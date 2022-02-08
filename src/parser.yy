@@ -37,7 +37,7 @@ extern ni::NProgram *program;
 %%
 
 program :
-	statements { p.value = std::move($1); }
+	statements { p.instructions = std::move($1); }
 	|
 	;
 

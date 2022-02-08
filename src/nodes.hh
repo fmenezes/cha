@@ -92,7 +92,7 @@ namespace ni
     class NProgram
     {
     public:
-        std::vector<std::unique_ptr<Node>> value;
+        std::vector<std::unique_ptr<Node>> instructions;
 
         int parse();
         int parse(const std::string &f);

@@ -162,7 +162,7 @@ int ni::NProgram::codegen(std::string &error) const
     ni::Context ctx(&llDest, TheContext, Builder);
 
     llvm::Value *last;
-    for (auto &statement : this->value)
+    for (auto &statement : this->instructions)
     {
         last = statement->codegen(&ctx);
     }
