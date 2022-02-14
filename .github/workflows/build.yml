@@ -55,8 +55,6 @@ jobs:
   mac:
     name: mac
     runs-on: macos-latest
-    env:
-      LLVM_VERSION: 13
     steps:
       - uses: actions/checkout@v2
         with:
