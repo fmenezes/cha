@@ -2,8 +2,8 @@ name: build
 on: push
 
 jobs:
-  build:
-    name: build
+  ubuntu:
+    name: ubuntu
     runs-on: ubuntu-latest
     env:
       LLVM_VERSION: 13
@@ -51,4 +51,23 @@ jobs:
       - run: make
         env:
           CXX: clang++
+      - run: make test
+  mac:
+    name: mac
+    runs-on: macos-latest
+    env:
+      LLVM_VERSION: 13
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Install dependencies
+        run: |
+          /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
+          brew install bison flex llvm
+          echo "/usr/local/opt/flex/bin" >> $GITHUB_PATH
+          echo "/usr/local/opt/bison/bin" >> $GITHUB_PATH
+          echo "/usr/local/opt/llvm/bin" >> $GITHUB_PATH
+      - run: llvm-config --version
+      - run: make
       - run: make test
