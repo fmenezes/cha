@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <memory>
 #include <sstream>
 
@@ -22,6 +23,10 @@
 #include "llvm/Support/raw_ostream.h"
 #include "llvm/Target/TargetMachine.h"
 #include "llvm/Target/TargetOptions.h"
+
+#include "lld/Common/Driver.h"
+#include "lld/Common/ErrorHandler.h"
+#include "lld/Common/Memory.h"
 
 #include "nodes.hh"
 #include "parser.tab.hh"
@@ -90,6 +95,33 @@ llvm::Value *ni::NVariableLookup::codegen(ni::NProgram &p)
         exit(1);
     }
     return p.llvmIRBuilder->CreateLoad(s->second->getAllocatedType(), s->second.get(), this->identifier.c_str());
+}
+
+std::string runCommand(const char *cmd)
+{
+    std::shared_ptr<FILE>
+        pipe(popen(cmd, "r"), pclose);
+    if (!pipe)
+        return "ERROR";
+    char buffer[128];
+    std::string result = "";
+    while (!feof(pipe.get()))
+    {
+        if (fgets(buffer, 128, pipe.get()) != NULL)
+            result += buffer;
+    }
+    result.erase(std::remove(result.begin(), result.end(), '\n'), result.end());
+    return result;
+}
+
+std::string getMacOSSDK()
+{
+    return runCommand("xcrun --show-sdk-path");
+}
+
+std::string getMacOSSDKVersion()
+{
+    return runCommand("xcrun --show-sdk-version");
 }
 
 int ni::NProgram::codegen(std::string &error)
@@ -182,6 +214,44 @@ int ni::NProgram::codegen(std::string &error)
     this->llvmIRBuilder.release();
     this->llvmModule.release();
     this->llvmContext.release();
+
+    auto outFilename = "a.out";
+    llvm::raw_fd_ostream outDest(outFilename, EC, llvm::sys::fs::OF_None);
+    if (EC)
+    {
+        std::stringstream e;
+        e << "Could not open file: " << EC.message();
+        error = e.str();
+        return 1;
+    }
+
+    std::vector<const char *> args;
+    if (TheTargetMachine->getTargetTriple().getOS() == llvm::Triple::OSType::Darwin)
+    {
+        args.push_back("-dynamic");
+        args.push_back("-arch");
+        args.push_back(TheTargetMachine->getTargetTriple().getArchName().str().c_str());
+        args.push_back("-platform_version");
+        args.push_back("macos");
+        args.push_back(getMacOSSDKVersion().c_str());
+        args.push_back(getMacOSSDKVersion().c_str());
+        args.push_back("-o");
+        args.push_back(outFilename);
+        args.push_back(destFilename);
+        args.push_back("-lc");
+        args.push_back("-syslibroot");
+        args.push_back(getMacOSSDK().c_str());
+        lld::macho::link(args, false, llvm::outs(), llvm::errs());
+    }
+    else
+    {
+        args.push_back("-arch");
+        args.push_back(TheTargetMachine->getTargetTriple().getArchName().str().c_str());
+        args.push_back("-o");
+        args.push_back(outFilename);
+        args.push_back(destFilename);
+        lld::elf::link(llvm::makeArrayRef(args), false, llvm::outs(), llvm::errs());
+    }
 
     return 0;
 }

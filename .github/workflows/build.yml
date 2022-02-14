@@ -17,6 +17,7 @@ jobs:
           curl -O "https://apt.llvm.org/llvm.sh"
           chmod +x llvm.sh
           sudo ./llvm.sh ${LLVM_VERSION} all
+          sudo apt-get install liblld-13-dev
       - name: set llvm version
         run: |
           sudo update-alternatives \
@@ -47,6 +48,12 @@ jobs:
             --slave   /usr/bin/clang-cpp         clang-cpp        /usr/bin/clang-cpp-${LLVM_VERSION}
           sudo update-alternatives \
             --install   /usr/bin/clang++         clang++          /usr/bin/clang++-${LLVM_VERSION} 1
+          sudo update-alternatives \
+            --install   /usr/bin/lld             lld              /usr/bin/lld-${LLVM_VERSION} 1 \
+            --slave     /usr/bin/ld.lld          ld.lld           /usr/bin/ld.lld-${LLVM_VERSION} \
+            --slave     /usr/bin/lld-link        lld-link         /usr/bin/lld-link-${LLVM_VERSION} \
+            --slave     /usr/bin/ld64.lld        ld64.lld         /usr/bin/ld64.lld-${LLVM_VERSION} \
+            --slave     /usr/bin/wasm-ld         wasm-ld          /usr/bin/wasm-ld-${LLVM_VERSION}
       - run: llvm-config --version
       - run: make
         env:

@@ -1,6 +1,13 @@
 LLVM_CONFIG := $(shell llvm-config --cxxflags --ldflags --system-libs --libs)
 
-CXXFLAGS = $(LLVM_CONFIG) -fexceptions
+CXXFLAGS = $(LLVM_CONFIG) -fexceptions -llldCommon -llldDriver -llldMachO2 -llldELF -llldCOFF
+
+ifneq ($(OS),Windows_NT)
+    UNAME_S := $(shell uname -s)
+    ifeq ($(UNAME_S),Darwin)
+        CXXFLAGS += -lxar
+    endif
+endif
 
 BISON := bison
 
@@ -15,10 +22,6 @@ bison: src/parser.yy
 .PHONY: flex
 flex: src/parser.l
 	$(FLEX) $(FLEXFLAGS) -o src/parser.yy.c src/parser.l
-
-.PHONY: test_ld
-test_ld:
-	$(CXX) output.o -o a.out
 
 .PHONY: ni
 ni:
@@ -36,10 +39,10 @@ test_ni:
 	./bin/ni < examples/test.ni
 
 .PHONY: test
-test: test_ni test_ld
+test: test_ni
 	./scripts/test.sh
 
 .PHONY: debug
-debug: CXXFLAGS += -g -DDEBUG
+debug: CXXFLAGS += -v -g -DDEBUG
 debug: BISONFLAGS += -t
 debug: build
