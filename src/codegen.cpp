@@ -32,67 +32,101 @@ int ni::NProgram::parse()
     return p.parse();
 }
 
-llvm::Value *ni::NInteger::codegen(ni::NProgram &p)
-{
-    long long v = std::stoll(this->value);
-    auto a = llvm::APInt(32, v);
-    return llvm::ConstantInt::get(*p.llvmContext.get(), llvm::APSInt(a, false));
+llvm::Value *ni::Codegen::internalCodegen(const ni::NProgram &p, const ni::Node &node){
+    auto i = dynamic_cast<const ni::NInteger *>(&node);
+    if (i != nullptr)
+    {
+        return this->internalCodegen(p, *i);
+    }
+
+    auto b = dynamic_cast<const ni::NBinaryOperation *>(&node);
+    if (b != nullptr)
+    {
+        return this->internalCodegen(p, *b);
+    }
+
+    auto d = dynamic_cast<const ni::NVariableDeclaration *>(&node);
+    if (d != nullptr)
+    {
+        return this->internalCodegen(p, *d);
+    }
+
+    auto a = dynamic_cast<const ni::NVariableAssignment *>(&node);
+    if (a != nullptr)
+    {
+        return this->internalCodegen(p, *a);
+    }
+
+    auto l = dynamic_cast<const ni::NVariableLookup *>(&node);
+    if (l != nullptr)
+    {
+        return this->internalCodegen(p, *l);
+    }
+
+    throw std::runtime_error("Unkown node type");
 }
 
-llvm::Value *ni::NBinaryOperation::codegen(ni::NProgram &p)
+llvm::Value *ni::Codegen::internalCodegen(const ni::NProgram &p, const ni::NInteger &node)
 {
-    auto L = this->left->codegen(p);
-    auto R = this->right->codegen(p);
+    long long v = std::stoll(node.value);
+    auto a = llvm::APInt(32, v);
+    return llvm::ConstantInt::get(*this->llvmContext.get(), llvm::APSInt(a, false));
+}
 
-    if (this->op.compare("+") == 0)
+llvm::Value *ni::Codegen::internalCodegen(const ni::NProgram &p, const ni::NBinaryOperation &node)
+{
+    auto L = this->internalCodegen(p, *node.left.get());
+    auto R = this->internalCodegen(p, *node.right.get());
+
+    if (node.op.compare("+") == 0)
     {
-        return p.llvmIRBuilder->CreateAdd(L, R, "addtmp");
+        return this->llvmIRBuilder->CreateAdd(L, R, "addtmp");
     }
-    else if (this->op.compare("-") == 0)
+    else if (node.op.compare("-") == 0)
     {
-        return p.llvmIRBuilder->CreateSub(L, R, "subtmp");
+        return this->llvmIRBuilder->CreateSub(L, R, "subtmp");
     }
-    else if (this->op.compare("*") == 0)
+    else if (node.op.compare("*") == 0)
     {
-        return p.llvmIRBuilder->CreateMul(L, R, "multmp");
+        return this->llvmIRBuilder->CreateMul(L, R, "multmp");
     }
 
     return NULL;
 }
 
-llvm::Value *ni::NVariableDeclaration::codegen(ni::NProgram &p)
+llvm::Value *ni::Codegen::internalCodegen(const ni::NProgram &p, const ni::NVariableDeclaration &node)
 {
-    std::unique_ptr<llvm::AllocaInst> allocaVar(p.llvmIRBuilder->CreateAlloca(llvm::Type::getInt32Ty(*p.llvmContext.get()), 0, this->identifier.c_str()));
-    p.vars[this->identifier] = std::move(allocaVar);
+    std::unique_ptr<llvm::AllocaInst> allocaVar(this->llvmIRBuilder->CreateAlloca(llvm::Type::getInt32Ty(*this->llvmContext.get()), 0, node.identifier.c_str()));
+    this->vars[node.identifier] = std::move(allocaVar);
 
-    return p.llvmIRBuilder->CreateLoad(p.vars[this->identifier]->getAllocatedType(), p.vars[this->identifier].get(), this->identifier.c_str());
+    return this->llvmIRBuilder->CreateLoad(this->vars[node.identifier]->getAllocatedType(), this->vars[node.identifier].get(), node.identifier.c_str());
 }
 
-llvm::Value *ni::NVariableAssignment::codegen(ni::NProgram &p)
+llvm::Value *ni::Codegen::internalCodegen(const ni::NProgram &p, const ni::NVariableAssignment &node)
 {
-    auto s = p.vars.find(this->identifier);
-    if (s == p.vars.end())
+    auto s = this->vars.find(node.identifier);
+    if (s == this->vars.end())
     {
-        std::cerr << this->identifier << " Not found." << std::endl;
+        std::cerr << node.identifier << " Not found." << std::endl;
         exit(1);
     }
-    auto value = this->value->codegen(p);
-    p.llvmIRBuilder->CreateStore(value, s->second.get());
+    auto value = this->internalCodegen(p, *node.value.get());
+    this->llvmIRBuilder->CreateStore(value, s->second.get());
     return value;
 }
 
-llvm::Value *ni::NVariableLookup::codegen(ni::NProgram &p)
+llvm::Value *ni::Codegen::internalCodegen(const ni::NProgram &p, const ni::NVariableLookup &node)
 {
-    auto s = p.vars.find(this->identifier);
-    if (s == p.vars.end())
+    auto s = this->vars.find(node.identifier);
+    if (s == this->vars.end())
     {
-        std::cerr << this->identifier << " Not found." << std::endl;
+        std::cerr << node.identifier << " Not found." << std::endl;
         exit(1);
     }
-    return p.llvmIRBuilder->CreateLoad(s->second->getAllocatedType(), s->second.get(), this->identifier.c_str());
+    return this->llvmIRBuilder->CreateLoad(s->second->getAllocatedType(), s->second.get(), node.identifier.c_str());
 }
 
-int ni::NProgram::codegen(std::string &error)
+int ni::Codegen::codegen(std::string &error)
 {
     llvm::InitializeAllTargetInfos();
     llvm::InitializeAllTargets();
@@ -162,9 +196,9 @@ int ni::NProgram::codegen(std::string &error)
     this->llvmIRBuilder->SetInsertPoint(BB);
 
     llvm::Value *last;
-    for (auto &statement : this->instructions)
+    for (auto &statement : program.instructions)
     {
-        last = statement->codegen(*this);
+        last = this->internalCodegen(this->program, *statement.get());
     }
 
     this->llvmIRBuilder->CreateRet(last);
