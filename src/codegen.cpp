@@ -32,51 +32,57 @@ int ni::NProgram::parse()
     return p.parse();
 }
 
-llvm::Value *ni::Codegen::internalCodegen(const ni::NProgram &p, const ni::Node &node){
+llvm::Value *ni::LLVMCodegen::internalCodegen(const ni::Node &node){
     auto i = dynamic_cast<const ni::NInteger *>(&node);
     if (i != nullptr)
     {
-        return this->internalCodegen(p, *i);
+        return this->internalCodegen(*i);
     }
 
     auto b = dynamic_cast<const ni::NBinaryOperation *>(&node);
     if (b != nullptr)
     {
-        return this->internalCodegen(p, *b);
+        return this->internalCodegen(*b);
     }
 
     auto d = dynamic_cast<const ni::NVariableDeclaration *>(&node);
     if (d != nullptr)
     {
-        return this->internalCodegen(p, *d);
+        return this->internalCodegen(*d);
     }
 
     auto a = dynamic_cast<const ni::NVariableAssignment *>(&node);
     if (a != nullptr)
     {
-        return this->internalCodegen(p, *a);
+        return this->internalCodegen(*a);
     }
 
     auto l = dynamic_cast<const ni::NVariableLookup *>(&node);
     if (l != nullptr)
     {
-        return this->internalCodegen(p, *l);
+        return this->internalCodegen(*l);
+    }
+
+    auto p = dynamic_cast<const ni::NProgram *>(&node);
+    if (p != nullptr)
+    {
+        return this->internalCodegen(*p);
     }
 
     throw std::runtime_error("Unkown node type");
 }
 
-llvm::Value *ni::Codegen::internalCodegen(const ni::NProgram &p, const ni::NInteger &node)
+llvm::Value *ni::LLVMCodegen::internalCodegen(const ni::NInteger &node)
 {
     long long v = std::stoll(node.value);
     auto a = llvm::APInt(32, v);
     return llvm::ConstantInt::get(*this->llvmContext.get(), llvm::APSInt(a, false));
 }
 
-llvm::Value *ni::Codegen::internalCodegen(const ni::NProgram &p, const ni::NBinaryOperation &node)
+llvm::Value *ni::LLVMCodegen::internalCodegen(const ni::NBinaryOperation &node)
 {
-    auto L = this->internalCodegen(p, *node.left.get());
-    auto R = this->internalCodegen(p, *node.right.get());
+    auto L = this->internalCodegen(*node.left.get());
+    auto R = this->internalCodegen(*node.right.get());
 
     if (node.op.compare("+") == 0)
     {
@@ -94,7 +100,7 @@ llvm::Value *ni::Codegen::internalCodegen(const ni::NProgram &p, const ni::NBina
     return NULL;
 }
 
-llvm::Value *ni::Codegen::internalCodegen(const ni::NProgram &p, const ni::NVariableDeclaration &node)
+llvm::Value *ni::LLVMCodegen::internalCodegen(const ni::NVariableDeclaration &node)
 {
     std::unique_ptr<llvm::AllocaInst> allocaVar(this->llvmIRBuilder->CreateAlloca(llvm::Type::getInt32Ty(*this->llvmContext.get()), 0, node.identifier.c_str()));
     this->vars[node.identifier] = std::move(allocaVar);
@@ -102,7 +108,7 @@ llvm::Value *ni::Codegen::internalCodegen(const ni::NProgram &p, const ni::NVari
     return this->llvmIRBuilder->CreateLoad(this->vars[node.identifier]->getAllocatedType(), this->vars[node.identifier].get(), node.identifier.c_str());
 }
 
-llvm::Value *ni::Codegen::internalCodegen(const ni::NProgram &p, const ni::NVariableAssignment &node)
+llvm::Value *ni::LLVMCodegen::internalCodegen(const ni::NVariableAssignment &node)
 {
     auto s = this->vars.find(node.identifier);
     if (s == this->vars.end())
@@ -110,12 +116,12 @@ llvm::Value *ni::Codegen::internalCodegen(const ni::NProgram &p, const ni::NVari
         std::cerr << node.identifier << " Not found." << std::endl;
         exit(1);
     }
-    auto value = this->internalCodegen(p, *node.value.get());
+    auto value = this->internalCodegen(*node.value.get());
     this->llvmIRBuilder->CreateStore(value, s->second.get());
     return value;
 }
 
-llvm::Value *ni::Codegen::internalCodegen(const ni::NProgram &p, const ni::NVariableLookup &node)
+llvm::Value *ni::LLVMCodegen::internalCodegen(const ni::NVariableLookup &node)
 {
     auto s = this->vars.find(node.identifier);
     if (s == this->vars.end())
@@ -126,7 +132,31 @@ llvm::Value *ni::Codegen::internalCodegen(const ni::NProgram &p, const ni::NVari
     return this->llvmIRBuilder->CreateLoad(s->second->getAllocatedType(), s->second.get(), node.identifier.c_str());
 }
 
-int ni::Codegen::codegen(std::string &error)
+llvm::Value *ni::LLVMCodegen::internalCodegen(const ni::NProgram &node)
+{
+    std::vector<llvm::Type *> Args;
+
+    llvm::FunctionType *FT =
+        llvm::FunctionType::get(llvm::Type::getInt32Ty(*this->llvmContext.get()), Args, false);
+
+    llvm::Function *F =
+        llvm::Function::Create(FT, llvm::Function::ExternalLinkage, 0, "main", this->llvmModule.get());
+
+    llvm::BasicBlock *BB = llvm::BasicBlock::Create(*this->llvmContext.get(), "entry", F);
+    this->llvmIRBuilder->SetInsertPoint(BB);
+
+    llvm::Value *last;
+    for (auto &statement : program.instructions)
+    {
+        last = this->internalCodegen(*statement.get());
+    }
+
+    this->llvmIRBuilder->CreateRet(last);
+
+    return last;
+}
+
+int ni::LLVMCodegen::codegen(std::string &error)
 {
     llvm::InitializeAllTargetInfos();
     llvm::InitializeAllTargets();
@@ -184,24 +214,7 @@ int ni::Codegen::codegen(std::string &error)
         return 1;
     }
 
-    std::vector<llvm::Type *> Args;
-
-    llvm::FunctionType *FT =
-        llvm::FunctionType::get(llvm::Type::getInt32Ty(*this->llvmContext.get()), Args, false);
-
-    llvm::Function *F =
-        llvm::Function::Create(FT, llvm::Function::ExternalLinkage, 0, "main", this->llvmModule.get());
-
-    llvm::BasicBlock *BB = llvm::BasicBlock::Create(*this->llvmContext.get(), "entry", F);
-    this->llvmIRBuilder->SetInsertPoint(BB);
-
-    llvm::Value *last;
-    for (auto &statement : program.instructions)
-    {
-        last = this->internalCodegen(this->program, *statement.get());
-    }
-
-    this->llvmIRBuilder->CreateRet(last);
+    this->internalCodegen(this->program);
 
     this->llvmModule->print(llDest, nullptr);
 

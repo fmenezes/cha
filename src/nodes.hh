@@ -72,19 +72,29 @@ namespace ni
     {
     public:
         Codegen(const NProgram &p) : program(p){};
-        int codegen(std::string &error);
+        virtual int codegen(std::string &error) = 0;
+
+    protected:
+        const NProgram &program;
+    };
+
+    class LLVMCodegen : public Codegen
+    {
+    public:
+        LLVMCodegen(const NProgram &p) : Codegen(p){};
+        virtual int codegen(std::string &error);
 
     private:
         std::unique_ptr<llvm::LLVMContext> llvmContext;
         std::unique_ptr<llvm::Module> llvmModule;
         std::unique_ptr<llvm::IRBuilder<>> llvmIRBuilder;
         std::map<std::string, std::unique_ptr<llvm::AllocaInst>> vars;
-        const NProgram &program;
-        virtual llvm::Value *internalCodegen(const ni::NProgram &p, const ni::Node &node);
-        virtual llvm::Value *internalCodegen(const ni::NProgram &p, const ni::NInteger &node);
-        virtual llvm::Value *internalCodegen(const ni::NProgram &p, const ni::NBinaryOperation &node);
-        virtual llvm::Value *internalCodegen(const ni::NProgram &p, const ni::NVariableAssignment &node);
-        virtual llvm::Value *internalCodegen(const ni::NProgram &p, const ni::NVariableDeclaration &node);
-        virtual llvm::Value *internalCodegen(const ni::NProgram &p, const ni::NVariableLookup &node);
+        llvm::Value *internalCodegen(const ni::Node &node);
+        llvm::Value *internalCodegen(const ni::NInteger &node);
+        llvm::Value *internalCodegen(const ni::NBinaryOperation &node);
+        llvm::Value *internalCodegen(const ni::NVariableAssignment &node);
+        llvm::Value *internalCodegen(const ni::NVariableDeclaration &node);
+        llvm::Value *internalCodegen(const ni::NVariableLookup &node);
+        llvm::Value *internalCodegen(const ni::NProgram &node);
     };
 }

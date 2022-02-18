@@ -19,7 +19,7 @@ int main(int argc, char *argv[])
       exit(1);
    }
    std::string error;
-   ni::Codegen c(program);
+   ni::LLVMCodegen c(program);
    if (c.codegen(error) == 1)
    {
       std::cerr << error << std::endl;
