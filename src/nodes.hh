@@ -18,8 +18,6 @@ namespace ni
     class Node
     {
     public:
-        virtual llvm::Value *codegen(NProgram &p) = 0;
-
         virtual ~Node() {};
     };
 
@@ -28,19 +26,6 @@ namespace ni
     public:
         std::string value;
         NInteger(const std::string &value) : value(value){};
-
-        virtual llvm::Value *codegen(NProgram &p);
-    };
-
-    class NUnaryOperation : public Node
-    {
-    public:
-        Node *value;
-        std::string op;
-
-        NUnaryOperation(const std::string &op, Node *value) : op(op), value(std::move(value)){};
-
-        virtual llvm::Value *codegen(NProgram &p);
     };
 
     class NBinaryOperation : public Node
@@ -51,8 +36,6 @@ namespace ni
         std::string op;
 
         NBinaryOperation(const std::string &op, std::unique_ptr<Node> &left, std::unique_ptr<Node> &right) : op(op), left(std::move(left)), right(std::move(right)){};
-
-        virtual llvm::Value *codegen(NProgram &p);
     };
 
     class NVariableDeclaration : public Node
@@ -60,8 +43,6 @@ namespace ni
     public:
         std::string identifier;
         NVariableDeclaration(const std::string &identifier) : identifier(identifier){};
-
-        virtual llvm::Value *codegen(NProgram &p);
     };
 
     class NVariableAssignment : public Node
@@ -70,8 +51,6 @@ namespace ni
         std::string identifier;
         std::unique_ptr<Node> value;
         NVariableAssignment(const std::string &identifier, std::unique_ptr<Node> &value) : identifier(identifier), value(std::move(value)){};
-
-        virtual llvm::Value *codegen(NProgram &p);
     };
 
     class NVariableLookup : public Node
@@ -79,22 +58,43 @@ namespace ni
     public:
         std::string identifier;
         NVariableLookup(const std::string &identifier) : identifier(identifier){};
-
-        virtual llvm::Value *codegen(NProgram &p);
     };
 
-    class NProgram
+    class NProgram : public Node
     {
     public:
+        std::vector<std::unique_ptr<Node>> instructions;
+        int parse();
+        int parse(const std::string &f);
+    };
+
+    class Codegen
+    {
+    public:
+        Codegen(const NProgram &p) : program(p){};
+        virtual int codegen(std::string &error) = 0;
+
+    protected:
+        const NProgram &program;
+    };
+
+    class LLVMCodegen : public Codegen
+    {
+    public:
+        LLVMCodegen(const NProgram &p) : Codegen(p){};
+        virtual int codegen(std::string &error);
+
+    private:
         std::unique_ptr<llvm::LLVMContext> llvmContext;
         std::unique_ptr<llvm::Module> llvmModule;
         std::unique_ptr<llvm::IRBuilder<>> llvmIRBuilder;
         std::map<std::string, std::unique_ptr<llvm::AllocaInst>> vars;
-        std::vector<std::unique_ptr<Node>> instructions;
-
-        int parse();
-        int parse(const std::string &f);
-        int codegen(std::string &error);
+        llvm::Value *internalCodegen(const ni::Node &node);
+        llvm::Value *internalCodegen(const ni::NInteger &node);
+        llvm::Value *internalCodegen(const ni::NBinaryOperation &node);
+        llvm::Value *internalCodegen(const ni::NVariableAssignment &node);
+        llvm::Value *internalCodegen(const ni::NVariableDeclaration &node);
+        llvm::Value *internalCodegen(const ni::NVariableLookup &node);
+        llvm::Value *internalCodegen(const ni::NProgram &node);
     };
-
 }
