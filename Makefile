@@ -33,7 +33,7 @@ clean:
 
 .PHONY: test_ni
 test_ni:
-	./bin/ni < examples/test.ni
+	./bin/ni examples/test.ni
 
 .PHONY: test
 test: test_ni test_ld

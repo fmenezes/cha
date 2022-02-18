@@ -18,7 +18,7 @@ namespace ni
     class Node
     {
     public:
-        virtual ~Node() {};
+        virtual ~Node(){};
     };
 
     class NInteger : public Node
