@@ -32,7 +32,8 @@ int ni::NProgram::parse()
     return p.parse();
 }
 
-llvm::Value *ni::LLVMCodegen::internalCodegen(const ni::Node &node){
+llvm::Value *ni::LLVMCodegen::internalCodegen(const ni::Node &node)
+{
     auto i = dynamic_cast<const ni::NInteger *>(&node);
     if (i != nullptr)
     {
