@@ -41,7 +41,8 @@ jobs:
             --slave   /usr/bin/llvm-symbolizer   llvm-symbolizer  /usr/bin/llvm-symbolizer-${LLVM_VERSION} \
             --slave   /usr/bin/llvm-tblgen       llvm-tblgen      /usr/bin/llvm-tblgen-${LLVM_VERSION} \
             --slave   /usr/bin/llvm-objcopy      llvm-objcopy     /usr/bin/llvm-objcopy-${LLVM_VERSION} \
-            --slave   /usr/bin/llvm-strip        llvm-strip       /usr/bin/llvm-strip-${LLVM_VERSION}
+            --slave   /usr/bin/llvm-strip        llvm-strip       /usr/bin/llvm-strip-${LLVM_VERSION} \
+            --slave   /usr/bin/llc               llc              /usr/bin/llc-${LLVM_VERSION}
           sudo update-alternatives \
             --install /usr/bin/clang             clang            /usr/bin/clang-${LLVM_VERSION} 1 \
             --slave   /usr/bin/clang-cpp         clang-cpp        /usr/bin/clang-cpp-${LLVM_VERSION}
