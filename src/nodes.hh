@@ -13,8 +13,6 @@
 
 namespace ni
 {
-    class NProgram;
-
     class Node
     {
     public:
@@ -72,7 +70,7 @@ namespace ni
     {
     public:
         Codegen(const NProgram &p) : program(p){};
-        virtual int codegen(std::string &error) = 0;
+        virtual int codegen(const std::string &output, std::string &error) = 0;
 
     protected:
         const NProgram &program;
@@ -82,7 +80,7 @@ namespace ni
     {
     public:
         LLVMCodegen(const NProgram &p) : Codegen(p){};
-        virtual int codegen(std::string &error);
+        virtual int codegen(const std::string &output, std::string &error);
 
     private:
         std::unique_ptr<llvm::LLVMContext> llvmContext;

@@ -6,9 +6,9 @@ int main(int argc, char *argv[])
 {
    ni::NProgram program;
    int op;
-   if (argc != 2)
+   if (argc != 3)
    {
-      std::cerr << "Usage: " << argv[0] << " <file>" << std::endl;
+      std::cerr << "Usage: " << argv[0] << " <srcfile> <destfile>" << std::endl;
       exit(1);
    }
 
@@ -21,7 +21,7 @@ int main(int argc, char *argv[])
 
    std::string error;
    ni::LLVMCodegen c(program);
-   if (c.codegen(error) == 1)
+   if (c.codegen(std::string(argv[2]), error) == 1)
    {
       std::cerr << error << std::endl;
       exit(1);

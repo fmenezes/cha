@@ -1,11 +1,16 @@
-LLVM_CONFIG := $(shell llvm-config --cxxflags --ldflags --system-libs --libs)
-
-CXXFLAGS = $(LLVM_CONFIG) -fexceptions
-
 BISON := bison
-
 FLEX := flex
 
+SOURCES := src/codegen.cpp src/main.cpp
+INCLUDES := src/nodes.hh src/parserdecl.h
+
+LLVM_CONFIG := $(shell llvm-config --cxxflags --ldflags --system-libs --libs)
+CXXFLAGS = $(LLVM_CONFIG) -fexceptions
+GENERATEDINCLUDES := src/parser.tab.hh
+GENERATEDSOURCES := src/parser.yy.c src/parser.tab.cc
+OUTPUT := bin/ni
+
+.PHONY: default
 default: build
 
 .PHONY: bison
@@ -22,21 +27,29 @@ test_ld:
 
 .PHONY: ni
 ni:
-	$(CXX) $(CXXFLAGS) src/parser.yy.c src/parser.tab.cc src/codegen.cpp src/main.cpp -o bin/ni
+	$(CXX) $(CXXFLAGS) $(GENERATEDSOURCES) $(SOURCES) -o $(OUTPUT)
 
 .PHONY: build
 build: clean bison flex ni
 
 .PHONY: clean
 clean:
-	rm -rf bin/ni src/parser.yy.c src/parser.tab.* a.out output.*
+	rm -rf $(OUTPUT) $(GENERATEDINCLUDES) $(GENERATEDSOURCES) a.out output.*
 
-.PHONY: test_ni
-test_ni:
-	./bin/ni examples/test.ni
+.PHONY: compile_ll
+compile_ll:
+	$(OUTPUT) examples/test.ni output.ll
+
+.PHONY: compile_asm
+compile_asm:
+	llc -filetype=asm output.ll -o output.s
+
+.PHONY: link
+link:
+	$(CXX) output.s -o a.out
 
 .PHONY: test
-test: test_ni test_ld
+test: compile_ll compile_asm link
 	./scripts/test.sh
 
 .PHONY: debug

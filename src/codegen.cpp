@@ -157,7 +157,7 @@ llvm::Value *ni::LLVMCodegen::internalCodegen(const ni::NProgram &node)
     return last;
 }
 
-int ni::LLVMCodegen::codegen(std::string &error)
+int ni::LLVMCodegen::codegen(const std::string &output, std::string &error)
 {
     llvm::InitializeAllTargetInfos();
     llvm::InitializeAllTargets();
@@ -186,28 +186,8 @@ int ni::LLVMCodegen::codegen(std::string &error)
     this->llvmModule->setDataLayout(TheTargetMachine->createDataLayout());
 
     std::error_code EC;
-    auto destFilename = "output.o";
-    llvm::raw_fd_ostream dest(destFilename, EC, llvm::sys::fs::OF_None);
+    llvm::raw_fd_ostream dest(output, EC, llvm::sys::fs::OF_Text);
     if (EC)
-    {
-        std::stringstream e;
-        e << "Could not open file: " << EC.message();
-        error = e.str();
-        return 1;
-    }
-
-    auto llFilename = "output.ll";
-    llvm::raw_fd_ostream llDest(llFilename, EC, llvm::sys::fs::OF_None);
-    if (EC)
-    {
-        std::stringstream e;
-        e << "Could not open file: " << EC.message();
-        error = e.str();
-        return 1;
-    }
-
-    llvm::legacy::PassManager pass;
-    if (TheTargetMachine->addPassesToEmitFile(pass, dest, nullptr, llvm::CGFT_ObjectFile))
     {
         std::stringstream e;
         e << "Could not open file: " << EC.message();
@@ -217,14 +197,10 @@ int ni::LLVMCodegen::codegen(std::string &error)
 
     this->internalCodegen(this->program);
 
-    this->llvmModule->print(llDest, nullptr);
-
-    pass.run(*this->llvmModule.get());
+    this->llvmModule->print(dest, nullptr);
 
     dest.flush();
     dest.close();
-    llDest.flush();
-    llDest.close();
 
     this->vars.clear();
     this->llvmIRBuilder.release();
