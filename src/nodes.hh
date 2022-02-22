@@ -71,6 +71,7 @@ namespace ni
     public:
         Codegen(const NProgram &p) : program(p){};
         virtual int codegen(const std::string &output, std::string &error) = 0;
+        virtual ~Codegen() {}
 
     protected:
         const NProgram &program;
@@ -94,5 +95,16 @@ namespace ni
         llvm::Value *internalCodegen(const ni::NVariableDeclaration &node);
         llvm::Value *internalCodegen(const ni::NVariableLookup &node);
         llvm::Value *internalCodegen(const ni::NProgram &node);
+    };
+
+    class ASMCodegen : public Codegen
+    {
+    public:
+        ASMCodegen(const NProgram &p) : Codegen(p){};
+        virtual int codegen(const std::string &output, std::string &error);
+
+    private:
+        std::ofstream *outputFile;
+        int internalCodegen(const ni::NProgram &node);
     };
 }

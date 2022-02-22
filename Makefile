@@ -1,7 +1,7 @@
 BISON := bison
 FLEX := flex
 
-SOURCES := src/codegen.cpp src/main.cpp
+SOURCES := src/codegen.cpp src/llvmcodegen.cpp src/asmcodegen.cpp src/main.cpp
 INCLUDES := src/nodes.hh src/parserdecl.h
 
 LLVM_CONFIG := $(shell llvm-config --cxxflags --ldflags --system-libs --libs)
@@ -38,19 +38,30 @@ clean:
 
 .PHONY: compile_ll
 compile_ll:
-	$(OUTPUT) examples/test.ni output.ll
+	$(OUTPUT) -ll examples/test.ni output.ll
 
-.PHONY: compile_asm
-compile_asm:
+.PHONY: compile_asm_ll
+compile_asm_ll:
 	llc -filetype=asm output.ll -o output.s
 
 .PHONY: link
 link:
 	$(CXX) output.s -o a.out
 
-.PHONY: test
-test: compile_ll compile_asm link
+.PHONY: test_ll
+test_ll: compile_ll compile_asm_ll link
 	./scripts/test.sh
+
+.PHONY: compile_asm_ni
+compile_asm_ni:
+	$(OUTPUT) -asm examples/test.ni output.s
+
+.PHONY: test_asm
+test_asm: compile_asm_ni link
+	./scripts/test.sh
+
+.PHONY: test
+test: test_ll test_asm
 
 .PHONY: debug
 debug: CXXFLAGS += -g -DDEBUG
