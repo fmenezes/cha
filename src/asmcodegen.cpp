@@ -1,5 +1,5 @@
-#include <iostream>
 #include <fstream>
+#include <iostream>
 
 #include "nodes.hh"
 #include "parser.tab.hh"
@@ -14,8 +14,7 @@ int ni::ASMCodegen::internalCodegen(const ni::NProgram &node) {
   return 0;
 }
 
-int ni::ASMCodegen::codegen(const std::string &output, std::string &error)
-{
+int ni::ASMCodegen::codegen(const std::string &output, std::string &error) {
   this->outputFile = new std::ofstream();
   this->outputFile->open(output, std::ios::trunc);
   ni::ASMCodegen::internalCodegen(this->program);
