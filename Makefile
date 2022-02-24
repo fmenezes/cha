@@ -1,5 +1,6 @@
 BISON := bison
 FLEX := flex
+FORMAT := clang-format
 
 SOURCES := src/codegen.cpp src/llvmcodegen.cpp src/asmcodegen.cpp src/main.cpp
 INCLUDES := src/nodes.hh src/parserdecl.h
@@ -12,6 +13,15 @@ OUTPUT := bin/ni
 
 .PHONY: default
 default: build
+
+.PHONY: git-hooks
+git-hooks:
+	rm -rf "$$(pwd)/.git/hooks"
+	ln -s "$$(pwd)/.githooks" "$$(pwd)/.git/hooks"
+
+.PHONY: format
+format:
+	$(FORMAT) -i $(INCLUDES) $(SOURCES)
 
 .PHONY: bison
 bison: src/parser.yy
