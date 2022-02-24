@@ -101,5 +101,11 @@ public:
 private:
   std::ofstream *outputFile;
   int internalCodegen(const ni::NProgram &node);
+  int internalCodegen(const ni::NVariableLookup &node);
+  int internalCodegen(const ni::NVariableDeclaration &node);
+  int internalCodegen(const ni::NVariableAssignment &node);
+  int internalCodegen(const ni::NBinaryOperation &node);
+  int internalCodegen(const ni::NInteger &node);
+  int internalCodegen(const ni::Node &node);
 };
 } // namespace ni
