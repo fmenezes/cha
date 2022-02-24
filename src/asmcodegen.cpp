@@ -2,7 +2,6 @@
 #include <iostream>
 
 #include "nodes.hh"
-#include "parser.tab.hh"
 
 int ni::ASMCodegen::internalCodegen(const ni::NProgram &node) {
   *this->outputFile << "global _start" << std::endl;

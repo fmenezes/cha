@@ -19,6 +19,10 @@ git-hooks:
 	rm -rf "$$(pwd)/.git/hooks"
 	ln -s "$$(pwd)/.githooks" "$$(pwd)/.git/hooks"
 
+.PHONY: check-format
+check-format:
+	$(FORMAT) -n --Werror -i $(INCLUDES) $(SOURCES)
+
 .PHONY: format
 format:
 	$(FORMAT) -i $(INCLUDES) $(SOURCES)

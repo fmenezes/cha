@@ -20,8 +20,7 @@ int main(int argc, char *argv[]) {
   auto input = std::string(argv[2]);
   auto output = std::string(argv[3]);
 
-  auto f = std::string(argv[2]);
-  op = program.parse(f);
+  op = program.parse(input);
   if (op != 0) {
     exit(1);
   }
