@@ -4,8 +4,7 @@
 #include "nodes.hh"
 #include "parser.tab.hh"
 
-int ni::NProgram::parse()
-{
-    yy::parser p(*this);
-    return p.parse();
+int ni::NProgram::parse() {
+  yy::parser p(*this);
+  return p.parse();
 }
