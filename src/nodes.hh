@@ -82,14 +82,15 @@ private:
   std::unique_ptr<llvm::LLVMContext> llvmContext;
   std::unique_ptr<llvm::Module> llvmModule;
   std::unique_ptr<llvm::IRBuilder<>> llvmIRBuilder;
-  std::map<std::string, std::unique_ptr<llvm::AllocaInst>> vars;
-  llvm::Value *internalCodegen(const ni::Node &node);
-  llvm::Value *internalCodegen(const ni::NInteger &node);
-  llvm::Value *internalCodegen(const ni::NBinaryOperation &node);
-  llvm::Value *internalCodegen(const ni::NVariableAssignment &node);
-  llvm::Value *internalCodegen(const ni::NVariableDeclaration &node);
-  llvm::Value *internalCodegen(const ni::NVariableLookup &node);
-  llvm::Value *internalCodegen(const ni::NProgram &node);
+  std::map<std::string, llvm::AllocaInst *> vars;
+  int internalCodegen(const ni::Node &node, llvm::Value **value);
+  int internalCodegen(const ni::NInteger &node, llvm::Value **value);
+  int internalCodegen(const ni::NBinaryOperation &node, llvm::Value **value);
+  int internalCodegen(const ni::NVariableAssignment &node, llvm::Value **value);
+  int internalCodegen(const ni::NVariableDeclaration &node,
+                      llvm::Value **value);
+  int internalCodegen(const ni::NVariableLookup &node, llvm::Value **value);
+  int internalCodegen(const ni::NProgram &node, llvm::Value **value);
 };
 
 class ASMCodegen : public Codegen {
