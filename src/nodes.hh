@@ -93,13 +93,25 @@ private:
   int internalCodegen(const ni::NProgram &node, llvm::Value **value);
 };
 
+enum OS { MACOS, LINUX };
+
 class ASMCodegen : public Codegen {
 public:
-  ASMCodegen(const NProgram &p) : Codegen(p){};
+  ASMCodegen(const NProgram &p) : ASMCodegen(p, defaultOs()){};
+  ASMCodegen(const NProgram &p, const OS &os) : Codegen(p), targetOS(os){};
   virtual int codegen(const std::string &output, std::string &error);
+  static OS defaultOs();
 
 private:
   std::ofstream *outputFile;
+  OS targetOS;
+  std::map<std::string, int> vars;
+  int currentStackPosition;
+  int generateTextSection();
+  int generateExitCall();
+  int generateFunction(const std::string &name);
+  int generateFunctionPrologue();
+  int generateFunctionEpilogue();
   int internalCodegen(const ni::NProgram &node);
   int internalCodegen(const ni::NVariableLookup &node);
   int internalCodegen(const ni::NVariableDeclaration &node);
