@@ -1,3 +1,5 @@
+[![build](https://github.com/fmenezes/ni/actions/workflows/build.yml/badge.svg)](https://github.com/fmenezes/ni/actions/workflows/build.yml)
+
 # ni
 
 This is a new ahead of time compiled programing language from the ground up.
