@@ -56,6 +56,7 @@ int ni::ASMCodegen::internalCodegen(const ni::NVariableDeclaration &node) {
 }
 
 int ni::ASMCodegen::internalCodegen(const ni::NProgram &node) {
+#if defined(__APPLE__) || defined(__MACH__)
   *this->outputFile << ".section __TEXT,__text" << std::endl;
   *this->outputFile << ".globl _main" << std::endl;
   *this->outputFile << std::endl;
@@ -63,15 +64,24 @@ int ni::ASMCodegen::internalCodegen(const ni::NProgram &node) {
   *this->outputFile << "\tmovl $0x2000001, %eax" << std::endl;
   *this->outputFile << "\tmovl $100, %edi" << std::endl;
   *this->outputFile << "\tsyscall" << std::endl;
+#else
+  *this->outputFile << ".text" << std::endl;
+  *this->outputFile << ".globl main" << std::endl;
+  *this->outputFile << std::endl;
+  *this->outputFile << "main:" << std::endl;
+  *this->outputFile << "\tmovl $60, %eax" << std::endl;
+  *this->outputFile << "\tmovl $100, %edi" << std::endl;
+  *this->outputFile << "\tsyscall" << std::endl;
+#endif
   return 0;
 }
 
 int ni::ASMCodegen::codegen(const std::string &output, std::string &error) {
   this->outputFile = new std::ofstream();
   this->outputFile->open(output, std::ios::trunc);
-  ni::ASMCodegen::internalCodegen(this->program);
+  int ret = ni::ASMCodegen::internalCodegen(this->program);
   this->outputFile->close();
   this->outputFile = nullptr;
 
-  return 0;
+  return ret;
 }
