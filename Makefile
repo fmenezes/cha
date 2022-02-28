@@ -58,12 +58,12 @@ compile_ll:
 compile_asm_ll:
 	llc -filetype=asm output.ll -o output.s
 
-.PHONY: link
-link:
+.PHONY: link_ll link_asm
+link_ll link_asm:
 	$(CXX) output.s -o a.out
 
 .PHONY: test_ll
-test_ll: compile_ll compile_asm_ll link
+test_ll: compile_ll compile_asm_ll link_ll
 	./scripts/test.sh
 
 .PHONY: compile_asm_ni
@@ -71,7 +71,7 @@ compile_asm_ni:
 	$(OUTPUT) -asm examples/test.ni output.s
 
 .PHONY: test_asm
-test_asm: compile_asm_ni link
+test_asm: compile_asm_ni link_asm
 	./scripts/test.sh
 
 .PHONY: test
