@@ -164,7 +164,6 @@ int ni::ASMCodegen::internalCodegen(const ni::NProgram &node) {
       return ret;
     }
   }
-  *this->outputFile << "\tmovl\t$100, %edi" << std::endl;
   ret = this->generateExitCall();
   if (ret != 0) {
     return ret;
