@@ -27,7 +27,7 @@ extern ni::NProgram *program;
 %param { ni::NProgram& p }
 
 %token <std::string> INTEGER IDENTIFIER
-%token VAR NEWLINE PLUS MINUS MULTIPLY OPENPAR CLOSEPAR EQUALS
+%token VAR PLUS MINUS MULTIPLY OPENPAR CLOSEPAR EQUALS
 
 %left PLUS MINUS
 %left MULTIPLY
@@ -43,8 +43,8 @@ program :
 
 
 statements :
-	statement NEWLINE	{ $$.push_back(std::move($1)); }
-	| statements statement NEWLINE	{ $$ = std::move($1); $$.push_back(std::move($2)); }
+	statement	{ $$.push_back(std::move($1)); }
+	| statements statement	{ $$ = std::move($1); $$.push_back(std::move($2)); }
 	;
 
 statement :

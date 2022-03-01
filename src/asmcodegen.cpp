@@ -38,7 +38,7 @@ int ni::ASMCodegen::internalCodegen(const ni::Node &node) {
 }
 
 int ni::ASMCodegen::internalCodegen(const ni::NInteger &node) {
-  *this->outputFile << "\tmovl\t$" << node.value << ", %edi" << std::endl;
+  *this->outputFile << "\tmovl\t$" << node.value << ", %eax" << std::endl;
   return 0;
 }
 
@@ -48,24 +48,21 @@ int ni::ASMCodegen::internalCodegen(const ni::NBinaryOperation &node) {
   if (ret != 0) {
     return ret;
   }
-  *this->outputFile << "\tmovl\t%edi, %eax" << std::endl;
+  *this->outputFile << "\tmovl\t%eax, %ebx" << std::endl;
 
   ret = this->internalCodegen(*node.right.get());
   if (ret != 0) {
     return ret;
   }
-  *this->outputFile << "\tmovl\t%edi, %ebx" << std::endl;
 
   if (node.op.compare("+") == 0) {
-    *this->outputFile << "\taddl\t%eax, %ebx" << std::endl;
-    *this->outputFile << "\tmovl\t%ebx, %edi" << std::endl;
+    *this->outputFile << "\taddl\t%ebx, %eax" << std::endl;
     return 0;
   } else if (node.op.compare("-") == 0) {
-    *this->outputFile << "\tsubl\t%eax, %ebx" << std::endl;
-    *this->outputFile << "\tmovl\t%ebx, %edi" << std::endl;
+    *this->outputFile << "\tsubl\t%ebx, %eax" << std::endl;
     return 0;
   } else if (node.op.compare("*") == 0) {
-    *this->outputFile << "\timull\t%eax, %ebx, %edi" << std::endl;
+    *this->outputFile << "\timull\t%ebx, %eax" << std::endl;
     return 0;
   }
 
@@ -79,7 +76,7 @@ int ni::ASMCodegen::internalCodegen(const ni::NVariableLookup &node) {
     std::cerr << node.identifier << " Not found." << std::endl;
     return 1;
   }
-  *this->outputFile << "\tmovl\t" << s->second << "(%rbp),%edi" << std::endl;
+  *this->outputFile << "\tmovl\t" << s->second << "(%rbp),%eax" << std::endl;
   return 0;
 }
 
@@ -93,7 +90,7 @@ int ni::ASMCodegen::internalCodegen(const ni::NVariableAssignment &node) {
   if (ret != 0) {
     return ret;
   }
-  *this->outputFile << "\tmovl\t%edi, " << s->second << "(%rbp)" << std::endl;
+  *this->outputFile << "\tmovl\t%eax, " << s->second << "(%rbp)" << std::endl;
   return 0;
 }
 
@@ -164,6 +161,7 @@ int ni::ASMCodegen::internalCodegen(const ni::NProgram &node) {
       return ret;
     }
   }
+  *this->outputFile << "\tmovl\t%eax, %edi" << std::endl;
   ret = this->generateExitCall();
   if (ret != 0) {
     return ret;

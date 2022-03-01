@@ -13,7 +13,7 @@ int main(int argc, char *argv[]) {
   int op;
   if (argc != 4) {
     printUsage(argv[0]);
-    exit(1);
+    return 1;
   }
 
   auto format = std::string(argv[1]);
@@ -22,7 +22,7 @@ int main(int argc, char *argv[]) {
 
   op = program.parse(input);
   if (op != 0) {
-    exit(1);
+    return 1;
   }
 
   std::string error;
@@ -34,12 +34,12 @@ int main(int argc, char *argv[]) {
   } else {
     std::cerr << "Error: invalid format" << std::endl << std::endl;
     printUsage(argv[0]);
-    exit(1);
+    return 1;
   }
   if (c->codegen(output, error) == 1) {
     delete c;
     std::cerr << error << std::endl;
-    exit(1);
+    return 1;
   }
   delete c;
   return 0;
