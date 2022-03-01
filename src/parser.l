@@ -49,11 +49,7 @@ identifier [_a-zA-Z][_a-zA-Z0-9]*
 		return yy::parser::make_CLOSEPAR();
 	}
 
-"\n" {
-		return yy::parser::make_NEWLINE();
-	}
-
-[ \t]+ ;
+[ \t\r\n]+ ;
 
 .	{ throw yy::parser::syntax_error("invalid character: " + std::string(yytext, yyleng)); }
 
