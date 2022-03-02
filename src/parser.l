@@ -16,6 +16,14 @@ identifier [_a-zA-Z][_a-zA-Z0-9]*
 		return yy::parser::make_VAR();
 	}
 
+"fun" {
+		return yy::parser::make_FUN();
+	}
+
+"ret" {
+		return yy::parser::make_RET();
+	}
+
 {identifier} {
 		return yy::parser::make_IDENTIFIER(std::string(yytext, yyleng));
 	}
@@ -47,6 +55,14 @@ identifier [_a-zA-Z][_a-zA-Z0-9]*
 
 ")" {
 		return yy::parser::make_CLOSEPAR();
+	}
+
+"{" {
+		return yy::parser::make_OPENCUR();
+	}
+
+"}" {
+		return yy::parser::make_CLOSECUR();
 	}
 
 [ \t\r\n]+ ;

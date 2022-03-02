@@ -18,6 +18,7 @@ extern ni::NProgram *program;
 %nterm <std::unique_ptr<ni::Node>> expr;
 %nterm <std::unique_ptr<ni::Node>> const;
 %nterm <std::unique_ptr<ni::Node>> statement;
+%nterm <std::unique_ptr<ni::Node>> function;
 %nterm <std::vector<std::unique_ptr<ni::Node>>> statements;
 
 %code {
@@ -27,7 +28,7 @@ extern ni::NProgram *program;
 %param { ni::NProgram& p }
 
 %token <std::string> INTEGER IDENTIFIER
-%token VAR PLUS MINUS MULTIPLY OPENPAR CLOSEPAR EQUALS
+%token VAR PLUS MINUS MULTIPLY OPENPAR CLOSEPAR EQUALS OPENCUR CLOSECUR FUN RET
 
 %left PLUS MINUS
 %left MULTIPLY
@@ -37,10 +38,13 @@ extern ni::NProgram *program;
 %%
 
 program :
-	statements { p.instructions = std::move($1); }
-	|
+	function { p.instructions.push_back(std::move($1)); }
+	| program function { p.instructions.push_back(std::move($2)); }
 	;
 
+function :
+	FUN IDENTIFIER OPENCUR statements CLOSECUR	{ $$ = std::make_unique<ni::NFunctionDeclaration>($2, $4); }
+	;
 
 statements :
 	statement	{ $$.push_back(std::move($1)); }
@@ -56,6 +60,8 @@ statement :
 expr :
 	const					{ $$ = std::move($1); }
 	| IDENTIFIER			{ $$ = std::make_unique<ni::NVariableLookup>($1); }
+	| IDENTIFIER OPENPAR CLOSEPAR	{ $$ = std::make_unique<ni::NFunctionCall>($1); }
+	| RET expr				{ $$ = std::make_unique<ni::NFunctionReturn>($2); }
 	| expr PLUS expr		{ $$ = std::make_unique<ni::NBinaryOperation>("+"s, $1, $3); }
 	| expr MINUS expr		{ $$ = std::make_unique<ni::NBinaryOperation>("-"s, $1, $3); }
 	| expr MULTIPLY expr	{ $$ = std::make_unique<ni::NBinaryOperation>("*"s, $1, $3); }

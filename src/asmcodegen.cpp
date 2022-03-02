@@ -29,6 +29,21 @@ int ni::ASMCodegen::internalCodegen(const ni::Node &node) {
     return this->internalCodegen(*l);
   }
 
+  auto fd = dynamic_cast<const ni::NFunctionDeclaration *>(&node);
+  if (fd != nullptr) {
+    return this->internalCodegen(*fd);
+  }
+
+  auto fc = dynamic_cast<const ni::NFunctionCall *>(&node);
+  if (fc != nullptr) {
+    return this->internalCodegen(*fc);
+  }
+
+  auto fr = dynamic_cast<const ni::NFunctionReturn *>(&node);
+  if (fr != nullptr) {
+    return this->internalCodegen(*fr);
+  }
+
   auto p = dynamic_cast<const ni::NProgram *>(&node);
   if (p != nullptr) {
     return this->internalCodegen(*p);
@@ -100,6 +115,49 @@ int ni::ASMCodegen::internalCodegen(const ni::NVariableDeclaration &node) {
   return 0;
 }
 
+int ni::ASMCodegen::internalCodegen(const ni::NFunctionDeclaration &node) {
+  this->currentFunctionName = this->generateFunctionName(node.identifier);
+
+  int ret = this->generateFunction(this->currentFunctionName);
+  if (ret != 0) {
+    return ret;
+  }
+  ret = this->generateFunctionPrologue();
+  if (ret != 0) {
+    return ret;
+  }
+  this->resetStackFrame();
+  for (const auto &it : node.body) {
+    int ret = this->internalCodegen(*it.get());
+    if (ret != 0) {
+      return ret;
+    }
+  }
+  return this->generateFunctionEpilogue(this->currentFunctionName);
+}
+
+int ni::ASMCodegen::internalCodegen(const ni::NFunctionCall &node) {
+  std::string fnName = this->generateFunctionName(node.identifier);
+  *this->outputFile << "\tcallq " << fnName << std::endl;
+  return 0;
+}
+
+int ni::ASMCodegen::internalCodegen(const ni::NFunctionReturn &node) {
+  int ret = this->internalCodegen(*node.value.get());
+  if (ret != 0) {
+    return ret;
+  }
+
+  *this->outputFile << "\tjmp " << this->currentFunctionName << "_epilogue"
+                    << std::endl;
+  return 0;
+}
+
+void ni::ASMCodegen::resetStackFrame() {
+  this->currentStackPosition = 0;
+  this->vars.clear();
+}
+
 int ni::ASMCodegen::generateTextSection() {
   if (this->targetOS == ni::OS::MACOS) {
     *this->outputFile << ".section\t__TEXT,__text" << std::endl;
@@ -119,14 +177,18 @@ int ni::ASMCodegen::generateExitCall() {
   return 0;
 }
 
-int ni::ASMCodegen::generateFunction(const std::string &name) {
-  std::string fnName = name;
+std::string
+ni::ASMCodegen::generateFunctionName(const std::string &name) const {
   if (this->targetOS == ni::OS::MACOS) {
-    fnName = "_" + fnName;
+    return "_" + name;
   }
-  *this->outputFile << ".globl\t" << fnName << std::endl;
+  return name;
+}
+
+int ni::ASMCodegen::generateFunction(const std::string &name) {
+  *this->outputFile << ".globl\t" << name << std::endl;
   *this->outputFile << std::endl;
-  *this->outputFile << fnName << ":" << std::endl;
+  *this->outputFile << name << ":" << std::endl;
   return 0;
 }
 
@@ -136,22 +198,15 @@ int ni::ASMCodegen::generateFunctionPrologue() {
   return 0;
 }
 
-int ni::ASMCodegen::generateFunctionEpilogue() {
+int ni::ASMCodegen::generateFunctionEpilogue(const std::string &name) {
+  *this->outputFile << name << "_epilogue:" << std::endl;
   *this->outputFile << "\tpopq\t%rbp" << std::endl;
-  *this->outputFile << "\tretq" << std::endl;
+  *this->outputFile << "\tretq" << std::endl << std::endl;
   return 0;
 }
 
 int ni::ASMCodegen::internalCodegen(const ni::NProgram &node) {
   int ret = this->generateTextSection();
-  if (ret != 0) {
-    return ret;
-  }
-  ret = this->generateFunction("main");
-  if (ret != 0) {
-    return ret;
-  }
-  ret = this->generateFunctionPrologue();
   if (ret != 0) {
     return ret;
   }
@@ -161,12 +216,7 @@ int ni::ASMCodegen::internalCodegen(const ni::NProgram &node) {
       return ret;
     }
   }
-  *this->outputFile << "\tmovl\t%eax, %edi" << std::endl;
-  ret = this->generateExitCall();
-  if (ret != 0) {
-    return ret;
-  }
-  return this->generateFunctionEpilogue();
+  return 0;
 }
 
 int ni::ASMCodegen::codegen(const std::string &output, std::string &error) {
