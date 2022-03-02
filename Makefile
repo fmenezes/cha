@@ -5,7 +5,7 @@ FORMAT := clang-format
 SOURCES := src/codegen.cpp src/asmcodegen.cpp src/main.cpp
 INCLUDES := src/nodes.hh src/parserdecl.h
 
-CXXFLAGS = -std=c++14 -stdlib=libc++
+CXXFLAGS = -std=c++14
 GENERATEDINCLUDES := src/parser.tab.hh
 GENERATEDSOURCES := src/parser.yy.c src/parser.tab.cc
 OUTPUT := bin/ni
