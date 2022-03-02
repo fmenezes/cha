@@ -3,9 +3,8 @@
 #include <string>
 
 void printUsage(const std::string &app) {
-  std::cerr << "Usage: " << app << " <format> <srcfile> <destfile>"
-            << std::endl;
-  std::cerr << "format: -ll for LLVM IR or -asm for Assembly" << std::endl;
+  std::cerr << "Usage: " << app << " <format> <srcfile> <destfile>" << std::endl
+            << "format: -asm for Assembly" << std::endl;
 }
 
 int main(int argc, char *argv[]) {
@@ -27,9 +26,7 @@ int main(int argc, char *argv[]) {
 
   std::string error;
   ni::Codegen *c;
-  if (format.compare("-ll") == 0) {
-    c = new ni::LLVMCodegen(program);
-  } else if (format.compare("-asm") == 0) {
+  if (format.compare("-asm") == 0) {
     c = new ni::ASMCodegen(program);
   } else {
     std::cerr << "Error: invalid format" << std::endl << std::endl;

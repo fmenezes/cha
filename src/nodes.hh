@@ -73,26 +73,6 @@ protected:
   const NProgram &program;
 };
 
-class LLVMCodegen : public Codegen {
-public:
-  LLVMCodegen(const NProgram &p) : Codegen(p){};
-  virtual int codegen(const std::string &output, std::string &error);
-
-private:
-  std::unique_ptr<llvm::LLVMContext> llvmContext;
-  std::unique_ptr<llvm::Module> llvmModule;
-  std::unique_ptr<llvm::IRBuilder<>> llvmIRBuilder;
-  std::map<std::string, llvm::AllocaInst *> vars;
-  int internalCodegen(const ni::Node &node, llvm::Value **value);
-  int internalCodegen(const ni::NInteger &node, llvm::Value **value);
-  int internalCodegen(const ni::NBinaryOperation &node, llvm::Value **value);
-  int internalCodegen(const ni::NVariableAssignment &node, llvm::Value **value);
-  int internalCodegen(const ni::NVariableDeclaration &node,
-                      llvm::Value **value);
-  int internalCodegen(const ni::NVariableLookup &node, llvm::Value **value);
-  int internalCodegen(const ni::NProgram &node, llvm::Value **value);
-};
-
 enum OS { MACOS, LINUX };
 
 class ASMCodegen : public Codegen {

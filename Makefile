@@ -2,7 +2,7 @@ BISON := bison
 FLEX := flex
 FORMAT := clang-format
 
-SOURCES := src/codegen.cpp src/llvmcodegen.cpp src/asmcodegen.cpp src/main.cpp
+SOURCES := src/codegen.cpp src/asmcodegen.cpp src/main.cpp
 INCLUDES := src/nodes.hh src/parserdecl.h
 
 LLVM_CONFIG := $(shell llvm-config --cxxflags --ldflags --system-libs --libs)
@@ -50,32 +50,17 @@ build: clean bison flex ni
 clean:
 	rm -rf $(OUTPUT) $(GENERATEDINCLUDES) $(GENERATEDSOURCES) a.out output.*
 
-.PHONY: compile_ll
-compile_ll:
-	$(OUTPUT) -ll examples/test.ni output.ll
-
-.PHONY: compile_asm_ll
-compile_asm_ll:
-	llc -filetype=asm output.ll -o output.s
-
-.PHONY: link_ll link_asm
-link_ll link_asm:
+.PHONY: link
+link:
 	$(CXX) output.s -o a.out
 
-.PHONY: test_ll
-test_ll: compile_ll compile_asm_ll link_ll
-	./scripts/test.sh
-
-.PHONY: compile_asm_ni
-compile_asm_ni:
+.PHONY: compile_asm
+compile_asm:
 	$(OUTPUT) -asm examples/test.ni output.s
 
-.PHONY: test_asm
-test_asm: compile_asm_ni link_asm
-	./scripts/test.sh
-
 .PHONY: test
-test: test_ll test_asm
+test: compile_asm link
+	./scripts/test.sh
 
 .PHONY: debug
 debug: CXXFLAGS += -g -DDEBUG
