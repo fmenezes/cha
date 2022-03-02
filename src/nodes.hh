@@ -56,6 +56,27 @@ public:
   NVariableLookup(const std::string &identifier) : identifier(identifier){};
 };
 
+class NFunctionDeclaration : public Node {
+public:
+  std::string identifier;
+  std::vector<std::unique_ptr<Node>> body;
+  NFunctionDeclaration(const std::string &identifier,
+                       std::vector<std::unique_ptr<Node>> &body)
+      : identifier(identifier), body(std::move(body)){};
+};
+
+class NFunctionCall : public Node {
+public:
+  std::string identifier;
+  NFunctionCall(const std::string &identifier) : identifier(identifier){};
+};
+
+class NFunctionReturn : public Node {
+public:
+  std::unique_ptr<Node> value;
+  NFunctionReturn(std::unique_ptr<Node> &value) : value(std::move(value)){};
+};
+
 class NProgram : public Node {
 public:
   std::vector<std::unique_ptr<Node>> instructions;
@@ -93,13 +114,19 @@ public:
 private:
   std::ofstream *outputFile;
   std::map<std::string, int> vars;
+  std::string currentFunctionName;
   int currentStackPosition;
   int generateTextSection();
   int generateExitCall();
+  std::string generateFunctionName(const std::string &name) const;
+  void resetStackFrame();
   int generateFunction(const std::string &name);
   int generateFunctionPrologue();
-  int generateFunctionEpilogue();
+  int generateFunctionEpilogue(const std::string &name);
   int internalCodegen(const ni::NProgram &node);
+  int internalCodegen(const ni::NFunctionDeclaration &node);
+  int internalCodegen(const ni::NFunctionCall &node);
+  int internalCodegen(const ni::NFunctionReturn &node);
   int internalCodegen(const ni::NVariableLookup &node);
   int internalCodegen(const ni::NVariableDeclaration &node);
   int internalCodegen(const ni::NVariableAssignment &node);
