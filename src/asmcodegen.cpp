@@ -178,11 +178,3 @@ int ni::ASMCodegen::codegen(const std::string &output, std::string &error) {
 
   return ret;
 }
-
-ni::OS ni::ASMCodegen::defaultOs() {
-#if defined(__APPLE__) || defined(__MACH__)
-  return ni::OS::MACOS;
-#else
-  return ni::OS::LINUX;
-#endif
-}
