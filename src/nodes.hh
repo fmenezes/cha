@@ -63,28 +63,35 @@ public:
   int parse(const std::string &f);
 };
 
+enum OS { MACOS, LINUX };
+
+enum ARCH { x86_64 };
+
 class Codegen {
 public:
-  Codegen(const NProgram &p) : program(p){};
+  Codegen(const NProgram &p) : Codegen(p, defaultOs(), defaultArch()){};
+  Codegen(const NProgram &p, const OS &os, const ARCH &arch)
+      : program(p), targetOS(os), targetArch(arch){};
   virtual int codegen(const std::string &output, std::string &error) = 0;
   virtual ~Codegen() {}
+  static OS defaultOs();
+  static ARCH defaultArch();
 
 protected:
   const NProgram &program;
+  OS targetOS;
+  ARCH targetArch;
 };
-
-enum OS { MACOS, LINUX };
 
 class ASMCodegen : public Codegen {
 public:
-  ASMCodegen(const NProgram &p) : ASMCodegen(p, defaultOs()){};
-  ASMCodegen(const NProgram &p, const OS &os) : Codegen(p), targetOS(os){};
+  ASMCodegen(const NProgram &p) : Codegen(p){};
+  ASMCodegen(const NProgram &p, const OS &os, const ARCH &arch)
+      : Codegen(p, os, arch){};
   virtual int codegen(const std::string &output, std::string &error);
-  static OS defaultOs();
 
 private:
   std::ofstream *outputFile;
-  OS targetOS;
   std::map<std::string, int> vars;
   int currentStackPosition;
   int generateTextSection();
