@@ -15,8 +15,6 @@ jobs:
         run: |
           sudo apt-get update && sudo apt-get install build-essential flex bison -y
       - run: make
-        env:
-          CXX: clang++
       - run: make test
   mac:
     name: mac
