@@ -3,81 +3,94 @@
 
 #include "nodes.hh"
 
-int ni::ASMCodegen::internalCodegen(const ni::Node &node) {
+int ni::ASMCodegen::internalCodegen(const ni::Node &node,
+                                    std::string &returnAddr) {
   auto i = dynamic_cast<const ni::NInteger *>(&node);
   if (i != nullptr) {
-    return this->internalCodegen(*i);
+    return this->internalCodegen(*i, returnAddr);
   }
 
   auto b = dynamic_cast<const ni::NBinaryOperation *>(&node);
   if (b != nullptr) {
-    return this->internalCodegen(*b);
+    return this->internalCodegen(*b, returnAddr);
   }
 
   auto d = dynamic_cast<const ni::NVariableDeclaration *>(&node);
   if (d != nullptr) {
-    return this->internalCodegen(*d);
+    return this->internalCodegen(*d, returnAddr);
   }
 
   auto a = dynamic_cast<const ni::NVariableAssignment *>(&node);
   if (a != nullptr) {
-    return this->internalCodegen(*a);
+    return this->internalCodegen(*a, returnAddr);
   }
 
   auto l = dynamic_cast<const ni::NVariableLookup *>(&node);
   if (l != nullptr) {
-    return this->internalCodegen(*l);
+    return this->internalCodegen(*l, returnAddr);
   }
 
   auto fd = dynamic_cast<const ni::NFunctionDeclaration *>(&node);
   if (fd != nullptr) {
-    return this->internalCodegen(*fd);
+    return this->internalCodegen(*fd, returnAddr);
   }
 
   auto fc = dynamic_cast<const ni::NFunctionCall *>(&node);
   if (fc != nullptr) {
-    return this->internalCodegen(*fc);
+    return this->internalCodegen(*fc, returnAddr);
   }
 
   auto fr = dynamic_cast<const ni::NFunctionReturn *>(&node);
   if (fr != nullptr) {
-    return this->internalCodegen(*fr);
+    return this->internalCodegen(*fr, returnAddr);
   }
 
   auto p = dynamic_cast<const ni::NProgram *>(&node);
   if (p != nullptr) {
-    return this->internalCodegen(*p);
+    return this->internalCodegen(*p, returnAddr);
   }
 
   throw std::runtime_error("Unkown node type");
 }
 
-int ni::ASMCodegen::internalCodegen(const ni::NInteger &node) {
-  *this->outputFile << "\tmovl\t$" << node.value << ", %eax" << std::endl;
+int ni::ASMCodegen::internalCodegen(const ni::NInteger &node,
+                                    std::string &returnAddr) {
+  returnAddr = "$" + node.value;
   return 0;
 }
 
-int ni::ASMCodegen::internalCodegen(const ni::NBinaryOperation &node) {
-
-  int ret = this->internalCodegen(*node.left.get());
+int ni::ASMCodegen::internalCodegen(const ni::NBinaryOperation &node,
+                                    std::string &returnAddr) {
+  std::string laddr, raddr;
+  int ret = this->internalCodegen(*node.left.get(), laddr);
   if (ret != 0) {
     return ret;
   }
-  *this->outputFile << "\tmovl\t%eax, %ebx" << std::endl;
+  if (laddr.compare("%eax") == 0) {
+    *this->outputFile << "\tmovl\t" << laddr << ", %ebx" << std::endl;
+    laddr = "%ebx";
+  }
 
-  ret = this->internalCodegen(*node.right.get());
+  ret = this->internalCodegen(*node.right.get(), raddr);
   if (ret != 0) {
     return ret;
+  }
+  if (raddr.compare("%eax") != 0) {
+    *this->outputFile << "\tmovl\t" << raddr << ", %eax" << std::endl;
+    raddr = "%eax";
   }
 
   if (node.op.compare("+") == 0) {
-    *this->outputFile << "\taddl\t%ebx, %eax" << std::endl;
+    *this->outputFile << "\taddl\t" << laddr << ", " << raddr << std::endl;
+    returnAddr = raddr;
     return 0;
   } else if (node.op.compare("-") == 0) {
-    *this->outputFile << "\tsubl\t%ebx, %eax" << std::endl;
+    *this->outputFile << "\tsubl\t" << laddr << ", " << raddr << std::endl;
+    returnAddr = raddr;
     return 0;
   } else if (node.op.compare("*") == 0) {
-    *this->outputFile << "\timull\t%ebx, %eax" << std::endl;
+    *this->outputFile << "\timull\t" << laddr << ", " << raddr << std::endl;
+    returnAddr = raddr;
     return 0;
   }
 
@@ -85,37 +98,44 @@ int ni::ASMCodegen::internalCodegen(const ni::NBinaryOperation &node) {
   return 1;
 }
 
-int ni::ASMCodegen::internalCodegen(const ni::NVariableLookup &node) {
+int ni::ASMCodegen::internalCodegen(const ni::NVariableLookup &node,
+                                    std::string &returnAddr) {
   auto s = this->vars.find(node.identifier);
   if (s == this->vars.end()) {
-    std::cerr << node.identifier << " Not found." << std::endl;
+    std::cerr << node.identifier << " not found." << std::endl;
     return 1;
   }
-  *this->outputFile << "\tmovl\t" << s->second << "(%rbp),%eax" << std::endl;
+  returnAddr = s->second;
   return 0;
 }
 
-int ni::ASMCodegen::internalCodegen(const ni::NVariableAssignment &node) {
+int ni::ASMCodegen::internalCodegen(const ni::NVariableAssignment &node,
+                                    std::string &returnAddr) {
   auto s = this->vars.find(node.identifier);
   if (s == this->vars.end()) {
-    std::cerr << node.identifier << " Not found." << std::endl;
+    std::cerr << node.identifier << " not found." << std::endl;
     return 1;
   }
-  int ret = this->internalCodegen(*node.value.get());
+  std::string addr;
+  int ret = this->internalCodegen(*node.value.get(), addr);
   if (ret != 0) {
     return ret;
   }
-  *this->outputFile << "\tmovl\t%eax, " << s->second << "(%rbp)" << std::endl;
+  *this->outputFile << "\tmovl\t" << addr << ", " << s->second << std::endl;
+  returnAddr = s->second;
   return 0;
 }
 
-int ni::ASMCodegen::internalCodegen(const ni::NVariableDeclaration &node) {
+int ni::ASMCodegen::internalCodegen(const ni::NVariableDeclaration &node,
+                                    std::string &returnAddr) {
   this->currentStackPosition -= 4;
-  this->vars[node.identifier] = this->currentStackPosition;
+  returnAddr = std::to_string(this->currentStackPosition) + "(%rbp)";
+  this->vars[node.identifier] = returnAddr;
   return 0;
 }
 
-int ni::ASMCodegen::internalCodegen(const ni::NFunctionDeclaration &node) {
+int ni::ASMCodegen::internalCodegen(const ni::NFunctionDeclaration &node,
+                                    std::string &returnAddr) {
   this->currentFunctionName = this->generateFunctionName(node.identifier);
 
   int ret = this->generateFunction(this->currentFunctionName);
@@ -128,28 +148,33 @@ int ni::ASMCodegen::internalCodegen(const ni::NFunctionDeclaration &node) {
   }
   this->resetStackFrame();
   for (const auto &it : node.body) {
-    int ret = this->internalCodegen(*it.get());
+    int ret = this->internalCodegen(*it.get(), returnAddr);
     if (ret != 0) {
       return ret;
     }
   }
+  returnAddr = this->currentFunctionName;
   return this->generateFunctionEpilogue(this->currentFunctionName);
 }
 
-int ni::ASMCodegen::internalCodegen(const ni::NFunctionCall &node) {
+int ni::ASMCodegen::internalCodegen(const ni::NFunctionCall &node,
+                                    std::string &returnAddr) {
   std::string fnName = this->generateFunctionName(node.identifier);
   *this->outputFile << "\tcallq " << fnName << std::endl;
+  returnAddr = "%eax";
   return 0;
 }
 
-int ni::ASMCodegen::internalCodegen(const ni::NFunctionReturn &node) {
-  int ret = this->internalCodegen(*node.value.get());
+int ni::ASMCodegen::internalCodegen(const ni::NFunctionReturn &node,
+                                    std::string &returnAddr) {
+  int ret = this->internalCodegen(*node.value.get(), returnAddr);
   if (ret != 0) {
     return ret;
   }
 
   *this->outputFile << "\tjmp " << this->currentFunctionName << "_epilogue"
                     << std::endl;
+  returnAddr = "%eax";
   return 0;
 }
 
@@ -205,13 +230,15 @@ int ni::ASMCodegen::generateFunctionEpilogue(const std::string &name) {
   return 0;
 }
 
-int ni::ASMCodegen::internalCodegen(const ni::NProgram &node) {
+int ni::ASMCodegen::internalCodegen(const ni::NProgram &node,
+                                    std::string &returnAddr) {
   int ret = this->generateTextSection();
   if (ret != 0) {
     return ret;
   }
   for (const auto &it : node.instructions) {
-    ret = this->internalCodegen(*it.get());
+    std::string addr;
+    ret = this->internalCodegen(*it.get(), addr);
     if (ret != 0) {
       return ret;
     }
@@ -222,7 +249,8 @@ int ni::ASMCodegen::internalCodegen(const ni::NProgram &node) {
 int ni::ASMCodegen::codegen(const std::string &output, std::string &error) {
   this->outputFile = new std::ofstream();
   this->outputFile->open(output, std::ios::trunc);
-  int ret = ni::ASMCodegen::internalCodegen(this->program);
+  std::string addr;
+  int ret = ni::ASMCodegen::internalCodegen(this->program, addr);
   this->outputFile->close();
   this->outputFile = nullptr;
 

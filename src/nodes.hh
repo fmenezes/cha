@@ -108,7 +108,7 @@ public:
 
 private:
   std::ofstream *outputFile;
-  std::map<std::string, int> vars;
+  std::map<std::string, std::string> vars;
   std::string currentFunctionName;
   int currentStackPosition;
   int generateTextSection();
@@ -118,15 +118,19 @@ private:
   int generateFunction(const std::string &name);
   int generateFunctionPrologue();
   int generateFunctionEpilogue(const std::string &name);
-  int internalCodegen(const ni::NProgram &node);
-  int internalCodegen(const ni::NFunctionDeclaration &node);
-  int internalCodegen(const ni::NFunctionCall &node);
-  int internalCodegen(const ni::NFunctionReturn &node);
-  int internalCodegen(const ni::NVariableLookup &node);
-  int internalCodegen(const ni::NVariableDeclaration &node);
-  int internalCodegen(const ni::NVariableAssignment &node);
-  int internalCodegen(const ni::NBinaryOperation &node);
-  int internalCodegen(const ni::NInteger &node);
-  int internalCodegen(const ni::Node &node);
+  int internalCodegen(const ni::NProgram &node, std::string &returnAddr);
+  int internalCodegen(const ni::NFunctionDeclaration &node,
+                      std::string &returnAddr);
+  int internalCodegen(const ni::NFunctionCall &node, std::string &returnAddr);
+  int internalCodegen(const ni::NFunctionReturn &node, std::string &returnAddr);
+  int internalCodegen(const ni::NVariableLookup &node, std::string &returnAddr);
+  int internalCodegen(const ni::NVariableDeclaration &node,
+                      std::string &returnAddr);
+  int internalCodegen(const ni::NVariableAssignment &node,
+                      std::string &returnAddr);
+  int internalCodegen(const ni::NBinaryOperation &node,
+                      std::string &returnAddr);
+  int internalCodegen(const ni::NInteger &node, std::string &returnAddr);
+  int internalCodegen(const ni::Node &node, std::string &returnAddr);
 };
 } // namespace ni
