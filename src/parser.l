@@ -65,6 +65,10 @@ identifier [_a-zA-Z][_a-zA-Z0-9]*
 		return yy::parser::make_CLOSECUR();
 	}
 
+"," {
+		return yy::parser::make_COMMA();
+	}
+
 [ \t\r\n]+ ;
 
 .	{ throw yy::parser::syntax_error("invalid character: " + std::string(yytext, yyleng)); }

@@ -1,17 +1,11 @@
-fun run {
-    var a
-    a = 10
-    var b
-    b = 20
-    a = a + 30
-    b = b + 40
-    a = a + b
-    a = a * 2
-    ret a
+fun run (a, b, c, d, e) {
+    var k
+    k = a + b + c + d
+    ret k
 }
 
-fun main {
+fun main() {
     var a
-    a = run()
-    ret a
+    a = run(10, 20, 30, 40)
+    ret a * 2
 }

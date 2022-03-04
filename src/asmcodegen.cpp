@@ -3,6 +3,7 @@
 
 #include "nodes.hh"
 
+const std::vector<std::string> REGS({"edi", "esi", "edx", "ecx", "r8d", "r9d"});
 int ni::ASMCodegen::internalCodegen(const ni::Node &node,
                                     std::string &returnAddr) {
   auto i = dynamic_cast<const ni::NInteger *>(&node);
@@ -121,6 +122,7 @@ int ni::ASMCodegen::internalCodegen(const ni::NVariableAssignment &node,
   if (ret != 0) {
     return ret;
   }
+
   *this->outputFile << "\tmovl\t" << addr << ", " << s->second << std::endl;
   returnAddr = s->second;
   return 0;
@@ -128,9 +130,42 @@ int ni::ASMCodegen::internalCodegen(const ni::NVariableAssignment &node,
 
 int ni::ASMCodegen::internalCodegen(const ni::NVariableDeclaration &node,
                                     std::string &returnAddr) {
+  auto s = this->vars.find(node.identifier);
+  if (s != this->vars.end()) {
+    std::cerr << node.identifier << " already exists." << std::endl;
+    return 1;
+  }
+
   this->currentStackPosition -= 4;
   returnAddr = std::to_string(this->currentStackPosition) + "(%rbp)";
   this->vars[node.identifier] = returnAddr;
+  return 0;
+}
+int calculateMemorySize(const ni::Node *node) {
+  auto b = dynamic_cast<const ni::NBinaryOperation *>(node);
+  if (b != nullptr) {
+    return calculateMemorySize(b->left.get()) +
+           calculateMemorySize(b->right.get());
+  }
+
+  auto d = dynamic_cast<const ni::NVariableDeclaration *>(node);
+  if (d != nullptr) {
+    return 4;
+  }
+
+  auto fd = dynamic_cast<const ni::NFunctionDeclaration *>(node);
+  if (fd != nullptr) {
+    int ret = fd->args.size() * 4;
+    if (fd->args.size() > REGS.size()) {
+      ret = REGS.size() * 4;
+    }
+    ret += 4;
+    for (auto &it : fd->body) {
+      ret += calculateMemorySize(it.get());
+    }
+    return ret;
+  }
+
   return 0;
 }
 
@@ -142,11 +177,35 @@ int ni::ASMCodegen::internalCodegen(const ni::NFunctionDeclaration &node,
   if (ret != 0) {
     return ret;
   }
-  ret = this->generateFunctionPrologue();
+  int memorySize = calculateMemorySize(&node);
+  ret = this->generateFunctionPrologue(memorySize);
   if (ret != 0) {
     return ret;
   }
   this->resetStackFrame();
+
+  int argc = node.args.size();
+  if (argc > REGS.size()) {
+    argc = REGS.size();
+  }
+  for (int a = 0; a < argc; a++) {
+    auto arg = node.args[a];
+    this->currentStackPosition -= 4;
+    this->vars[arg] = std::to_string(this->currentStackPosition) + "(%rbp)";
+    auto reg = REGS[a];
+    *this->outputFile << "\tmovl\t%" << reg << ", " << this->vars[arg]
+                      << std::endl;
+  }
+
+  if (node.args.size() > 6) {
+    int offset = 16;
+    for (int a = 6; a < node.args.size(); a++) {
+      auto arg = node.args[a];
+      this->vars[arg] = std::to_string(offset) + "(%rbp)";
+      offset += 8;
+    }
+  }
+
   for (const auto &it : node.body) {
     int ret = this->internalCodegen(*it.get(), returnAddr);
     if (ret != 0) {
@@ -154,25 +213,53 @@ int ni::ASMCodegen::internalCodegen(const ni::NFunctionDeclaration &node,
     }
   }
   returnAddr = this->currentFunctionName;
-  return this->generateFunctionEpilogue(this->currentFunctionName);
+  return this->generateFunctionEpilogue(this->currentFunctionName, memorySize);
 }
 
 int ni::ASMCodegen::internalCodegen(const ni::NFunctionCall &node,
                                     std::string &returnAddr) {
   std::string fnName = this->generateFunctionName(node.identifier);
-  *this->outputFile << "\tcallq " << fnName << std::endl;
+  int argc = node.params.size();
+  if (argc > REGS.size()) {
+    argc = REGS.size();
+  }
+  for (int i = 0; i < argc; i++) {
+    auto &param = *node.params[i].get();
+    auto reg = REGS[i];
+    std::string addr;
+    int ret = this->internalCodegen(param, addr);
+    if (ret != 0) {
+      return ret;
+    }
+    *this->outputFile << "\tmovl\t" << addr << ", %" << reg << std::endl;
+  }
+  for (int i = (node.params.size() - 1); i >= 6; i--) {
+    auto &param = *node.params[i].get();
+    std::string addr;
+    int ret = this->internalCodegen(param, addr);
+    if (ret != 0) {
+      return ret;
+    }
+    *this->outputFile << "\tpushq\t" << addr << std::endl;
+  }
+
+  *this->outputFile << "\tcallq\t" << fnName << std::endl;
   returnAddr = "%eax";
   return 0;
 }
 
 int ni::ASMCodegen::internalCodegen(const ni::NFunctionReturn &node,
                                     std::string &returnAddr) {
-  int ret = this->internalCodegen(*node.value.get(), returnAddr);
+  std::string addr;
+  int ret = this->internalCodegen(*node.value.get(), addr);
   if (ret != 0) {
     return ret;
   }
 
-  *this->outputFile << "\tjmp " << this->currentFunctionName << "_epilogue"
+  if (addr.compare("%eax") != 0) {
+    *this->outputFile << "\tmovl\t" << addr << ", %eax" << std::endl;
+  }
+  *this->outputFile << "\tjmp\t" << this->currentFunctionName << "_epilogue"
                     << std::endl;
   returnAddr = "%eax";
   return 0;
@@ -212,19 +299,21 @@ ni::ASMCodegen::generateFunctionName(const std::string &name) const {
 
 int ni::ASMCodegen::generateFunction(const std::string &name) {
   *this->outputFile << ".globl\t" << name << std::endl;
-  *this->outputFile << std::endl;
   *this->outputFile << name << ":" << std::endl;
   return 0;
 }
 
-int ni::ASMCodegen::generateFunctionPrologue() {
+int ni::ASMCodegen::generateFunctionPrologue(const int memorySize) {
   *this->outputFile << "\tpushq\t%rbp" << std::endl;
   *this->outputFile << "\tmovq\t%rsp, %rbp" << std::endl;
+  *this->outputFile << "\tsubq\t$" << memorySize << ", %rsp" << std::endl;
   return 0;
 }
 
-int ni::ASMCodegen::generateFunctionEpilogue(const std::string &name) {
+int ni::ASMCodegen::generateFunctionEpilogue(const std::string &name,
+                                             const int memorySize) {
   *this->outputFile << name << "_epilogue:" << std::endl;
+  *this->outputFile << "\taddq\t$" << memorySize << ", %rsp" << std::endl;
   *this->outputFile << "\tpopq\t%rbp" << std::endl;
   *this->outputFile << "\tretq" << std::endl << std::endl;
   return 0;

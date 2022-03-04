@@ -23,10 +23,6 @@ make
 
 To compile ni programs you can simply run:
 
-* To generate LLVM IR
-```
-ni -ll examples/test.ni output.ll
-```
 * To generate Assembly Code
 ```
 ni -asm examples/test.ni output.s

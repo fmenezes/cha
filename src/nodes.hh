@@ -54,16 +54,25 @@ public:
 class NFunctionDeclaration : public Node {
 public:
   std::string identifier;
+  std::vector<std::string> args;
   std::vector<std::unique_ptr<Node>> body;
   NFunctionDeclaration(const std::string &identifier,
                        std::vector<std::unique_ptr<Node>> &body)
       : identifier(identifier), body(std::move(body)){};
+  NFunctionDeclaration(const std::string &identifier,
+                       std::vector<std::string> &args,
+                       std::vector<std::unique_ptr<Node>> &body)
+      : identifier(identifier), args(std::move(args)), body(std::move(body)){};
 };
 
 class NFunctionCall : public Node {
 public:
   std::string identifier;
+  std::vector<std::unique_ptr<Node>> params;
   NFunctionCall(const std::string &identifier) : identifier(identifier){};
+  NFunctionCall(const std::string &identifier,
+                std::vector<std::unique_ptr<Node>> &params)
+      : identifier(identifier), params(std::move(params)){};
 };
 
 class NFunctionReturn : public Node {
@@ -116,8 +125,8 @@ private:
   std::string generateFunctionName(const std::string &name) const;
   void resetStackFrame();
   int generateFunction(const std::string &name);
-  int generateFunctionPrologue();
-  int generateFunctionEpilogue(const std::string &name);
+  int generateFunctionPrologue(const int memorySize);
+  int generateFunctionEpilogue(const std::string &name, const int memorySize);
   int internalCodegen(const ni::NProgram &node, std::string &returnAddr);
   int internalCodegen(const ni::NFunctionDeclaration &node,
                       std::string &returnAddr);
