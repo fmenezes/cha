@@ -1,4 +1,4 @@
-fun run (a, b, c, d, e) {
+fun run (a, b, c, d) {
     var k
     k = a + b + c + d
     ret k

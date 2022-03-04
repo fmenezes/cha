@@ -68,8 +68,8 @@ int ni::ASMCodegen::internalCodegen(const ni::NBinaryOperation &node,
     return ret;
   }
   if (laddr.compare("%eax") == 0) {
-    *this->outputFile << "\tmovl\t" << laddr << ", %ebx" << std::endl;
-    laddr = "%ebx";
+    *this->outputFile << "\tmovl\t" << laddr << ", %ecx" << std::endl;
+    laddr = "%ecx";
   }
 
   ret = this->internalCodegen(*node.right.get(), raddr);
