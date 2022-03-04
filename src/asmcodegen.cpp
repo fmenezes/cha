@@ -245,6 +245,13 @@ int ni::ASMCodegen::internalCodegen(const ni::NFunctionCall &node,
 
   *this->outputFile << "\tcallq\t" << fnName << std::endl;
   returnAddr = "%eax";
+
+  argc = node.params.size();
+  if (argc > REGS.size()) {
+    argc -= REGS.size();
+    *this->outputFile << "\taddq\t$" << (argc * 8) << ", %rsp" << std::endl;
+  }
+
   return 0;
 }
 

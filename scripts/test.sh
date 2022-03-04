@@ -1,7 +1,7 @@
 #!/bin/bash
 
 result=0
-expected=200
+expected=211
 set -e
 ./a.out || result=$?
 set +e
