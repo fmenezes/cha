@@ -17,14 +17,14 @@ jobs:
         with:
           fetch-depth: 0
       - name: Install dependencies (mac)
-        if: ${{ startsWith( "macos", matrix.os ) }}
+        if: startsWith( "macos", ${{ matrix.os }} ) 
         run: |
           /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
           brew install bison flex
           echo "/usr/local/opt/flex/bin" >> $GITHUB_PATH
           echo "/usr/local/opt/bison/bin" >> $GITHUB_PATH
       - name: Install dependencies (linux)
-        if: ${{ startsWith( "linux", matrix.os ) }}
+        if: startsWith( "ubuntu", ${{ matrix.os }} ) 
         run: |
           sudo apt-get update && sudo apt-get install build-essential flex bison -y
       - run: make
