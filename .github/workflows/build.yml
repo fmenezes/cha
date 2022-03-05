@@ -2,11 +2,24 @@ name: build
 on: push
 
 jobs:
-  ubuntu:
-    name: ubuntu
+  format:
+    name: check format
     runs-on: ubuntu-latest
     env:
       LLVM_VERSION: 13
+      FORMAT: clang-format-13
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Install dependencies
+        run: |
+          sudo apt-get update && sudo apt-get install build-essential flex bison -y && cd /tmp && wget https://apt.llvm.org/llvm.sh && chmod +x llvm.sh && sudo ./llvm.sh $LLVM_VERSION clang && rm llvm.sh && sudo apt-get install -y clang-format-$LLVM_VERSION
+      - run: make
+      - run: make check-format -e
+  ubuntu:
+    name: ubuntu
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
         with:
