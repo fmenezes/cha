@@ -24,12 +24,16 @@ identifier [_a-zA-Z][_a-zA-Z0-9]*
 		return yy::parser::make_RET();
 	}
 
+"int" {
+		return yy::parser::make_INT();
+	}
+
 {identifier} {
 		return yy::parser::make_IDENTIFIER(std::string(yytext, yyleng));
 	}
 
 {number} {
-		return yy::parser::make_INTEGER(std::string(yytext, yyleng));
+		return yy::parser::make_CONST_INTEGER(std::string(yytext, yyleng));
 	}
 
 "+" {

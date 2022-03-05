@@ -29,8 +29,8 @@ extern ni::NProgram *program;
 
 %param { ni::NProgram& p }
 
-%token <std::string> INTEGER IDENTIFIER
-%token VAR PLUS MINUS MULTIPLY OPENPAR CLOSEPAR EQUALS OPENCUR CLOSECUR FUN RET COMMA
+%token <std::string> CONST_INTEGER IDENTIFIER
+%token VAR PLUS MINUS MULTIPLY OPENPAR CLOSEPAR EQUALS OPENCUR CLOSECUR FUN RET COMMA INT
 
 %left PLUS MINUS
 %left MULTIPLY
@@ -50,8 +50,8 @@ function :
 	;
 
 def_args :
-	IDENTIFIER { $$.push_back(std::move($1)); }
-	| def_args COMMA IDENTIFIER { $$ = std::move($1); $$.push_back(std::move($3)); }
+	IDENTIFIER typedef { $$.push_back(std::move($1)); }
+	| def_args COMMA IDENTIFIER typedef { $$ = std::move($1); $$.push_back(std::move($3)); }
 	;
 
 call_args :
@@ -65,7 +65,7 @@ statements :
 	;
 
 statement :
-	VAR IDENTIFIER				{ $$ = std::make_unique<ni::NVariableDeclaration>($2); }
+	VAR IDENTIFIER typedef		{ $$ = std::make_unique<ni::NVariableDeclaration>($2); }
 	| IDENTIFIER EQUALS expr	{ $$ = std::make_unique<ni::NVariableAssignment>($1, $3); }
 	| expr						{ $$ = std::move($1); }
 	| RET expr					{ $$ = std::make_unique<ni::NFunctionReturn>($2); }
@@ -82,8 +82,13 @@ expr :
 	| OPENPAR expr CLOSEPAR	{ $$ = std::move($2); }
 	;
 
+typedef :
+	INT
+	;
+
 const :
-	INTEGER				{ $$ = std::make_unique<ni::NInteger>($1); }
+	CONST_INTEGER			{ $$ = std::make_unique<ni::NInteger>($1); }
+	;
 
 %%
 
