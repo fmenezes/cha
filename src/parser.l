@@ -78,14 +78,15 @@ identifier [_a-zA-Z][_a-zA-Z0-9]*
 .	{ throw yy::parser::syntax_error("invalid character: " + std::string(yytext, yyleng)); }
 
 %%
-int ni::ast::NProgram::parse(const std::string& f)
+int ni::ast::Parser::parse(const std::string& f)
 {
 	if (!(yyin = fopen (f.c_str (), "r")))
 	{
 		std::cerr << "cannot open " << f << std::endl;
 		exit (EXIT_FAILURE);
 	}
-	int r = this->parse();
+	yy::parser p(*this);
+  	int r =  p.parse();
 	fclose(yyin);
 	return r;
 }

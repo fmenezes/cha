@@ -5,11 +5,6 @@
 #include "codegen.hh"
 #include "parser.tab.hh"
 
-int ni::ast::NProgram::parse() {
-  yy::parser p(*this);
-  return p.parse();
-}
-
 ni::codegen::OS ni::codegen::Codegen::defaultOs() {
 #if defined(__APPLE__) || defined(__MACH__)
   return ni::codegen::OS::MACOS;

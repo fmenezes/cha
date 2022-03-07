@@ -2,7 +2,7 @@ BISON := bison
 FLEX := flex
 FORMAT := clang-format
 
-SOURCES := src/codegen.cpp src/asmcodegen.cpp src/main.cpp
+SOURCES := src/ast.cpp src/codegen.cpp src/asmcodegen.cpp src/main.cpp
 INCLUDES := src/ast.hh src/codegen.hh src/parserdecl.h
 
 CXXFLAGS = -std=c++14
