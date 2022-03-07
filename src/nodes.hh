@@ -12,40 +12,63 @@ public:
   virtual ~Node(){};
 };
 
-class NInteger : public Node {
+class NStatement : public Node {};
+
+class NExpression : public NStatement {};
+
+class NConstant : public NExpression {};
+
+class NType : public Node {};
+
+class NInteger : public NType {
 public:
-  std::string value;
-  NInteger(const std::string &value) : value(value){};
+  NInteger(){};
 };
 
-class NBinaryOperation : public Node {
+class NConstantInteger : public NConstant {
 public:
-  std::unique_ptr<Node> left;
-  std::unique_ptr<Node> right;
+  std::string value;
+  NConstantInteger(const std::string &value) : value(value){};
+};
+
+class NBinaryOperation : public NExpression {
+public:
+  std::unique_ptr<NExpression> left;
+  std::unique_ptr<NExpression> right;
   std::string op;
 
-  NBinaryOperation(const std::string &op, std::unique_ptr<Node> &left,
-                   std::unique_ptr<Node> &right)
+  NBinaryOperation(const std::string &op, std::unique_ptr<NExpression> &left,
+                   std::unique_ptr<NExpression> &right)
       : op(op), left(std::move(left)), right(std::move(right)){};
 };
 
-class NVariableDeclaration : public Node {
+class NVariableDeclaration : public NStatement {
 public:
   std::string identifier;
-  NVariableDeclaration(const std::string &identifier)
-      : identifier(identifier){};
+  std::unique_ptr<NType> type;
+  NVariableDeclaration(const std::string &identifier,
+                       std::unique_ptr<NType> &type)
+      : identifier(identifier), type(std::move(type)){};
 };
 
-class NVariableAssignment : public Node {
+class NArgument : public Node {
 public:
   std::string identifier;
-  std::unique_ptr<Node> value;
+  std::unique_ptr<NType> type;
+  NArgument(const std::string &identifier, std::unique_ptr<NType> &type)
+      : identifier(identifier), type(std::move(type)){};
+};
+
+class NVariableAssignment : public NStatement {
+public:
+  std::string identifier;
+  std::unique_ptr<NExpression> value;
   NVariableAssignment(const std::string &identifier,
-                      std::unique_ptr<Node> &value)
+                      std::unique_ptr<NExpression> &value)
       : identifier(identifier), value(std::move(value)){};
 };
 
-class NVariableLookup : public Node {
+class NVariableLookup : public NExpression {
 public:
   std::string identifier;
   NVariableLookup(const std::string &identifier) : identifier(identifier){};
@@ -54,31 +77,45 @@ public:
 class NFunctionDeclaration : public Node {
 public:
   std::string identifier;
-  std::vector<std::string> args;
-  std::vector<std::unique_ptr<Node>> body;
+  std::unique_ptr<NType> returnType;
+  std::vector<std::unique_ptr<NArgument>> args;
+  std::vector<std::unique_ptr<NStatement>> body;
   NFunctionDeclaration(const std::string &identifier,
-                       std::vector<std::unique_ptr<Node>> &body)
+                       std::vector<std::unique_ptr<NStatement>> &body)
       : identifier(identifier), body(std::move(body)){};
   NFunctionDeclaration(const std::string &identifier,
-                       std::vector<std::string> &args,
-                       std::vector<std::unique_ptr<Node>> &body)
+                       std::vector<std::unique_ptr<NArgument>> &args,
+                       std::vector<std::unique_ptr<NStatement>> &body)
       : identifier(identifier), args(std::move(args)), body(std::move(body)){};
+  NFunctionDeclaration(const std::string &identifier,
+                       std::unique_ptr<NType> &returnType,
+                       std::vector<std::unique_ptr<NStatement>> &body)
+      : identifier(identifier), returnType(std::move(returnType)),
+        body(std::move(body)){};
+  NFunctionDeclaration(const std::string &identifier,
+                       std::vector<std::unique_ptr<NArgument>> &args,
+                       std::unique_ptr<NType> &returnType,
+                       std::vector<std::unique_ptr<NStatement>> &body)
+      : identifier(identifier), returnType(std::move(returnType)),
+        args(std::move(args)), body(std::move(body)){};
 };
 
-class NFunctionCall : public Node {
+class NFunctionCall : public NExpression {
 public:
   std::string identifier;
-  std::vector<std::unique_ptr<Node>> params;
+  std::vector<std::unique_ptr<NExpression>> params;
   NFunctionCall(const std::string &identifier) : identifier(identifier){};
   NFunctionCall(const std::string &identifier,
-                std::vector<std::unique_ptr<Node>> &params)
+                std::vector<std::unique_ptr<NExpression>> &params)
       : identifier(identifier), params(std::move(params)){};
 };
 
-class NFunctionReturn : public Node {
+class NFunctionReturn : public NStatement {
 public:
-  std::unique_ptr<Node> value;
-  NFunctionReturn(std::unique_ptr<Node> &value) : value(std::move(value)){};
+  std::unique_ptr<NExpression> value;
+  NFunctionReturn(std::unique_ptr<NExpression> &value)
+      : value(std::move(value)){};
+  NFunctionReturn(){};
 };
 
 class NProgram : public Node {
@@ -139,7 +176,8 @@ private:
                       std::string &returnAddr);
   int internalCodegen(const ni::NBinaryOperation &node,
                       std::string &returnAddr);
-  int internalCodegen(const ni::NInteger &node, std::string &returnAddr);
+  int internalCodegen(const ni::NConstantInteger &node,
+                      std::string &returnAddr);
   int internalCodegen(const ni::Node &node, std::string &returnAddr);
 };
 } // namespace ni
