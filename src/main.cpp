@@ -1,6 +1,8 @@
-#include "nodes.hh"
 #include <iostream>
 #include <string>
+
+#include "ast.hh"
+#include "codegen.hh"
 
 void printUsage(const std::string &app) {
   std::cerr << "Usage: " << app << " <format> <srcfile> <destfile>" << std::endl
@@ -8,7 +10,7 @@ void printUsage(const std::string &app) {
 }
 
 int main(int argc, char *argv[]) {
-  ni::NProgram program;
+  ni::ast::NProgram program;
   int op;
   if (argc != 4) {
     printUsage(argv[0]);
@@ -25,9 +27,9 @@ int main(int argc, char *argv[]) {
   }
 
   std::string error;
-  ni::Codegen *c;
+  ni::codegen::Codegen *c;
   if (format.compare("-asm") == 0) {
-    c = new ni::ASMCodegen(program);
+    c = new ni::codegen::ASMCodegen(program);
   } else {
     std::cerr << "Error: invalid format" << std::endl << std::endl;
     printUsage(argv[0]);

@@ -7,6 +7,7 @@
 #include <vector>
 
 namespace ni {
+namespace ast {
 class Node {
 public:
   virtual ~Node(){};
@@ -124,60 +125,5 @@ public:
   int parse();
   int parse(const std::string &f);
 };
-
-enum OS { MACOS, LINUX };
-
-enum ARCH { x86_64 };
-
-class Codegen {
-public:
-  Codegen(const NProgram &p) : Codegen(p, defaultOs(), defaultArch()){};
-  Codegen(const NProgram &p, const OS &os, const ARCH &arch)
-      : program(p), targetOS(os), targetArch(arch){};
-  virtual int codegen(const std::string &output, std::string &error) = 0;
-  virtual ~Codegen() {}
-  static OS defaultOs();
-  static ARCH defaultArch();
-
-protected:
-  const NProgram &program;
-  OS targetOS;
-  ARCH targetArch;
-};
-
-class ASMCodegen : public Codegen {
-public:
-  ASMCodegen(const NProgram &p) : Codegen(p){};
-  ASMCodegen(const NProgram &p, const OS &os, const ARCH &arch)
-      : Codegen(p, os, arch){};
-  virtual int codegen(const std::string &output, std::string &error);
-
-private:
-  std::ofstream *outputFile;
-  std::map<std::string, std::string> vars;
-  std::string currentFunctionName;
-  int currentStackPosition;
-  int generateTextSection();
-  int generateExitCall();
-  std::string generateFunctionName(const std::string &name) const;
-  void resetStackFrame();
-  int generateFunction(const std::string &name);
-  int generateFunctionPrologue(const int memorySize);
-  int generateFunctionEpilogue(const std::string &name, const int memorySize);
-  int internalCodegen(const ni::NProgram &node, std::string &returnAddr);
-  int internalCodegen(const ni::NFunctionDeclaration &node,
-                      std::string &returnAddr);
-  int internalCodegen(const ni::NFunctionCall &node, std::string &returnAddr);
-  int internalCodegen(const ni::NFunctionReturn &node, std::string &returnAddr);
-  int internalCodegen(const ni::NVariableLookup &node, std::string &returnAddr);
-  int internalCodegen(const ni::NVariableDeclaration &node,
-                      std::string &returnAddr);
-  int internalCodegen(const ni::NVariableAssignment &node,
-                      std::string &returnAddr);
-  int internalCodegen(const ni::NBinaryOperation &node,
-                      std::string &returnAddr);
-  int internalCodegen(const ni::NConstantInteger &node,
-                      std::string &returnAddr);
-  int internalCodegen(const ni::Node &node, std::string &returnAddr);
-};
+} // namespace ast
 } // namespace ni
