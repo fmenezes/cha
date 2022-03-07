@@ -1,5 +1,5 @@
 %{
-#include "nodes.hh"
+#include "ast.hh"
 #include "parser.tab.hh"
 #include "parserdecl.h"
 
@@ -78,7 +78,7 @@ identifier [_a-zA-Z][_a-zA-Z0-9]*
 .	{ throw yy::parser::syntax_error("invalid character: " + std::string(yytext, yyleng)); }
 
 %%
-int ni::NProgram::parse(const std::string& f)
+int ni::ast::NProgram::parse(const std::string& f)
 {
 	if (!(yyin = fopen (f.c_str (), "r")))
 	{

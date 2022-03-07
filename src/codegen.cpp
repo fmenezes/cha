@@ -1,20 +1,23 @@
 #include <memory>
 #include <sstream>
 
-#include "nodes.hh"
+#include "ast.hh"
+#include "codegen.hh"
 #include "parser.tab.hh"
 
-int ni::NProgram::parse() {
+int ni::ast::NProgram::parse() {
   yy::parser p(*this);
   return p.parse();
 }
 
-ni::OS ni::Codegen::defaultOs() {
+ni::codegen::OS ni::codegen::Codegen::defaultOs() {
 #if defined(__APPLE__) || defined(__MACH__)
-  return ni::OS::MACOS;
+  return ni::codegen::OS::MACOS;
 #else
-  return ni::OS::LINUX;
+  return ni::codegen::OS::LINUX;
 #endif
 }
 
-ni::ARCH ni::Codegen::defaultArch() { return ni::ARCH::x86_64; }
+ni::codegen::ARCH ni::codegen::Codegen::defaultArch() {
+  return ni::codegen::ARCH::x86_64;
+}
