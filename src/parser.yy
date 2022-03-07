@@ -15,13 +15,13 @@ extern ni::NProgram *program;
 %define api.value.type variant
 %define api.token.constructor
 
-%nterm <std::unique_ptr<ni::Node>> expr;
-%nterm <std::unique_ptr<ni::Node>> const;
-%nterm <std::unique_ptr<ni::Node>> statement;
-%nterm <std::unique_ptr<ni::Node>> function;
-%nterm <std::vector<std::unique_ptr<ni::Node>>> statements;
+%nterm <std::unique_ptr<ni::NExpression>> expr;
+%nterm <std::unique_ptr<ni::NConstant>> const;
+%nterm <std::unique_ptr<ni::NStatement>> statement;
+%nterm <std::unique_ptr<ni::NFunctionDeclaration>> function;
+%nterm <std::vector<std::unique_ptr<ni::NStatement>>> statements;
 %nterm <std::vector<std::string>> def_args;
-%nterm <std::vector<std::unique_ptr<ni::Node>>> call_args;
+%nterm <std::vector<std::unique_ptr<ni::NExpression>>> call_args;
 
 %code {
 # include "parserdecl.h"
