@@ -20,7 +20,8 @@ extern ni::NProgram *program;
 %nterm <std::unique_ptr<ni::NStatement>> statement;
 %nterm <std::unique_ptr<ni::NFunctionDeclaration>> function;
 %nterm <std::vector<std::unique_ptr<ni::NStatement>>> statements;
-%nterm <std::vector<std::string>> def_args;
+%nterm <std::unique_ptr<ni::NType>> typedef;
+%nterm <std::vector<std::unique_ptr<ni::NArgument>>> def_args;
 %nterm <std::vector<std::unique_ptr<ni::NExpression>>> call_args;
 
 %code {
@@ -50,8 +51,8 @@ function :
 	;
 
 def_args :
-	IDENTIFIER typedef { $$.push_back(std::move($1)); }
-	| def_args COMMA IDENTIFIER typedef { $$ = std::move($1); $$.push_back(std::move($3)); }
+	IDENTIFIER typedef { $$.push_back(std::move(std::make_unique<ni::NArgument>($1, $2))); }
+	| def_args COMMA IDENTIFIER typedef { $$ = std::move($1); $$.push_back(std::move(std::make_unique<ni::NArgument>($3, $4))); }
 	;
 
 call_args :
@@ -65,7 +66,7 @@ statements :
 	;
 
 statement :
-	VAR IDENTIFIER typedef		{ $$ = std::make_unique<ni::NVariableDeclaration>($2); }
+	VAR IDENTIFIER typedef		{ $$ = std::make_unique<ni::NVariableDeclaration>($2, $3); }
 	| IDENTIFIER EQUALS expr	{ $$ = std::make_unique<ni::NVariableAssignment>($1, $3); }
 	| expr						{ $$ = std::move($1); }
 	| RET expr					{ $$ = std::make_unique<ni::NFunctionReturn>($2); }
@@ -83,11 +84,11 @@ expr :
 	;
 
 typedef :
-	INT
+	INT						{ $$ = std::make_unique<ni::NInteger>(); }
 	;
 
 const :
-	CONST_INTEGER			{ $$ = std::make_unique<ni::NInteger>($1); }
+	CONST_INTEGER			{ $$ = std::make_unique<ni::NConstantInteger>($1); }
 	;
 
 %%

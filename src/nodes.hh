@@ -18,10 +18,17 @@ class NExpression : public NStatement {};
 
 class NConstant : public NExpression {};
 
-class NInteger : public NConstant {
+class NType : public Node {};
+
+class NInteger : public NType {
+public:
+  NInteger(){};
+};
+
+class NConstantInteger : public NConstant {
 public:
   std::string value;
-  NInteger(const std::string &value) : value(value){};
+  NConstantInteger(const std::string &value) : value(value){};
 };
 
 class NBinaryOperation : public NExpression {
@@ -38,8 +45,18 @@ public:
 class NVariableDeclaration : public NStatement {
 public:
   std::string identifier;
-  NVariableDeclaration(const std::string &identifier)
-      : identifier(identifier){};
+  std::unique_ptr<NType> type;
+  NVariableDeclaration(const std::string &identifier,
+                       std::unique_ptr<NType> &type)
+      : identifier(identifier), type(std::move(type)){};
+};
+
+class NArgument : public Node {
+public:
+  std::string identifier;
+  std::unique_ptr<NType> type;
+  NArgument(const std::string &identifier, std::unique_ptr<NType> &type)
+      : identifier(identifier), type(std::move(type)){};
 };
 
 class NVariableAssignment : public NStatement {
@@ -60,13 +77,13 @@ public:
 class NFunctionDeclaration : public Node {
 public:
   std::string identifier;
-  std::vector<std::string> args;
+  std::vector<std::unique_ptr<NArgument>> args;
   std::vector<std::unique_ptr<NStatement>> body;
   NFunctionDeclaration(const std::string &identifier,
                        std::vector<std::unique_ptr<NStatement>> &body)
       : identifier(identifier), body(std::move(body)){};
   NFunctionDeclaration(const std::string &identifier,
-                       std::vector<std::string> &args,
+                       std::vector<std::unique_ptr<NArgument>> &args,
                        std::vector<std::unique_ptr<NStatement>> &body)
       : identifier(identifier), args(std::move(args)), body(std::move(body)){};
 };
@@ -146,7 +163,8 @@ private:
                       std::string &returnAddr);
   int internalCodegen(const ni::NBinaryOperation &node,
                       std::string &returnAddr);
-  int internalCodegen(const ni::NInteger &node, std::string &returnAddr);
+  int internalCodegen(const ni::NConstantInteger &node,
+                      std::string &returnAddr);
   int internalCodegen(const ni::Node &node, std::string &returnAddr);
 };
 } // namespace ni

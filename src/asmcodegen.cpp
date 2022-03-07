@@ -6,7 +6,7 @@
 const std::vector<std::string> REGS({"edi", "esi", "edx", "ecx", "r8d", "r9d"});
 int ni::ASMCodegen::internalCodegen(const ni::Node &node,
                                     std::string &returnAddr) {
-  auto i = dynamic_cast<const ni::NInteger *>(&node);
+  auto i = dynamic_cast<const ni::NConstantInteger *>(&node);
   if (i != nullptr) {
     return this->internalCodegen(*i, returnAddr);
   }
@@ -54,7 +54,7 @@ int ni::ASMCodegen::internalCodegen(const ni::Node &node,
   throw std::runtime_error("Unkown node type");
 }
 
-int ni::ASMCodegen::internalCodegen(const ni::NInteger &node,
+int ni::ASMCodegen::internalCodegen(const ni::NConstantInteger &node,
                                     std::string &returnAddr) {
   returnAddr = "$" + node.value;
   return 0;
@@ -189,19 +189,20 @@ int ni::ASMCodegen::internalCodegen(const ni::NFunctionDeclaration &node,
     argc = REGS.size();
   }
   for (int a = 0; a < argc; a++) {
-    auto arg = node.args[a];
+    auto &arg = *node.args[a].get();
     this->currentStackPosition -= 4;
-    this->vars[arg] = std::to_string(this->currentStackPosition) + "(%rbp)";
+    this->vars[arg.identifier] =
+        std::to_string(this->currentStackPosition) + "(%rbp)";
     auto reg = REGS[a];
-    *this->outputFile << "\tmovl\t%" << reg << ", " << this->vars[arg]
-                      << std::endl;
+    *this->outputFile << "\tmovl\t%" << reg << ", "
+                      << this->vars[arg.identifier] << std::endl;
   }
 
   if (node.args.size() > 6) {
     int offset = 16;
     for (int a = 6; a < node.args.size(); a++) {
-      auto arg = node.args[a];
-      this->vars[arg] = std::to_string(offset) + "(%rbp)";
+      auto &arg = *node.args[a].get();
+      this->vars[arg.identifier] = std::to_string(offset) + "(%rbp)";
       offset += 8;
     }
   }
