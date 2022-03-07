@@ -10,8 +10,6 @@ void printUsage(const std::string &app) {
 }
 
 int main(int argc, char *argv[]) {
-  ni::ast::NProgram program;
-  int op;
   if (argc != 4) {
     printUsage(argv[0]);
     return 1;
@@ -21,9 +19,10 @@ int main(int argc, char *argv[]) {
   auto input = std::string(argv[2]);
   auto output = std::string(argv[3]);
 
-  op = program.parse(input);
+  ni::ast::NProgram program;
+  int op = ni::ast::Parser::parse(input, program);
   if (op != 0) {
-    return 1;
+    return op;
   }
 
   std::string error;

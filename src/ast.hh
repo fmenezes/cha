@@ -121,9 +121,18 @@ public:
 
 class NProgram : public Node {
 public:
-  std::vector<std::unique_ptr<Node>> instructions;
-  int parse();
+  std::vector<std::unique_ptr<NFunctionDeclaration>> instructions;
+  NProgram(){};
+};
+
+class Parser {
+public:
+  NProgram &program;
+  static int parse(const std::string &f, NProgram &p);
   int parse(const std::string &f);
+
+private:
+  Parser(NProgram &p) : program(p){};
 };
 } // namespace ast
 } // namespace ni
