@@ -258,18 +258,21 @@ int ni::ASMCodegen::internalCodegen(const ni::NFunctionCall &node,
 
 int ni::ASMCodegen::internalCodegen(const ni::NFunctionReturn &node,
                                     std::string &returnAddr) {
-  std::string addr;
-  int ret = this->internalCodegen(*node.value.get(), addr);
-  if (ret != 0) {
-    return ret;
-  }
+  returnAddr = "";
+  if (node.value.get() != nullptr) {
+    std::string addr;
+    int ret = this->internalCodegen(*node.value.get(), addr);
+    if (ret != 0) {
+      return ret;
+    }
 
-  if (addr.compare("%eax") != 0) {
-    *this->outputFile << "\tmovl\t" << addr << ", %eax" << std::endl;
+    if (addr.compare("%eax") != 0) {
+      *this->outputFile << "\tmovl\t" << addr << ", %eax" << std::endl;
+    }
+    returnAddr = "%eax";
   }
   *this->outputFile << "\tjmp\t" << this->currentFunctionName << "_epilogue"
                     << std::endl;
-  returnAddr = "%eax";
   return 0;
 }
 

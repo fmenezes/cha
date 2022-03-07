@@ -77,6 +77,7 @@ public:
 class NFunctionDeclaration : public Node {
 public:
   std::string identifier;
+  std::unique_ptr<NType> returnType;
   std::vector<std::unique_ptr<NArgument>> args;
   std::vector<std::unique_ptr<NStatement>> body;
   NFunctionDeclaration(const std::string &identifier,
@@ -86,6 +87,17 @@ public:
                        std::vector<std::unique_ptr<NArgument>> &args,
                        std::vector<std::unique_ptr<NStatement>> &body)
       : identifier(identifier), args(std::move(args)), body(std::move(body)){};
+  NFunctionDeclaration(const std::string &identifier,
+                       std::unique_ptr<NType> &returnType,
+                       std::vector<std::unique_ptr<NStatement>> &body)
+      : identifier(identifier), returnType(std::move(returnType)),
+        body(std::move(body)){};
+  NFunctionDeclaration(const std::string &identifier,
+                       std::vector<std::unique_ptr<NArgument>> &args,
+                       std::unique_ptr<NType> &returnType,
+                       std::vector<std::unique_ptr<NStatement>> &body)
+      : identifier(identifier), returnType(std::move(returnType)),
+        args(std::move(args)), body(std::move(body)){};
 };
 
 class NFunctionCall : public NExpression {
@@ -103,6 +115,7 @@ public:
   std::unique_ptr<NExpression> value;
   NFunctionReturn(std::unique_ptr<NExpression> &value)
       : value(std::move(value)){};
+  NFunctionReturn(){};
 };
 
 class NProgram : public Node {

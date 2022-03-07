@@ -48,6 +48,8 @@ program :
 function :
 	FUN IDENTIFIER OPENPAR CLOSEPAR OPENCUR statements CLOSECUR	{ $$ = std::make_unique<ni::NFunctionDeclaration>($2, $6); }
 	| FUN IDENTIFIER OPENPAR def_args CLOSEPAR OPENCUR statements CLOSECUR	{ $$ = std::make_unique<ni::NFunctionDeclaration>($2, $4, $7); }
+	| FUN IDENTIFIER OPENPAR CLOSEPAR typedef OPENCUR statements CLOSECUR	{ $$ = std::make_unique<ni::NFunctionDeclaration>($2, $5, $7); }
+	| FUN IDENTIFIER OPENPAR def_args CLOSEPAR typedef OPENCUR statements CLOSECUR	{ $$ = std::make_unique<ni::NFunctionDeclaration>($2, $4, $6, $8); }
 	;
 
 def_args :
@@ -70,6 +72,7 @@ statement :
 	| IDENTIFIER EQUALS expr	{ $$ = std::make_unique<ni::NVariableAssignment>($1, $3); }
 	| expr						{ $$ = std::move($1); }
 	| RET expr					{ $$ = std::make_unique<ni::NFunctionReturn>($2); }
+	| RET 						{ $$ = std::make_unique<ni::NFunctionReturn>(); }
 	;
 
 expr :
