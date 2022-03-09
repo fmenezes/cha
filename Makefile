@@ -34,10 +34,6 @@ bison: src/ast/parser.yy
 flex: src/ast/parser.l
 	$(FLEX) $(FLEXFLAGS) -o generated/parser.yy.c src/ast/parser.l
 
-.PHONY: test_ld
-test_ld:
-	$(CXX) output.o -o a.out
-
 .PHONY: ni
 ni:
 	$(CXX) $(CXXFLAGS) $(GENERATEDSOURCES) $(SOURCES) -o $(OUTPUT)
