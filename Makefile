@@ -2,12 +2,12 @@ BISON := bison
 FLEX := flex
 FORMAT := clang-format
 
-SOURCES := src/ast.cpp src/codegen.cpp src/asmcodegen.cpp src/main.cpp
-INCLUDES := src/ast.hh src/codegen.hh src/parserdecl.h
+SOURCES := src/ast/ast.cpp src/codegen/codegen.cpp src/codegen/asmcodegen.cpp src/main.cpp
+INCLUDES := include/ast/ast.hh include/codegen/codegen.hh include/ast/parserdecl.h
 
-CXXFLAGS = -std=c++14
-GENERATEDINCLUDES := src/parser.tab.hh
-GENERATEDSOURCES := src/parser.yy.c src/parser.tab.cc
+CXXFLAGS = -std=c++14 -I generated -I include
+GENERATEDINCLUDES := generated/parser.tab.hh
+GENERATEDSOURCES := generated/parser.yy.c generated/parser.tab.cc
 OUTPUT := bin/ni
 
 .PHONY: default
@@ -27,16 +27,12 @@ format:
 	$(FORMAT) -i $(INCLUDES) $(SOURCES)
 
 .PHONY: bison
-bison: src/parser.yy
-	$(BISON) $(BISONFLAGS) -d src/parser.yy -b src/parser
+bison: src/ast/parser.yy
+	$(BISON) $(BISONFLAGS) -d src/ast/parser.yy -b generated/parser
 
 .PHONY: flex
-flex: src/parser.l
-	$(FLEX) $(FLEXFLAGS) -o src/parser.yy.c src/parser.l
-
-.PHONY: test_ld
-test_ld:
-	$(CXX) output.o -o a.out
+flex: src/ast/parser.l
+	$(FLEX) $(FLEXFLAGS) -o generated/parser.yy.c src/ast/parser.l
 
 .PHONY: ni
 ni:

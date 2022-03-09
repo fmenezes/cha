@@ -1,8 +1,8 @@
 #include <memory>
 #include <sstream>
 
-#include "ast.hh"
-#include "codegen.hh"
+#include "ast/ast.hh"
+#include "codegen/codegen.hh"
 #include "parser.tab.hh"
 
 ni::codegen::OS ni::codegen::Codegen::defaultOs() {
