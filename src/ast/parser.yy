@@ -24,6 +24,7 @@ using namespace std::string_literals;
 %nterm <std::vector<std::unique_ptr<ni::ast::NFunctionDeclaration>>> instructions;
 
 %code {
+# include "ast/ast.hh"
 # include "ast/parserdecl.h"
 }
 
