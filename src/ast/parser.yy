@@ -2,7 +2,7 @@
 #include <iostream>
 #include <string>
 #include <memory>
-#include "ast.hh"
+#include "ast/ast.hh"
 
 using namespace std::string_literals;
 %}
@@ -24,7 +24,7 @@ using namespace std::string_literals;
 %nterm <std::vector<std::unique_ptr<ni::ast::NFunctionDeclaration>>> instructions;
 
 %code {
-# include "parserdecl.h"
+# include "ast/parserdecl.h"
 }
 
 %param { ni::ast::Parser &p }

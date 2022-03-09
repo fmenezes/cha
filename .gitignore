@@ -1,6 +1,5 @@
 bin/*
-src/parser.yy.c
-src/parser.tab.*
+generated/*
 *.o
 *.ll
 *.s

@@ -1,8 +1,8 @@
 #include <fstream>
 #include <iostream>
 
-#include "ast.hh"
-#include "codegen.hh"
+#include "ast/ast.hh"
+#include "codegen/codegen.hh"
 
 const std::vector<std::string> REGS({"edi", "esi", "edx", "ecx", "r8d", "r9d"});
 int ni::codegen::ASMCodegen::internalCodegen(const ni::ast::Node &node,

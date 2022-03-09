@@ -1,8 +1,8 @@
 #include <iostream>
 #include <string>
 
-#include "ast.hh"
-#include "codegen.hh"
+#include "ast/ast.hh"
+#include "codegen/codegen.hh"
 
 void printUsage(const std::string &app) {
   std::cerr << "Usage: " << app << " <format> <srcfile> <destfile>" << std::endl

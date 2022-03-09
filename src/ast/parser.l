@@ -1,7 +1,7 @@
 %{
-#include "ast.hh"
+#include "ast/ast.hh"
 #include "parser.tab.hh"
-#include "parserdecl.h"
+#include "ast/parserdecl.h"
 
 %}
 

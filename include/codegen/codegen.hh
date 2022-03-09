@@ -1,11 +1,12 @@
 #pragma once
 
-#include "ast.hh"
 #include <iostream>
 #include <map>
 #include <memory>
 #include <string>
 #include <vector>
+
+#include "ast/ast.hh"
 
 namespace ni {
 namespace codegen {
