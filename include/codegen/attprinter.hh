@@ -133,7 +133,7 @@ public:
   operator Register8Bits() const {
     if (size != 8 || (type != OperandType::REGISTER &&
                       type != OperandType::OFFSET_REGISTER)) {
-      throw std::runtime_error("invalid convertion");
+      throw std::runtime_error("invalid conversion");
     }
     return (Register8Bits)reg;
   }
