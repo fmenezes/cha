@@ -3,8 +3,10 @@
 
 #include "codegen/attprinter.hh"
 
-std::string registerName(const ni::codegen::Register32Bits &op) {
-  switch (op) {
+std::string serializeConstant(const std::string &value) { return "$" + value; }
+
+std::string serializeRegister(const ni::codegen::Register32Bits &reg) {
+  switch (reg) {
   case ni::codegen::Register32Bits::EAX:
     return "%eax";
   case ni::codegen::Register32Bits::EBX:
@@ -43,11 +45,11 @@ std::string registerName(const ni::codegen::Register32Bits &op) {
     return "%eflags";
   }
 
-  throw std::runtime_error("invalid operand");
+  throw std::runtime_error("invalid register");
 }
 
-std::string registerName(const ni::codegen::Register64Bits &op) {
-  switch (op) {
+std::string serializeRegister(const ni::codegen::Register64Bits &reg) {
+  switch (reg) {
   case ni::codegen::Register64Bits::RAX:
     return "%rax";
   case ni::codegen::Register64Bits::RBX:
@@ -86,17 +88,7 @@ std::string registerName(const ni::codegen::Register64Bits &op) {
     return "%rflags";
   }
 
-  throw std::runtime_error("invalid operand");
-}
-
-std::string serializeConstant(const std::string &value) { return "$" + value; }
-
-std::string serializeRegister(const ni::codegen::Register32Bits &reg) {
-  return "%" + registerName(reg);
-}
-
-std::string serializeRegister(const ni::codegen::Register64Bits &reg) {
-  return "%" + registerName(reg);
+  throw std::runtime_error("invalid register");
 }
 
 std::string serializeRegister(const int &reg, const int &size) {
