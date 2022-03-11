@@ -16,6 +16,9 @@ This is a new ahead of time compiled programing language from the ground up.
 
 To build simply run
 ```
+mkdir build
+cd build
+cmake ..
 make
 ```
 

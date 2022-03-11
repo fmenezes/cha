@@ -10,6 +10,6 @@ RUN cd /tmp && wget https://apt.llvm.org/llvm.sh && chmod +x llvm.sh && ./llvm.s
 WORKDIR /app
 COPY . .
 
-RUN make
+RUN mkdir build && cd build && cmake .. && make
 
-CMD ["make", "test"]
+CMD ["./scripts/test.sh"]
