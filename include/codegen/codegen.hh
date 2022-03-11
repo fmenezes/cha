@@ -17,8 +17,7 @@ enum ARCH { x86_64 };
 class Context {
 public:
   Context() : Context(defaultOs(), defaultArch()){};
-  Context(const OS &os, const ARCH &arch)
-      : targetOS(os), targetArch(arch){};
+  Context(const OS &os, const ARCH &arch) : targetOS(os), targetArch(arch){};
 
   const OS targetOS;
   const ARCH targetArch;
@@ -29,8 +28,7 @@ public:
 
 class Codegen {
 public:
-  Codegen(const ni::ast::NProgram &p)
-      : program(p){};
+  Codegen(const ni::ast::NProgram &p) : program(p){};
   Codegen(const ni::ast::NProgram &p, const Context &context)
       : program(p), context(context){};
   virtual int codegen(const std::string &output, std::string &error) = 0;
