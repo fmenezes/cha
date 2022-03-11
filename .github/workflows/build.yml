@@ -24,8 +24,9 @@ jobs:
           sudo update-alternatives \
             --install /usr/bin/clang             clang            /usr/bin/clang-${LLVM_VERSION} 1 \
             --slave   /usr/bin/clang-cpp         clang-cpp        /usr/bin/clang-cpp-${LLVM_VERSION} \
-            --slave   /usr/bin/clang-format      clang-format     /usr/bin/clang-format-${LLVM_VERSION} \
             --slave   /usr/bin/clang++           clang++          /usr/bin/clang++-${LLVM_VERSION}
+          sudo update-alternatives \
+            --install   /usr/bin/clang-format      clang-format     /usr/bin/clang-format-${LLVM_VERSION} 1
       - name: Build
         run: |
           mkdir build
@@ -43,9 +44,28 @@ jobs:
           fetch-depth: 0
       - name: Install dependencies
         run: |
-          sudo apt-get update && sudo apt-get install build-essential flex bison -y
-      - run: make
-      - run: make test
+          sudo apt-get update
+          sudo apt-get install build-essential flex bison -y
+          cd /tmp
+          wget https://apt.llvm.org/llvm.sh
+          chmod +x llvm.sh
+          sudo ./llvm.sh $LLVM_VERSION clang
+          rm llvm.sh
+          sudo apt-get install -y clang-format-$LLVM_VERSION
+          sudo update-alternatives \
+            --install /usr/bin/clang             clang            /usr/bin/clang-${LLVM_VERSION} 1 \
+            --slave   /usr/bin/clang-cpp         clang-cpp        /usr/bin/clang-cpp-${LLVM_VERSION} \
+            --slave   /usr/bin/clang++           clang++          /usr/bin/clang++-${LLVM_VERSION}
+          sudo update-alternatives \
+            --install   /usr/bin/clang-format      clang-format     /usr/bin/clang-format-${LLVM_VERSION} 1
+      - name: Build
+        run: |
+          mkdir build
+          cd build
+          cmake ..
+          make
+      - name: Test
+        run: ./scripts/test.sh
   mac:
     name: mac
     runs-on: macos-latest
