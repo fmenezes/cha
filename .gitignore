@@ -1,6 +1,1 @@
-bin/*
-generated/*
-*.o
-*.ll
-*.s
-*.out
+build/*
