@@ -28,7 +28,7 @@ jobs:
             --install /usr/bin/clang++           clang++          /usr/bin/clang++-${LLVM_VERSION} 1
           sudo update-alternatives \
             --install /usr/bin/clang-format      clang-format     /usr/bin/clang-format-${LLVM_VERSION} 1
-          sudo update-alternatives --list clang-format
+          sudo update-alternatives --query clang-format
       - name: Build
         run: |
           mkdir build
