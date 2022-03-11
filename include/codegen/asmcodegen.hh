@@ -14,8 +14,8 @@ namespace codegen {
 class ASMCodegen : public Codegen {
 public:
   ASMCodegen(const ni::ast::NProgram &p) : Codegen(p){};
-  ASMCodegen(const ni::ast::NProgram &p, const OS &os, const ARCH &arch)
-      : Codegen(p, os, arch){};
+  ASMCodegen(const ni::ast::NProgram &p, const Context &context)
+      : Codegen(p, context){};
   virtual int codegen(const std::string &output, std::string &error);
 
 private:
