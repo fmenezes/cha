@@ -160,7 +160,7 @@ void ni::codegen::ATTPrinter::closeFile() {
 void ni::codegen::ATTPrinter::textHeader() {
   this->checkFile();
 
-  if (this->targetOS == ni::codegen::OS::MACOS) {
+  if (this->context.targetOS == ni::codegen::OS::MACOS) {
     *this->outputFile << ".section\t__TEXT,__text" << std::endl;
   } else {
     *this->outputFile << ".text" << std::endl;
@@ -170,7 +170,7 @@ void ni::codegen::ATTPrinter::textHeader() {
 void ni::codegen::ATTPrinter::global(const std::string &label) {
   this->checkFile();
 
-  if (this->targetOS == ni::codegen::OS::MACOS) {
+  if (this->context.targetOS == ni::codegen::OS::MACOS) {
     *this->outputFile << ".globl\t_" << label << std::endl;
   } else {
     *this->outputFile << ".globl\t" << label << std::endl;
@@ -180,7 +180,7 @@ void ni::codegen::ATTPrinter::global(const std::string &label) {
 void ni::codegen::ATTPrinter::label(const std::string &label) {
   this->checkFile();
 
-  if (this->targetOS == ni::codegen::OS::MACOS) {
+  if (this->context.targetOS == ni::codegen::OS::MACOS) {
     *this->outputFile << "_" << label << ":" << std::endl;
   } else {
     *this->outputFile << label << ":" << std::endl;
@@ -251,7 +251,7 @@ void ni::codegen::ATTPrinter::imul(const Operand &dst, const Operand &src) {
 void ni::codegen::ATTPrinter::call(const std::string &label) {
   this->checkFile();
 
-  if (this->targetOS == ni::codegen::OS::MACOS) {
+  if (this->context.targetOS == ni::codegen::OS::MACOS) {
     *this->outputFile << "\tcallq\t_" << label << std::endl;
   } else {
     *this->outputFile << "\tcallq\t" << label << std::endl;
@@ -261,7 +261,7 @@ void ni::codegen::ATTPrinter::call(const std::string &label) {
 void ni::codegen::ATTPrinter::jmp(const std::string &label) {
   this->checkFile();
 
-  if (this->targetOS == ni::codegen::OS::MACOS) {
+  if (this->context.targetOS == ni::codegen::OS::MACOS) {
     *this->outputFile << "\tjmpq\t_" << label << std::endl;
   } else {
     *this->outputFile << "\tjmpq\t" << label << std::endl;

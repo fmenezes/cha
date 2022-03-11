@@ -284,7 +284,7 @@ void ni::codegen::ASMCodegen::resetStackFrame() {
 }
 
 int ni::codegen::ASMCodegen::generateTextSection() {
-  if (this->targetOS == ni::codegen::OS::MACOS) {
+  if (this->context.targetOS == ni::codegen::OS::MACOS) {
     *this->outputFile << ".section\t__TEXT,__text" << std::endl;
   } else {
     *this->outputFile << ".text" << std::endl;
@@ -294,7 +294,7 @@ int ni::codegen::ASMCodegen::generateTextSection() {
 
 int ni::codegen::ASMCodegen::generateExitCall() {
   std::string exitCode = "60";
-  if (this->targetOS == ni::codegen::OS::MACOS) {
+  if (this->context.targetOS == ni::codegen::OS::MACOS) {
     exitCode = "0x2000001";
   }
   *this->outputFile << "\tmovl\t$" << exitCode << ", %eax" << std::endl;
@@ -304,7 +304,7 @@ int ni::codegen::ASMCodegen::generateExitCall() {
 
 std::string
 ni::codegen::ASMCodegen::generateFunctionName(const std::string &name) const {
-  if (this->targetOS == ni::codegen::OS::MACOS) {
+  if (this->context.targetOS == ni::codegen::OS::MACOS) {
     return "_" + name;
   }
   return name;

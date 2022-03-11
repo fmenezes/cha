@@ -162,8 +162,10 @@ public:
 
 class ATTPrinter {
 public:
-  ATTPrinter(const std::string &outputFilePath, const OS &os, const ARCH &arch)
-      : outputFilePath(outputFilePath), targetOS(os), targetArch(arch){};
+  ATTPrinter(const std::string &outputFilePath, const Context &context)
+      : outputFilePath(outputFilePath), context(context){};
+
+  const Context context;
 
   void openFile();
   bool openedFile() const;
@@ -190,9 +192,7 @@ public:
 
 private:
   std::ofstream *outputFile;
-  std::string outputFilePath;
-  OS targetOS;
-  ARCH targetArch;
+  const std::string outputFilePath;
   void checkFile() const;
 };
 
