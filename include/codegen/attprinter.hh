@@ -12,7 +12,7 @@
 namespace ni {
 namespace codegen {
 
-enum OperandType { REGISTER, OFFSET_REGISTER, CONSTANT };
+enum OperandType { NOP, REGISTER, OFFSET_REGISTER, CONSTANT };
 
 enum Register8Bits {
   DH = -4,
@@ -102,33 +102,35 @@ enum Register64Bits {
 
 class Operand {
 public:
-  Operand(Register8Bits reg)
-      : type(OperandType::REGISTER), reg(reg), size(8), offset(0){};
-  Operand(Register16Bits reg)
-      : type(OperandType::REGISTER), reg(reg), size(16), offset(0){};
-  Operand(Register32Bits reg)
-      : type(OperandType::REGISTER), reg(reg), size(32), offset(0){};
-  Operand(Register64Bits reg)
-      : type(OperandType::REGISTER), reg(reg), size(64), offset(0){};
-  Operand(Register8Bits reg, int offset)
-      : type(OperandType::OFFSET_REGISTER), reg(reg), size(8), offset(offset){};
-  Operand(Register16Bits reg, int offset)
-      : type(OperandType::OFFSET_REGISTER), reg(reg), size(16),
+  Operand(const Register8Bits &reg)
+      : value(0), type(OperandType::REGISTER), reg(reg), size(8), offset(0){};
+  Operand(const Register16Bits &reg)
+      : value(0), type(OperandType::REGISTER), reg(reg), size(16), offset(0){};
+  Operand(const Register32Bits &reg)
+      : value(0), type(OperandType::REGISTER), reg(reg), size(32), offset(0){};
+  Operand(const Register64Bits &reg)
+      : value(0), type(OperandType::REGISTER), reg(reg), size(64), offset(0){};
+  Operand(const Register8Bits &reg, int offset)
+      : value(0), type(OperandType::OFFSET_REGISTER), reg(reg), size(8),
         offset(offset){};
-  Operand(Register32Bits reg, int offset)
-      : type(OperandType::OFFSET_REGISTER), reg(reg), size(32),
+  Operand(const Register16Bits &reg, int offset)
+      : value(0), type(OperandType::OFFSET_REGISTER), reg(reg), size(16),
         offset(offset){};
-  Operand(Register64Bits reg, int offset)
-      : type(OperandType::OFFSET_REGISTER), reg(reg), size(64),
+  Operand(const Register32Bits &reg, int offset)
+      : value(0), type(OperandType::OFFSET_REGISTER), reg(reg), size(32),
         offset(offset){};
-  Operand(std::string value)
+  Operand(const Register64Bits &reg, int offset)
+      : value(0), type(OperandType::OFFSET_REGISTER), reg(reg), size(64),
+        offset(offset){};
+  Operand(const int &value)
       : value(value), type(OperandType::CONSTANT), size(0), offset(0), reg(0){};
+  Operand() : value(0), type(OperandType::NOP), size(0), offset(0), reg(0){};
   int sizeBytes() const { return size / 8; }
   const int size;
   const int offset;
   const int reg;
   const OperandType type;
-  const std::string value;
+  const int value;
 
   operator Register8Bits() const {
     if (size != 8 || (type != OperandType::REGISTER &&
@@ -158,16 +160,44 @@ public:
     }
     return (Register64Bits)reg;
   }
+  bool operator==(Register8Bits a) const {
+    return (size == 8 &&
+            (type == OperandType::REGISTER ||
+             type == OperandType::OFFSET_REGISTER) &&
+            reg == a);
+  }
+  bool operator==(Register16Bits a) const {
+    return (size == 16 &&
+            (type == OperandType::REGISTER ||
+             type == OperandType::OFFSET_REGISTER) &&
+            reg == a);
+  }
+  bool operator==(Register32Bits a) const {
+    return (size == 32 &&
+            (type == OperandType::REGISTER ||
+             type == OperandType::OFFSET_REGISTER) &&
+            reg == a);
+  }
+  bool operator==(Register64Bits a) const {
+    return (size == 32 &&
+            (type == OperandType::REGISTER ||
+             type == OperandType::OFFSET_REGISTER) &&
+            reg == a);
+  }
+  bool operator!=(Register8Bits a) const { return !(*this == a); }
+  bool operator!=(Register16Bits a) const { return !(*this == a); }
+  bool operator!=(Register32Bits a) const { return !(*this == a); }
+  bool operator!=(Register64Bits a) const { return !(*this == a); }
 };
 
 class ATTPrinter {
 public:
-  ATTPrinter(const std::string &outputFilePath, const Context &context)
-      : outputFilePath(outputFilePath), context(context){};
+  ATTPrinter(){};
+  ATTPrinter(const Context &context) : context(context){};
 
   const Context context;
 
-  void openFile();
+  void openFile(const std::string &filePath);
   bool openedFile() const;
   void closeFile();
   void textHeader();
@@ -192,7 +222,6 @@ public:
 
 private:
   std::ofstream *outputFile;
-  const std::string outputFilePath;
   void checkFile() const;
 };
 
