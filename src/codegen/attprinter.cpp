@@ -226,9 +226,9 @@ std::string getSuffix(const ni::codegen::Operand &dst,
 void ni::codegen::ATTPrinter::mov(const Operand &dst, const Operand &src) {
   this->checkFile();
 
-  *this->outputFile << "\tmov" << getSuffix(dst, src)
-  << "\t" << serializeOperand(src) << ", " << serializeOperand(dst)
-  << std::endl;
+  *this->outputFile << "\tmov" << getSuffix(dst, src) << "\t"
+                    << serializeOperand(src) << ", " << serializeOperand(dst)
+                    << std::endl;
 }
 
 void ni::codegen::ATTPrinter::syscall() {

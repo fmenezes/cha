@@ -18,7 +18,7 @@ public:
   ASMCodegen(const ni::ast::NProgram &p, const Context &context)
       : Codegen(p, context), printer(context){};
   virtual int codegen(const std::string &output, std::string &error);
-  ~ASMCodegen(){this->clearVars();};
+  ~ASMCodegen() { this->clearVars(); };
 
 private:
   ATTPrinter printer;
