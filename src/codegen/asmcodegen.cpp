@@ -2,6 +2,7 @@
 #include <iostream>
 
 #include "ast/ast.hh"
+#include "codegen/asmcodegen.hh"
 #include "codegen/codegen.hh"
 
 const std::vector<std::string> REGS({"edi", "esi", "edx", "ecx", "r8d", "r9d"});
