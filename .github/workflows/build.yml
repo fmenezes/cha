@@ -26,8 +26,14 @@ jobs:
             --slave   /usr/bin/clang-cpp         clang-cpp        /usr/bin/clang-cpp-${LLVM_VERSION} \
             --slave   /usr/bin/clang-format      clang-format     /usr/bin/clang-format-${LLVM_VERSION} \
             --slave   /usr/bin/clang++           clang++          /usr/bin/clang++-${LLVM_VERSION}
-      - run: make
-      - run: make check-format -e
+      - name: Build
+        run: |
+          mkdir build
+          cd build
+          cmake ..
+          make
+      - name: Check
+        run: cd build && make check-format
   ubuntu:
     name: ubuntu
     runs-on: ubuntu-latest
@@ -53,5 +59,11 @@ jobs:
           brew install bison flex
           echo "/usr/local/opt/flex/bin" >> $GITHUB_PATH
           echo "/usr/local/opt/bison/bin" >> $GITHUB_PATH
-      - run: make
-      - run: make test
+      - name: Build
+        run: |
+          mkdir build
+          cd build
+          cmake ..
+          make
+      - name: Test
+        run: ./scripts/test.sh
