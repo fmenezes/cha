@@ -5,6 +5,7 @@ expected=211
 tmp="$(mktemp -d)"
 trap 'rm -rf "$tmp"' exit
 build/ni -asm examples/test.ni "$tmp/output.s"
+cat "$tmp/output.s"
 clang++ "$tmp/output.s" -o "$tmp/a.out"
 set -e
 "$tmp/a.out" || result=$?
