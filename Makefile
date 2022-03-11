@@ -3,7 +3,7 @@ FLEX := flex
 FORMAT := clang-format
 
 SOURCES := src/ast/ast.cpp src/codegen/codegen.cpp src/codegen/asmcodegen.cpp src/codegen/attprinter.cpp src/main.cpp
-INCLUDES := include/ast/ast.hh include/codegen/codegen.hh include/codegen/attprinter.hh include/ast/parserdecl.h
+INCLUDES := include/ast/ast.hh include/codegen/codegen.hh include/codegen/asmcodegen.hh include/codegen/attprinter.hh include/ast/parserdecl.h
 
 CXXFLAGS = -std=c++14 -I generated -I include
 GENERATEDINCLUDES := generated/parser.tab.hh

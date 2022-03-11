@@ -2,6 +2,7 @@
 #include <string>
 
 #include "ast/ast.hh"
+#include "codegen/asmcodegen.hh"
 #include "codegen/codegen.hh"
 
 void printUsage(const std::string &app) {
