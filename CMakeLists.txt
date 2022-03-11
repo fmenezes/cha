@@ -4,10 +4,6 @@ project(ni VERSION 0.0.1 LANGUAGES CXX)
 find_package(FLEX REQUIRED)
 find_package(BISON REQUIRED)
 
-find_program (
-          CLANG_FORMAT_PATH
-          clang-format )
-
 set(GENERATED_DIR "${CMAKE_CURRENT_BINARY_DIR}/generated")
 
 file(MAKE_DIRECTORY ${GENERATED_DIR})
@@ -26,23 +22,6 @@ file(GLOB HEADERS
         "include/**/*.hh"
         )
 
-add_custom_target(
-        check-format
-        COMMAND ${CLANG_FORMAT_PATH}
-        -n
-        --Werror
-        ${SRC}
-        ${HEADERS}
-)
-
-add_custom_target(
-        format
-        COMMAND ${CLANG_FORMAT_PATH}
-        -i
-        ${SRC}
-        ${HEADERS}
-)
-
 flex_target(parser src/ast/parser.l "${GENERATED_DIR}/parser.yy.c")
 
 bison_target(parser src/ast/parser.yy "${GENERATED_DIR}/parser.tab.cc")
@@ -54,3 +33,56 @@ set_source_files_properties(${FLEX_parser_OUTPUTS} PROPERTIES LANGUAGE CXX)
 add_executable(ni ${SRC} ${BISON_parser_OUTPUTS} ${FLEX_parser_OUTPUTS})
 
 set_property(TARGET ni PROPERTY CXX_STANDARD 14)
+
+FIND_PROGRAM(CLANG_FORMAT_EXECUTABLE clang-format DOC "path to the clang-format executable")
+
+IF(CLANG_FORMAT_EXECUTABLE)
+    EXECUTE_PROCESS(COMMAND ${CLANG_FORMAT_EXECUTABLE} --version
+        OUTPUT_VARIABLE CLANG_FORMAT_version_output
+        ERROR_VARIABLE CLANG_FORMAT_version_error
+        RESULT_VARIABLE CLANG_FORMAT_version_result
+        OUTPUT_STRIP_TRAILING_WHITESPACE)
+
+    IF(NOT ${CLANG_FORMAT_version_result} EQUAL 0)
+        MESSAGE(SEND_ERROR "Command \"${CLANG_FORMAT_PATH} --version\" failed with output:\n${CLANG_FORMAT_version_error}")
+    ELSE()
+        IF("${CLANG_FORMAT_version_output}" MATCHES "version (.*)")
+            SET(CLANG_FORMAT_VERSION "${CMAKE_MATCH_1}")
+        ENDIF()
+        MESSAGE(NOTICE "-- Found CLANG_FORMAT: ${CLANG_FORMAT_EXECUTABLE} (found version \"${CLANG_FORMAT_VERSION}\")")
+    ENDIF()
+
+    MACRO(CLANG_FORMAT_TARGET Input)
+        add_custom_target(
+            format
+            COMMAND ${CLANG_FORMAT_EXECUTABLE}
+            -i
+            ${Input}
+        )
+
+        add_custom_target(
+            check-format
+            COMMAND ${CLANG_FORMAT_EXECUTABLE}
+            -n
+            --Werror
+            ${Input}
+        )
+    ENDMACRO(CLANG_FORMAT_TARGET)
+
+   add_custom_target(
+        format
+        COMMAND ${CLANG_FORMAT_EXECUTABLE}
+        -i
+        ${SRC}
+        ${HEADERS}
+   )
+
+   add_custom_target(
+        check-format
+        COMMAND ${CLANG_FORMAT_EXECUTABLE}
+        -n
+        --Werror
+        ${SRC}
+        ${HEADERS}
+   )
+ENDIF(CLANG_FORMAT_EXECUTABLE)
