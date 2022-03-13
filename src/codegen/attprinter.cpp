@@ -3,7 +3,9 @@
 
 #include "codegen/attprinter.hh"
 
-std::string serializeConstant(const std::string &value) { return "$" + value; }
+std::string serializeConstant(const int &value) {
+  return "$" + std::to_string(value);
+}
 
 std::string serializeRegister(const ni::codegen::Register32Bits &reg) {
   switch (reg) {
@@ -115,29 +117,33 @@ std::string serializeOffsetRegister(const int &reg, const int &size,
 }
 
 std::string serializeOperand(const ni::codegen::Operand &op) {
-  switch (op.type) {
+  switch (op.getType()) {
   case ni::codegen::OperandType::CONSTANT: {
-    return serializeConstant(op.value);
+    return serializeConstant(op.getValue());
     break;
   }
   case ni::codegen::OperandType::REGISTER: {
-    return serializeRegister(op.reg, op.size);
+    return serializeRegister(op.getRegister(), op.getSize());
     break;
   }
   case ni::codegen::OperandType::OFFSET_REGISTER: {
-    return serializeOffsetRegister(op.reg, op.size, op.offset);
+    return serializeOffsetRegister(op.getRegister(), op.getSize(),
+                                   op.getOffset());
     break;
+  }
+  default: {
+    throw new std::runtime_error("invalid operand");
   }
   };
 }
 
-void ni::codegen::ATTPrinter::openFile() {
+void ni::codegen::ATTPrinter::openFile(const std::string &filePath) {
   if (outputFile != nullptr) {
     throw new std::runtime_error("file already opened");
   }
 
   this->outputFile = new std::ofstream();
-  this->outputFile->open(this->outputFilePath, std::ios::trunc);
+  this->outputFile->open(filePath, std::ios::trunc);
 }
 
 bool ni::codegen::ATTPrinter::openedFile() const {
@@ -187,7 +193,15 @@ void ni::codegen::ATTPrinter::label(const std::string &label) {
   }
 }
 
-std::string getSuffix(const int &size) {
+std::string getSuffix(const ni::codegen::Operand &dst,
+                      const ni::codegen::Operand &src) {
+  int size;
+  if (src.getSize() > 0 && src.getSize() < dst.getSize()) {
+    size = src.getSize();
+  } else {
+    size = dst.getSize();
+  }
+
   switch (size) {
   case 8: {
     return "b";
@@ -213,7 +227,7 @@ std::string getSuffix(const int &size) {
 void ni::codegen::ATTPrinter::mov(const Operand &dst, const Operand &src) {
   this->checkFile();
 
-  *this->outputFile << "\tmov" << getSuffix(dst.size) << "\t"
+  *this->outputFile << "\tmov" << getSuffix(dst, src) << "\t"
                     << serializeOperand(src) << ", " << serializeOperand(dst)
                     << std::endl;
 }
@@ -227,7 +241,7 @@ void ni::codegen::ATTPrinter::syscall() {
 void ni::codegen::ATTPrinter::add(const Operand &dst, const Operand &src) {
   this->checkFile();
 
-  *this->outputFile << "\tadd" << getSuffix(dst.size) << "\t"
+  *this->outputFile << "\tadd" << getSuffix(dst, src) << "\t"
                     << serializeOperand(src) << ", " << serializeOperand(dst)
                     << std::endl;
 }
@@ -235,7 +249,7 @@ void ni::codegen::ATTPrinter::add(const Operand &dst, const Operand &src) {
 void ni::codegen::ATTPrinter::sub(const Operand &dst, const Operand &src) {
   this->checkFile();
 
-  *this->outputFile << "\tsub" << getSuffix(dst.size) << "\t"
+  *this->outputFile << "\tsub" << getSuffix(dst, src) << "\t"
                     << serializeOperand(src) << ", " << serializeOperand(dst)
                     << std::endl;
 }
@@ -243,7 +257,7 @@ void ni::codegen::ATTPrinter::sub(const Operand &dst, const Operand &src) {
 void ni::codegen::ATTPrinter::imul(const Operand &dst, const Operand &src) {
   this->checkFile();
 
-  *this->outputFile << "\timu" << getSuffix(dst.size) << "\t"
+  *this->outputFile << "\timu" << getSuffix(dst, src) << "\t"
                     << serializeOperand(src) << ", " << serializeOperand(dst)
                     << std::endl;
 }
@@ -262,9 +276,9 @@ void ni::codegen::ATTPrinter::jmp(const std::string &label) {
   this->checkFile();
 
   if (this->context.targetOS == ni::codegen::OS::MACOS) {
-    *this->outputFile << "\tjmpq\t_" << label << std::endl;
+    *this->outputFile << "\tjmp\t_" << label << std::endl;
   } else {
-    *this->outputFile << "\tjmpq\t" << label << std::endl;
+    *this->outputFile << "\tjmp\t" << label << std::endl;
   }
 }
 
