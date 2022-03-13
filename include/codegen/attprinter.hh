@@ -102,35 +102,44 @@ enum Register64Bits {
 
 class Operand {
 public:
-  Operand(const Register8Bits &reg)
+  constexpr Operand(const Register8Bits &reg)
       : value(0), type(OperandType::REGISTER), reg(reg), size(8), offset(0){};
-  Operand(const Register16Bits &reg)
+  constexpr Operand(const Register16Bits &reg)
       : value(0), type(OperandType::REGISTER), reg(reg), size(16), offset(0){};
-  Operand(const Register32Bits &reg)
+  constexpr Operand(const Register32Bits &reg)
       : value(0), type(OperandType::REGISTER), reg(reg), size(32), offset(0){};
-  Operand(const Register64Bits &reg)
+  constexpr Operand(const Register64Bits &reg)
       : value(0), type(OperandType::REGISTER), reg(reg), size(64), offset(0){};
-  Operand(const Register8Bits &reg, int offset)
+  constexpr Operand(const Register8Bits &reg, int offset)
       : value(0), type(OperandType::OFFSET_REGISTER), reg(reg), size(8),
         offset(offset){};
-  Operand(const Register16Bits &reg, int offset)
+  constexpr Operand(const Register16Bits &reg, int offset)
       : value(0), type(OperandType::OFFSET_REGISTER), reg(reg), size(16),
         offset(offset){};
-  Operand(const Register32Bits &reg, int offset)
+  constexpr Operand(const Register32Bits &reg, int offset)
       : value(0), type(OperandType::OFFSET_REGISTER), reg(reg), size(32),
         offset(offset){};
-  Operand(const Register64Bits &reg, int offset)
+  constexpr Operand(const Register64Bits &reg, int offset)
       : value(0), type(OperandType::OFFSET_REGISTER), reg(reg), size(64),
         offset(offset){};
-  Operand(const int &value)
+  constexpr Operand(const int &value)
       : value(value), type(OperandType::CONSTANT), size(0), offset(0), reg(0){};
-  Operand() : value(0), type(OperandType::NOP), size(0), offset(0), reg(0){};
-  int sizeBytes() const { return size / 8; }
-  const int size;
-  const int offset;
-  const int reg;
-  const OperandType type;
-  const int value;
+  constexpr Operand()
+      : value(0), type(OperandType::NOP), size(0), offset(0), reg(0){};
+  int getSize() const { return size; }
+  int getSizeBytes() const { return size / 8; }
+  OperandType getType() const { return type; }
+  int getValue() const { return value; }
+  int getRegister() const { return reg; }
+  int getOffset() const { return offset; }
+
+  void operator=(const ni::codegen::Operand &copy) {
+    this->value = copy.value;
+    this->type = copy.type;
+    this->size = copy.size;
+    this->offset = copy.offset;
+    this->reg = copy.reg;
+  }
 
   operator Register8Bits() const {
     if (size != 8 || (type != OperandType::REGISTER &&
@@ -188,6 +197,13 @@ public:
   bool operator!=(Register16Bits a) const { return !(*this == a); }
   bool operator!=(Register32Bits a) const { return !(*this == a); }
   bool operator!=(Register64Bits a) const { return !(*this == a); }
+
+private:
+  int size;
+  int offset;
+  int reg;
+  OperandType type;
+  int value;
 };
 
 class ATTPrinter {

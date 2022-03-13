@@ -100,31 +100,27 @@ ni::codegen::Operand ni::codegen::ASMCodegen::internalCodegen(
 
 ni::codegen::Operand ni::codegen::ASMCodegen::internalCodegen(
     const ni::ast::NBinaryOperation &node) {
-  ni::codegen::Operand laddrRet = this->internalCodegen(*node.left);
-  ni::codegen::Operand *laddr = &laddrRet;
-  if (laddrRet == Register32Bits::EAX) {
-    this->printer.mov(Register32Bits::ECX, laddrRet);
-    ni::codegen::Operand laddrECX = (ni::codegen::Operand)Register32Bits::ECX;
-    laddr = &laddrECX;
+  ni::codegen::Operand laddr = this->internalCodegen(*node.left);
+  if (laddr == Register32Bits::EAX) {
+    this->printer.mov(Register32Bits::ECX, laddr);
+    laddr = (ni::codegen::Operand)Register32Bits::ECX;
   }
 
-  ni::codegen::Operand raddrRet = this->internalCodegen(*node.right);
-  ni::codegen::Operand *raddr = &raddrRet;
-  if (raddrRet != Register32Bits::EAX) {
-    this->printer.mov(Register32Bits::EAX, raddrRet);
-    ni::codegen::Operand raddrEAX = (ni::codegen::Operand)Register32Bits::EAX;
-    raddr = &raddrEAX;
+  ni::codegen::Operand raddr = this->internalCodegen(*node.right);
+  if (raddr != Register32Bits::EAX) {
+    this->printer.mov(Register32Bits::EAX, raddr);
+    raddr = (ni::codegen::Operand)Register32Bits::EAX;
   }
 
   if (node.op.compare("+") == 0) {
-    this->printer.add(*raddr, *laddr);
-    return *raddr;
+    this->printer.add(raddr, laddr);
+    return raddr;
   } else if (node.op.compare("-") == 0) {
-    this->printer.sub(*raddr, *laddr);
-    return *raddr;
+    this->printer.sub(raddr, laddr);
+    return raddr;
   } else if (node.op.compare("*") == 0) {
-    this->printer.imul(*raddr, *laddr);
-    return *raddr;
+    this->printer.imul(raddr, laddr);
+    return raddr;
   }
 
   throw std::runtime_error("Invalid operation " + node.op);
@@ -136,7 +132,7 @@ ni::codegen::ASMCodegen::internalCodegen(const ni::ast::NVariableLookup &node) {
   if (s == this->vars.end()) {
     throw std::runtime_error(node.identifier + " not found.");
   }
-  return *s->second;
+  return s->second;
 }
 
 ni::codegen::Operand ni::codegen::ASMCodegen::internalCodegen(
@@ -146,8 +142,8 @@ ni::codegen::Operand ni::codegen::ASMCodegen::internalCodegen(
     throw std::runtime_error(node.identifier + " not found.");
   }
   ni::codegen::Operand addr = this->internalCodegen(*node.value);
-  this->printer.mov(*s->second, addr);
-  return *s->second;
+  this->printer.mov(s->second, addr);
+  return s->second;
 }
 
 ni::codegen::Operand ni::codegen::ASMCodegen::internalCodegen(
@@ -158,10 +154,9 @@ ni::codegen::Operand ni::codegen::ASMCodegen::internalCodegen(
   }
 
   this->currentStackPosition -= 4;
-  Operand *returnAddr =
-      new Operand(Register64Bits::RBP, this->currentStackPosition);
+  Operand returnAddr = Operand(Register64Bits::RBP, this->currentStackPosition);
   this->vars.insert({node.identifier, returnAddr});
-  return *returnAddr;
+  return returnAddr;
 }
 int calculateMemorySize(const ni::ast::Node *node) {
   auto b = dynamic_cast<const ni::ast::NBinaryOperation *>(node);
@@ -203,7 +198,7 @@ ni::codegen::Operand ni::codegen::ASMCodegen::internalCodegen(
   this->printer.mov(Register64Bits::RBP, Register64Bits::RSP);
   this->printer.sub(Register64Bits::RSP, memorySize);
   this->currentStackPosition = 0;
-  this->clearVars();
+  this->vars.clear();
 
   int argc = node.args.size();
   if (argc > REGS.size()) {
@@ -213,18 +208,16 @@ ni::codegen::Operand ni::codegen::ASMCodegen::internalCodegen(
     auto &arg = *node.args[a];
     this->currentStackPosition -= 4;
 
-    this->vars.insert(
-        {arg.identifier,
-         new Operand(Register64Bits::RBP, this->currentStackPosition)});
-    this->printer.mov(*this->vars.at(arg.identifier), REGS[a]);
+    auto addr = Operand(Register64Bits::RBP, this->currentStackPosition);
+    this->vars.insert({arg.identifier, addr});
+    this->printer.mov(addr, REGS[a]);
   }
 
   if (node.args.size() > 6) {
     int offset = 16;
     for (int a = 6; a < node.args.size(); a++) {
       auto &arg = *node.args[a];
-      this->vars.insert(
-          {arg.identifier, new Operand(Register64Bits::RBP, offset)});
+      this->vars.insert({arg.identifier, Operand(Register64Bits::RBP, offset)});
       offset += 8;
     }
   }
@@ -307,11 +300,4 @@ int ni::codegen::ASMCodegen::codegen(const std::string &output,
   ni::codegen::ASMCodegen::internalCodegen(this->program);
   this->printer.closeFile();
   return 0;
-}
-
-void ni::codegen::ASMCodegen::clearVars() {
-  for (auto it : this->vars) {
-    delete it.second;
-  }
-  this->vars.clear();
 }

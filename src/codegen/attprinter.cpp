@@ -117,17 +117,18 @@ std::string serializeOffsetRegister(const int &reg, const int &size,
 }
 
 std::string serializeOperand(const ni::codegen::Operand &op) {
-  switch (op.type) {
+  switch (op.getType()) {
   case ni::codegen::OperandType::CONSTANT: {
-    return serializeConstant(op.value);
+    return serializeConstant(op.getValue());
     break;
   }
   case ni::codegen::OperandType::REGISTER: {
-    return serializeRegister(op.reg, op.size);
+    return serializeRegister(op.getRegister(), op.getSize());
     break;
   }
   case ni::codegen::OperandType::OFFSET_REGISTER: {
-    return serializeOffsetRegister(op.reg, op.size, op.offset);
+    return serializeOffsetRegister(op.getRegister(), op.getSize(),
+                                   op.getOffset());
     break;
   }
   default: {
@@ -195,10 +196,10 @@ void ni::codegen::ATTPrinter::label(const std::string &label) {
 std::string getSuffix(const ni::codegen::Operand &dst,
                       const ni::codegen::Operand &src) {
   int size;
-  if (src.size > 0 && src.size < dst.size) {
-    size = src.size;
+  if (src.getSize() > 0 && src.getSize() < dst.getSize()) {
+    size = src.getSize();
   } else {
-    size = dst.size;
+    size = dst.getSize();
   }
 
   switch (size) {

@@ -18,15 +18,13 @@ public:
   ASMCodegen(const ni::ast::NProgram &p, const Context &context)
       : Codegen(p, context), printer(context){};
   virtual int codegen(const std::string &output, std::string &error);
-  ~ASMCodegen() { this->clearVars(); };
 
 private:
   ATTPrinter printer;
-  std::map<std::string, Operand *> vars;
+  std::map<std::string, Operand> vars;
   std::string currentFunctionName;
   int currentStackPosition;
   void generateExitCall();
-  void clearVars();
   Operand internalCodegen(const ni::ast::NProgram &node);
   Operand internalCodegen(const ni::ast::NStatement &node);
   Operand internalCodegen(const ni::ast::NConstant &node);
