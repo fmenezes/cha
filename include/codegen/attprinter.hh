@@ -218,6 +218,7 @@ public:
   void closeFile();
   void textHeader();
   void global(const std::string &label);
+  void labelStart();
   void label(const std::string &label);
   void mov(const Operand &dst, const Operand &src);
   void add(const Operand &dst, const Operand &src);

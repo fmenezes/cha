@@ -291,13 +291,21 @@ ni::codegen::ASMCodegen::internalCodegen(const ni::ast::NProgram &node) {
   for (const auto &it : node.instructions) {
     this->internalCodegen(*it);
   }
+  this->generateStartFunction();
   return Operand();
+}
+
+void ni::codegen::ASMCodegen::generateStartFunction() {
+  this->printer.labelStart();
+  this->printer.call("main");
+  this->printer.mov(Register32Bits::EDI, Register32Bits::EAX);
+  this->generateExitCall();
 }
 
 int ni::codegen::ASMCodegen::codegen(const std::string &output,
                                      std::string &error) {
   this->printer.openFile(output);
-  ni::codegen::ASMCodegen::internalCodegen(this->program);
+  this->internalCodegen(this->program);
   this->printer.closeFile();
   return 0;
 }

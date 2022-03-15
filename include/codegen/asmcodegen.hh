@@ -25,6 +25,7 @@ private:
   std::string currentFunctionName;
   int currentStackPosition;
   void generateExitCall();
+  void generateStartFunction();
   Operand internalCodegen(const ni::ast::NProgram &node);
   Operand internalCodegen(const ni::ast::NStatement &node);
   Operand internalCodegen(const ni::ast::NConstant &node);

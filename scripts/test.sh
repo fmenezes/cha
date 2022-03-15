@@ -5,7 +5,11 @@ expected=211
 tmp="$(mktemp -d)"
 trap 'rm -rf "$tmp"' exit
 build/ni -asm examples/test.ni "$tmp/output.s"
-c++ "$tmp/output.s" -o "$tmp/a.out"
+if [[ $OSTYPE == 'darwin'* ]]; then
+    cc "$tmp/output.s" -o "$tmp/a.out" -nostdlib -lSystem
+else
+    cc "$tmp/output.s" -o "$tmp/a.out" -nostdlib
+fi
 set -e
 "$tmp/a.out" || result=$?
 set +e
