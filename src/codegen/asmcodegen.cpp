@@ -291,6 +291,7 @@ ni::codegen::ASMCodegen::internalCodegen(const ni::ast::NProgram &node) {
   for (const auto &it : node.instructions) {
     this->internalCodegen(*it);
   }
+  this->generateStartFunction();
   return Operand();
 }
 
@@ -305,7 +306,6 @@ int ni::codegen::ASMCodegen::codegen(const std::string &output,
                                      std::string &error) {
   this->printer.openFile(output);
   this->internalCodegen(this->program);
-  this->generateStartFunction();
   this->printer.closeFile();
   return 0;
 }
