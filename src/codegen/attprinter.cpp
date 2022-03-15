@@ -193,6 +193,18 @@ void ni::codegen::ATTPrinter::label(const std::string &label) {
   }
 }
 
+void ni::codegen::ATTPrinter::labelStart() {
+  this->checkFile();
+
+  if (this->context.targetOS == ni::codegen::OS::MACOS) {
+    *this->outputFile << ".globl\tstart" << std::endl;
+    *this->outputFile << "start:" << std::endl;
+  } else {
+    *this->outputFile << ".globl\t_start" << std::endl;
+    *this->outputFile << "_start:" << std::endl;
+  }
+}
+
 std::string getSuffix(const ni::codegen::Operand &dst,
                       const ni::codegen::Operand &src) {
   int size;
