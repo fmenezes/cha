@@ -21,10 +21,7 @@ int main(int argc, char *argv[]) {
   auto output = std::string(argv[3]);
 
   ni::ast::NProgram program;
-  int op = ni::ast::Parser::parse(input, program);
-  if (op != 0) {
-    return op;
-  }
+  ni::ast::Parser::parse(input, program);
 
   std::string error;
   ni::codegen::Codegen *c;
