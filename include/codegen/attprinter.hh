@@ -126,20 +126,15 @@ public:
       : value(value), type(OperandType::CONSTANT), size(0), offset(0), reg(0){};
   constexpr Operand()
       : value(0), type(OperandType::NOP), size(0), offset(0), reg(0){};
+  Operand(const Operand &op)
+      : value(op.value), type(op.type), size(op.size), offset(op.offset),
+        reg(op.reg){};
   int getSize() const { return size; }
   int getSizeBytes() const { return size / 8; }
   OperandType getType() const { return type; }
   int getValue() const { return value; }
   int getRegister() const { return reg; }
   int getOffset() const { return offset; }
-
-  void operator=(const ni::codegen::Operand &copy) {
-    this->value = copy.value;
-    this->type = copy.type;
-    this->size = copy.size;
-    this->offset = copy.offset;
-    this->reg = copy.reg;
-  }
 
   operator Register8Bits() const {
     if (size != 8 || (type != OperandType::REGISTER &&

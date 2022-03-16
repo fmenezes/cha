@@ -22,6 +22,7 @@ using namespace std::string_literals;
 %nterm <std::vector<std::unique_ptr<ni::ast::NArgument>>> def_args;
 %nterm <std::vector<std::unique_ptr<ni::ast::NExpression>>> call_args;
 %nterm <std::vector<std::unique_ptr<ni::ast::NFunctionDeclaration>>> instructions;
+%nterm <std::unique_ptr<ni::ast::NProgram>> program;
 
 %code {
 # include "ast/ast.hh"
@@ -36,12 +37,16 @@ using namespace std::string_literals;
 %left PLUS MINUS
 %left MULTIPLY
 
-%start program
+%start parse
 
 %%
 
+parse :
+	program																			{ p.setProgram($1); }
+	;
+
 program :
-	instructions																	{ p.program.instructions = std::move($1); }
+	instructions																	{ $$ = std::make_unique<ni::ast::NProgram>($1); }
 	;
 
 instructions :
