@@ -20,13 +20,13 @@ int main(int argc, char *argv[]) {
   auto input = std::string(argv[2]);
   auto output = std::string(argv[3]);
 
-  ni::ast::NProgram program;
-  ni::ast::Parser::parse(input, program);
+  ni::ast::Parser parser;
+  auto program = parser.parse(input);
 
   std::string error;
   ni::codegen::Codegen *c;
   if (format.compare("-asm") == 0) {
-    c = new ni::codegen::ASMCodegen(program);
+    c = new ni::codegen::ASMCodegen(*program);
   } else {
     std::cerr << "Error: invalid format" << std::endl << std::endl;
     printUsage(argv[0]);

@@ -113,7 +113,7 @@ public:
 
 class NFunctionReturn : public NStatement {
 public:
-  std::unique_ptr<NExpression> value;
+  const std::unique_ptr<NExpression> value;
   NFunctionReturn(std::unique_ptr<NExpression> &value)
       : value(std::move(value)){};
   NFunctionReturn(){};
@@ -121,19 +121,20 @@ public:
 
 class NProgram : public Node {
 public:
-  std::vector<std::unique_ptr<NFunctionDeclaration>> instructions;
-  NProgram(){};
+  const std::vector<std::unique_ptr<NFunctionDeclaration>> instructions;
+  NProgram(std::vector<std::unique_ptr<NFunctionDeclaration>> &instructions)
+      : instructions(std::move(instructions)){};
 };
 
 class Parser {
 public:
-  NProgram &program;
-  static void parse(const std::string &f, NProgram &p) {
-    Parser parser(p);
-    parser.parse(f);
+  void setProgram(std::unique_ptr<NProgram> &p) {
+    this->program = std::move(p);
   };
-  void parse(const std::string &f);
-  Parser(NProgram &p) : program(p){};
+  std::unique_ptr<ni::ast::NProgram> parse(const std::string &f);
+
+private:
+  std::unique_ptr<NProgram> program;
 };
 } // namespace ast
 } // namespace ni
