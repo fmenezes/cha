@@ -269,7 +269,7 @@ void ni::codegen::ATTPrinter::sub(const Operand &dst, const Operand &src) {
 void ni::codegen::ATTPrinter::imul(const Operand &dst, const Operand &src) {
   this->checkFile();
 
-  *this->outputFile << "\timu" << getSuffix(dst, src) << "\t"
+  *this->outputFile << "\timul" << getSuffix(dst, src) << "\t"
                     << serializeOperand(src) << ", " << serializeOperand(dst)
                     << std::endl;
 }
