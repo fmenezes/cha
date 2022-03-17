@@ -1,4 +1,4 @@
-FROM ubuntu as builder
+FROM ubuntu
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV TZ=Etc/UTC
@@ -9,14 +9,9 @@ WORKDIR /app
 COPY .clang-format CMakeLists.txt /app/
 COPY src src
 COPY include include
-
-RUN mkdir build && cd build && cmake .. && make
-
-FROM ubuntu
-
-WORKDIR /app
-COPY --from=builder /app/build/ni /app/build/ni
 COPY examples examples
 COPY scripts scripts
+
+RUN mkdir build && cd build && cmake .. && make
 
 CMD ["./scripts/test.sh"]

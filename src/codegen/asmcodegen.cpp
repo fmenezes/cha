@@ -302,10 +302,8 @@ void ni::codegen::ASMCodegen::generateStartFunction() {
   this->generateExitCall();
 }
 
-int ni::codegen::ASMCodegen::codegen(const std::string &output,
-                                     std::string &error) {
+void ni::codegen::ASMCodegen::codegen(const std::string &output) {
   this->printer.openFile(output);
   this->internalCodegen(this->program);
   this->printer.closeFile();
-  return 0;
 }

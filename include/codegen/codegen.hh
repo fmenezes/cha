@@ -31,7 +31,7 @@ public:
   Codegen(const ni::ast::NProgram &p) : program(p){};
   Codegen(const ni::ast::NProgram &p, const Context &context)
       : program(p), context(context){};
-  virtual int codegen(const std::string &output, std::string &error) = 0;
+  virtual void codegen(const std::string &output) = 0;
   virtual ~Codegen() {}
   const Context context;
 

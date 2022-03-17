@@ -32,11 +32,7 @@ int main(int argc, char *argv[]) {
     printUsage(argv[0]);
     return 1;
   }
-  if (c->codegen(output, error) == 1) {
-    delete c;
-    std::cerr << error << std::endl;
-    return 1;
-  }
+  c->codegen(output);
   delete c;
   return 0;
 }
