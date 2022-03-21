@@ -35,6 +35,7 @@ using namespace std::string_literals;
 
 %token <std::string> CONST_INTEGER IDENTIFIER
 %token VAR PLUS MINUS MULTIPLY OPENPAR CLOSEPAR EQUALS OPENCUR CLOSECUR FUN RET COMMA INT
+%token YYEOF 0
 
 %left PLUS MINUS
 %left MULTIPLY

@@ -10,7 +10,9 @@ void ni::ast::Parser::parse(const std::string &f) {
   if (!(yyin = fopen(f.c_str(), "r"))) {
     throw std::runtime_error("cannot open " + f);
   }
-  this->loc = yy::location(&f);
+
+  std::string fp = f;
+  this->loc = yy::location(&fp);
   yy::parser p(*this);
   int r = p.parse();
   fclose(yyin);
