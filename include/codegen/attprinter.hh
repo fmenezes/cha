@@ -233,7 +233,7 @@ public:
   };
 
 private:
-  std::ofstream *outputFile;
+  std::ofstream *outputFile = nullptr;
   void checkFile() const;
 };
 

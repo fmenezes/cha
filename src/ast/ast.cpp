@@ -11,8 +11,8 @@ void ni::ast::Parser::parse(const std::string &f) {
     throw std::runtime_error("cannot open " + f);
   }
 
-  std::string fp = f;
-  this->loc = yy::location(&fp);
+  std::string *fp = new std::string(f);
+  this->location = yy::location(fp);
   yy::parser p(*this);
   int r = p.parse();
   fclose(yyin);
