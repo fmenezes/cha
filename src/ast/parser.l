@@ -3,6 +3,7 @@
 #include "parser.tab.hh"
 #include "ast/parserdecl.h"
 
+# define YY_USER_ACTION  loc.columns (yyleng);
 %}
 
 %option noyywrap nounput noinput batch
@@ -11,70 +12,77 @@
 number [0-9]+
 identifier [_a-zA-Z][_a-zA-Z0-9]*
 %%
-
+%{
+  yy::location& loc = p.loc;
+  loc.step();
+%}
 "var" {
-		return yy::parser::make_VAR();
+		return yy::parser::make_VAR(loc);
 	}
 
 "fun" {
-		return yy::parser::make_FUN();
+		return yy::parser::make_FUN(loc);
 	}
 
 "ret" {
-		return yy::parser::make_RET();
+		return yy::parser::make_RET(loc);
 	}
 
 "int" {
-		return yy::parser::make_INT();
+		return yy::parser::make_INT(loc);
 	}
 
 {identifier} {
-		return yy::parser::make_IDENTIFIER(std::string(yytext, yyleng));
+		return yy::parser::make_IDENTIFIER(std::string(yytext, yyleng), loc);
 	}
 
 {number} {
-		return yy::parser::make_CONST_INTEGER(std::string(yytext, yyleng));
+		return yy::parser::make_CONST_INTEGER(std::string(yytext, yyleng), loc);
 	}
 
 "+" {
-		return yy::parser::make_PLUS();
+		return yy::parser::make_PLUS(loc);
 	}
 
 "-" {
-		return yy::parser::make_MINUS();
+		return yy::parser::make_MINUS(loc);
 	}
 
 
 "*" {
-		return yy::parser::make_MULTIPLY();
+		return yy::parser::make_MULTIPLY(loc);
 	}
 
 "=" {
-		return yy::parser::make_EQUALS();
+		return yy::parser::make_EQUALS(loc);
 	}
 
 "(" {
-		return yy::parser::make_OPENPAR();
+		return yy::parser::make_OPENPAR(loc);
 	}
 
 ")" {
-		return yy::parser::make_CLOSEPAR();
+		return yy::parser::make_CLOSEPAR(loc);
 	}
 
 "{" {
-		return yy::parser::make_OPENCUR();
+		return yy::parser::make_OPENCUR(loc);
 	}
 
 "}" {
-		return yy::parser::make_CLOSECUR();
+		return yy::parser::make_CLOSECUR(loc);
 	}
 
 "," {
-		return yy::parser::make_COMMA();
+		return yy::parser::make_COMMA(loc);
 	}
 
-[ \t\r\n]+ ;
+[ \t\r]+ { loc.step(); }
 
-.	{ throw yy::parser::syntax_error("invalid character: " + std::string(yytext, yyleng)); }
+[\n]+ { loc.lines(yyleng); loc.step(); }
+
+.	{ throw yy::parser::syntax_error(loc, "invalid character: " + std::string(yytext, yyleng)); }
+
+<<EOF>>    { return yy::parser::make_YYEOF (loc); }
 
 %%
