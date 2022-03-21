@@ -19,8 +19,8 @@ std::string emitLocation(const yy::parser::syntax_error &e) {
       e.location.end.filename != nullptr &&
       e.location.begin.filename->compare(*e.location.end.filename) != 0) {
     loc += "-" + *e.location.end.filename + ":" +
-           std::to_string(e.location.end.line) +
-           ":"  + std::to_string(e.location.end.column);
+           std::to_string(e.location.end.line) + ":" +
+           std::to_string(e.location.end.column);
   } else if (e.location.begin.line != e.location.end.line) {
     loc += "-" + std::to_string(e.location.end.line) + ":" +
            std::to_string(e.location.end.column);
