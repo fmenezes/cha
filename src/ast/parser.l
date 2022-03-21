@@ -13,7 +13,7 @@ number [0-9]+
 identifier [_a-zA-Z][_a-zA-Z0-9]*
 %%
 %{
-  yy::location& loc = p.loc;
+  yy::location& loc = p.location;
   loc.step();
 %}
 "var" {

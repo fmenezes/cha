@@ -11,29 +11,6 @@ void printUsage(const std::string &app) {
             << "format: -asm for Assembly" << std::endl;
 }
 
-std::string emitLocation(const yy::parser::syntax_error &e) {
-  std::string loc = *e.location.begin.filename + ":" +
-                    std::to_string(e.location.begin.line) + ":" +
-                    std::to_string(e.location.begin.column);
-  if (e.location.begin.filename != nullptr &&
-      e.location.end.filename != nullptr &&
-      e.location.begin.filename->compare(*e.location.end.filename) != 0) {
-    loc += "-" + *e.location.end.filename + ":" +
-           std::to_string(e.location.end.line) + ":" +
-           std::to_string(e.location.end.column);
-  } else if (e.location.begin.line != e.location.end.line) {
-    loc += "-" + std::to_string(e.location.end.line) + ":" +
-           std::to_string(e.location.end.column);
-  } else if (e.location.begin.column != e.location.end.column) {
-    loc += "-" + std::to_string(e.location.end.column);
-  }
-  return loc + ":";
-}
-
-std::string emitSyntaxError(const yy::parser::syntax_error &e) {
-  return emitLocation(e) + " Error: " + e.what();
-}
-
 int main(int argc, char *argv[]) {
   if (argc != 4) {
     printUsage(argv[0]);
@@ -45,9 +22,11 @@ int main(int argc, char *argv[]) {
   auto output = std::string(argv[3]);
 
   ni::ast::Parser parser;
-  ni::codegen::Codegen *c;
+  ni::codegen::Codegen *c = nullptr;
   try {
     parser.parse(input);
+    ni::ast::Validator v(*parser.program);
+    v.validate();
 
     if (format.compare("-asm") == 0) {
       c = new ni::codegen::ASMCodegen(*parser.program);
@@ -58,9 +37,10 @@ int main(int argc, char *argv[]) {
     }
     c->codegen(output);
   } catch (const yy::parser::syntax_error &e) {
-    std::cerr << emitSyntaxError(e) << std::endl;
+    std::cerr << ni::ast::emitLocation(e.location) << ": error occurred: " << e.what()
+              << std::endl;
   } catch (const std::exception &e) {
-    std::cerr << "Error: " << e.what() << std::endl;
+    std::cerr << "error occurred: " << e.what() << std::endl;
   }
   if (c != nullptr) {
     delete c;
