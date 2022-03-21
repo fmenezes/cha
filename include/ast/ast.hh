@@ -169,9 +169,10 @@ public:
 
 class Validator {
 public:
-  Validator(const NProgram &program) : program(program) {};
+  Validator(const NProgram &program) : program(program){};
   const NProgram &program;
   void validate();
+
 private:
   std::map<std::string, yy::location> functionNames;
   std::map<std::string, yy::location> vars;

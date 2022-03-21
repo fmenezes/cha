@@ -98,7 +98,8 @@ void ni::ast::Validator::validate(const ni::ast::NExpression &node) {
 void ni::ast::Validator::validate(const ni::ast::NFunctionCall &node) {
   auto it = functionNames.find(node.identifier);
   if (it == functionNames.end()) {
-    throw yy::parser::syntax_error(node.location, "function \"" + node.identifier + "\" not defined");
+    throw yy::parser::syntax_error(
+        node.location, "function \"" + node.identifier + "\" not defined");
   }
 }
 
@@ -132,8 +133,10 @@ void ni::ast::Validator::validate(const ni::ast::NBinaryOperation &node) {
 void ni::ast::Validator::validate(const ni::ast::NVariableDeclaration &node) {
   auto it = this->vars.find(node.identifier);
   if (it != this->vars.end()) {
-    throw yy::parser::syntax_error(
-        node.location, "variable \"" + node.identifier + "\" already defined (at " +  emitLocation(it->second) + ")");
+    throw yy::parser::syntax_error(node.location,
+                                   "variable \"" + node.identifier +
+                                       "\" already defined (at " +
+                                       emitLocation(it->second) + ")");
   }
   this->vars.insert({node.identifier, node.location});
 }

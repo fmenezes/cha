@@ -37,8 +37,8 @@ int main(int argc, char *argv[]) {
     }
     c->codegen(output);
   } catch (const yy::parser::syntax_error &e) {
-    std::cerr << ni::ast::emitLocation(e.location) << ": error occurred: " << e.what()
-              << std::endl;
+    std::cerr << ni::ast::emitLocation(e.location)
+              << ": error occurred: " << e.what() << std::endl;
   } catch (const std::exception &e) {
     std::cerr << "error occurred: " << e.what() << std::endl;
   }
