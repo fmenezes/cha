@@ -6,6 +6,8 @@
 #include <string>
 #include <vector>
 
+#include "location.hh"
+
 namespace ni {
 namespace ast {
 class Node {
@@ -128,13 +130,9 @@ public:
 
 class Parser {
 public:
-  void setProgram(std::unique_ptr<NProgram> &p) {
-    this->program = std::move(p);
-  };
-  std::unique_ptr<ni::ast::NProgram> parse(const std::string &f);
-
-private:
+  yy::location loc;
   std::unique_ptr<NProgram> program;
+  void parse(const std::string &f);
 };
 } // namespace ast
 } // namespace ni

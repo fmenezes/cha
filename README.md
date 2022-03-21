@@ -19,7 +19,7 @@ To build simply run
 mkdir build
 cd build
 cmake ..
-make
+cmake --build .
 ```
 
 ### Compile ni programs

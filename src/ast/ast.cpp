@@ -6,17 +6,15 @@
 
 extern FILE *yyin;
 
-std::unique_ptr<ni::ast::NProgram>
-ni::ast::Parser::parse(const std::string &f) {
+void ni::ast::Parser::parse(const std::string &f) {
   if (!(yyin = fopen(f.c_str(), "r"))) {
     throw std::runtime_error("cannot open " + f);
   }
+  this->loc = yy::location(&f);
   yy::parser p(*this);
   int r = p.parse();
   fclose(yyin);
   if (r != 0) {
     throw std::runtime_error("error parsing");
   }
-
-  return std::move(this->program);
 }

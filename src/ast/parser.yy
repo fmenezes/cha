@@ -10,6 +10,8 @@ using namespace std::string_literals;
 %require "3.2"
 %language "c++"
 
+%locations
+
 %define api.value.type variant
 %define api.token.constructor
 
@@ -42,7 +44,7 @@ using namespace std::string_literals;
 %%
 
 parse :
-	program																			{ p.setProgram($1); }
+	program																			{ p.program = std::move($1); }
 	;
 
 program :
@@ -105,7 +107,7 @@ const :
 
 %%
 
-void yy::parser::error (const std::string& m)
+void yy::parser::error (const location_type& loc, const std::string& m)
 {
-  std::cerr << m << '\n';
+  throw yy::parser::syntax_error(loc, "invalid syntax: " + m);
 }
