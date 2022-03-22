@@ -79,10 +79,18 @@ void ni::ast::Validator::validate(const ni::ast::NExpression &node) {
 }
 
 void ni::ast::Validator::validate(const ni::ast::NFunctionCall &node) {
-  auto it = functionNames.find(node.identifier);
-  if (it == functionNames.end()) {
+  auto it = functions.find(node.identifier);
+  if (it == functions.end()) {
     throw yy::parser::syntax_error(
         node.location, "function \"" + node.identifier + "\" not defined");
+  }
+  if (node.params.size() != it->second.args.size()) {
+    throw yy::parser::syntax_error(
+        node.location, "incorrect number of arguments, function \"" +
+                           node.identifier + "\" expects " +
+                           std::to_string(it->second.args.size()) +
+                           " arguments, " + std::to_string(node.params.size()) +
+                           " were provided");
   }
 }
 
@@ -94,7 +102,7 @@ void ni::ast::Validator::validate(const ni::ast::NFunctionReturn &node) {
 
 void ni::ast::Validator::validate(const ni::ast::NVariableLookup &node) {
   auto it = vars.find(node.identifier);
-  if (it == functionNames.end()) {
+  if (it == vars.end()) {
     throw yy::parser::syntax_error(
         node.location, "variable \"" + node.identifier + "\" not defined");
   }
@@ -106,6 +114,7 @@ void ni::ast::Validator::validate(const ni::ast::NVariableAssignment &node) {
     throw yy::parser::syntax_error(
         node.location, "variable \"" + node.identifier + "\" not defined");
   }
+  this->validate(*node.value);
 }
 
 void ni::ast::Validator::validate(const ni::ast::NBinaryOperation &node) {
@@ -145,14 +154,14 @@ void ni::ast::Validator::validate(const ni::ast::NFunctionDeclaration &n) {
 
 void ni::ast::Validator::validate(const ni::ast::NProgram &p) {
   for (auto &n : p.instructions) {
-    auto it = this->functionNames.find(n->identifier);
-    if (it != this->functionNames.end()) {
-      throw yy::parser::syntax_error(n->location,
-                                     "function \"" + n->identifier +
-                                         "\" already defined (at " +
-                                         emitLocation(it->second) + ")");
+    auto it = this->functions.find(n->identifier);
+    if (it != this->functions.end()) {
+      throw yy::parser::syntax_error(
+          n->location, "function \"" + n->identifier +
+                           "\" already defined (at " +
+                           emitLocation(it->second.location) + ")");
     }
-    this->functionNames.insert({n->identifier, n->location});
+    this->functions.insert({n->identifier, *n});
   }
 
   for (auto &n : p.instructions) {

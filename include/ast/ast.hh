@@ -174,7 +174,7 @@ public:
   void validate();
 
 private:
-  std::map<std::string, yy::location> functionNames;
+  std::map<std::string, const NFunctionDeclaration &> functions;
   std::map<std::string, yy::location> vars;
   void validate(const Node &node);
   void validate(const NProgram &node);
