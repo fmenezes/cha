@@ -6,6 +6,6 @@ fun run (a int, b int, c int, d int, e int, f int, g int) int {
 
 fun main() int {
     var a int
-    a = run(10, 20, 30, 40, 50, 60, 1)
+    a = run(10, 20, 30, 40, 50, 60, -1)
     ret a
 }

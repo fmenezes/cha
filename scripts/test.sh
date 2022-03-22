@@ -1,7 +1,7 @@
 #!/bin/bash
 
 result=0
-expected=211
+expected=209
 tmp="$(mktemp -d)"
 trap 'rm -rf "$tmp"' exit
 build/ni -asm examples/test.ni "$tmp/output.s"

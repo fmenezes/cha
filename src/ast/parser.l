@@ -9,7 +9,7 @@
 %option noyywrap nounput noinput batch
 
 /* RegEx */
-number [0-9]+
+number -?[0-9]+
 identifier [_a-zA-Z][_a-zA-Z0-9]*
 %%
 %{
