@@ -80,8 +80,6 @@ set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googletest)
 
 file(GLOB TEST
-        "src/codegen/*.cc"
-        "src/codegen/*.cpp"
         "test/*.cc"
         "test/*.cpp"
         "test/**/*.cc"
@@ -90,14 +88,19 @@ file(GLOB TEST
 
 enable_testing()
 
+set(SRC_WITHOUT_MAIN ${SRC})
+list(FILTER SRC_WITHOUT_MAIN EXCLUDE REGEX "main.cpp") 
+
 add_executable(
   ni_unit_test
-  ${TEST} ${BISON_parser_OUTPUTS} ${FLEX_parser_OUTPUTS}
+  ${TEST} ${SRC_WITHOUT_MAIN} ${BISON_parser_OUTPUTS} ${FLEX_parser_OUTPUTS}
 )
 target_link_libraries(
   ni_unit_test
   gtest_main
 )
+
+set_property(TARGET ni_unit_test PROPERTY CXX_STANDARD 14)
 
 include(GoogleTest)
 gtest_discover_tests(ni_unit_test)
