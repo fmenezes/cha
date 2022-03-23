@@ -91,13 +91,13 @@ file(GLOB TEST
 enable_testing()
 
 add_executable(
-  hello_test
+  ni_unit_test
   ${TEST}
 )
 target_link_libraries(
-  hello_test
+  ni_unit_test
   gtest_main
 )
 
 include(GoogleTest)
-gtest_discover_tests(hello_test)
+gtest_discover_tests(ni_unit_test)
