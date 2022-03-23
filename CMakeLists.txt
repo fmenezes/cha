@@ -52,37 +52,55 @@ IF(CLANG_FORMAT_EXECUTABLE)
         MESSAGE(NOTICE "-- Found CLANG_FORMAT: ${CLANG_FORMAT_EXECUTABLE} (found version \"${CLANG_FORMAT_VERSION}\")")
     ENDIF()
 
-    MACRO(CLANG_FORMAT_TARGET Input)
-        add_custom_target(
-            format
-            COMMAND ${CLANG_FORMAT_EXECUTABLE}
-            -i
-            ${Input}
-        )
-
-        add_custom_target(
-            check-format
-            COMMAND ${CLANG_FORMAT_EXECUTABLE}
-            -n
-            --Werror
-            ${Input}
-        )
-    ENDMACRO(CLANG_FORMAT_TARGET)
-
-   add_custom_target(
+    add_custom_target(
         format
         COMMAND ${CLANG_FORMAT_EXECUTABLE}
         -i
         ${SRC}
         ${HEADERS}
-   )
+    )
 
-   add_custom_target(
+    add_custom_target(
         check-format
         COMMAND ${CLANG_FORMAT_EXECUTABLE}
         -n
         --Werror
         ${SRC}
         ${HEADERS}
-   )
+    )
 ENDIF(CLANG_FORMAT_EXECUTABLE)
+
+include(FetchContent)
+FetchContent_Declare(
+  googletest
+  URL https://github.com/google/googletest/archive/0affd45b62371c1de44064a5a5f8817242208442.zip
+)
+# For Windows: Prevent overriding the parent project's compiler/linker settings
+set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+FetchContent_MakeAvailable(googletest)
+
+file(GLOB TEST
+        "test/*.cc"
+        "test/*.cpp"
+        "test/**/*.cc"
+        "test/**/*.cpp"
+        )
+
+enable_testing()
+
+set(SRC_WITHOUT_MAIN ${SRC})
+list(FILTER SRC_WITHOUT_MAIN EXCLUDE REGEX "main.cpp") 
+
+add_executable(
+  ni_unit_test
+  ${TEST} ${SRC_WITHOUT_MAIN} ${BISON_parser_OUTPUTS} ${FLEX_parser_OUTPUTS}
+)
+target_link_libraries(
+  ni_unit_test
+  gtest_main
+)
+
+set_property(TARGET ni_unit_test PROPERTY CXX_STANDARD 14)
+
+include(GoogleTest)
+gtest_discover_tests(ni_unit_test)

@@ -38,7 +38,7 @@ enum Register8Bits {
 };
 
 enum Register16Bits {
-  AX,
+  AX = 1,
   BX,
   CX,
   DX,
@@ -59,7 +59,7 @@ enum Register16Bits {
 };
 
 enum Register32Bits {
-  EAX,
+  EAX = 1,
   EBX,
   ECX,
   EDX,
@@ -80,7 +80,7 @@ enum Register32Bits {
 };
 
 enum Register64Bits {
-  RAX,
+  RAX = 1,
   RBX,
   RCX,
   RDX,
