@@ -1,9 +1,11 @@
-#include <stdio.h>
 #include <fstream>
 #include <gtest/gtest.h>
+#include <stdio.h>
 
 #include "codegen/attprinter.hh"
 
+namespace ni {
+namespace test {
 namespace {
 class ATTPrinterTest : public ::testing::Test {
 
@@ -15,10 +17,19 @@ protected:
 
   virtual ~ATTPrinterTest() {}
 
+  std::string makeTempDir() {
+    char buf[] = "niXXXXXX";
+    char *tmp = mkdtemp(buf);
+    if (tmp == nullptr) {
+      throw std::runtime_error("unexpected error: " + std::to_string(errno));
+    }
+    return tmp;
+  }
+
   virtual void SetUp(const ni::codegen::Context &c) {
     this->printer = new ni::codegen::ATTPrinter(c);
-    this->filename.append(std::getenv("TMPDIR"));
-    this->filename.append("/test");
+    this->filename.append(makeTempDir());
+    this->filename.append("test");
 
     printer->openFile(filename);
   }
@@ -39,7 +50,7 @@ protected:
 TEST_F(ATTPrinterTest, Linux) {
   this->SetUp(
       ni::codegen::Context(ni::codegen::OS::LINUX, ni::codegen::ARCH::x86_64));
-  
+
   std::string expected;
   expected.append(".text\n");
   expected.append(".globl\t_start\n");
@@ -74,3 +85,5 @@ TEST_F(ATTPrinterTest, Linux) {
   EXPECT_EQ(this->readFile(), expected);
 }
 } // namespace
+} // namespace test
+} // namespace ni

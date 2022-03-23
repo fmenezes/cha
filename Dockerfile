@@ -15,4 +15,4 @@ COPY test test
 
 RUN mkdir build && cd build && cmake .. && cmake --build .
 
-CMD ["bash", "-c", "cd /app/build && ctest && cd /app && ./scripts/test.sh"]
+CMD ["bash", "-c", "cd /app/build && ctest --output-on-failure && cd /app && ./scripts/test.sh"]
