@@ -92,7 +92,7 @@ enable_testing()
 
 add_executable(
   ni_unit_test
-  ${TEST}
+  ${TEST} ${BISON_parser_OUTPUTS} ${FLEX_parser_OUTPUTS}
 )
 target_link_libraries(
   ni_unit_test
