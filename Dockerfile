@@ -11,7 +11,8 @@ COPY src src
 COPY include include
 COPY examples examples
 COPY scripts scripts
+COPY test test
 
-RUN mkdir build && cd build && cmake .. && make
+RUN mkdir build && cd build && cmake .. && cmake --build .
 
-CMD ["./scripts/test.sh"]
+CMD ["bash", "-c", "cd /app/build && ctest && cd /app && ./scripts/test.sh"]
