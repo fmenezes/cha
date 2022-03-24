@@ -22,63 +22,7 @@ std::string ni::ast::emitLocation(const yy::location &loc) {
   return ret;
 }
 
-void ni::ast::Validator::validate(const ni::ast::Node &node) {
-  auto s = dynamic_cast<const ni::ast::NStatement *>(&node);
-  if (s != nullptr) {
-    return this->validate(*s);
-  }
-
-  auto fd = dynamic_cast<const ni::ast::NFunctionDeclaration *>(&node);
-  if (fd != nullptr) {
-    return this->validate(*fd);
-  }
-
-  auto p = dynamic_cast<const ni::ast::NProgram *>(&node);
-  if (p != nullptr) {
-    return this->validate(*p);
-  }
-}
-
-void ni::ast::Validator::validate(const ni::ast::NStatement &node) {
-  auto d = dynamic_cast<const ni::ast::NVariableDeclaration *>(&node);
-  if (d != nullptr) {
-    return this->validate(*d);
-  }
-
-  auto a = dynamic_cast<const ni::ast::NVariableAssignment *>(&node);
-  if (a != nullptr) {
-    return this->validate(*a);
-  }
-
-  auto fr = dynamic_cast<const ni::ast::NFunctionReturn *>(&node);
-  if (fr != nullptr) {
-    return this->validate(*fr);
-  }
-
-  auto e = dynamic_cast<const ni::ast::NExpression *>(&node);
-  if (e != nullptr) {
-    return this->validate(*e);
-  }
-}
-
-void ni::ast::Validator::validate(const ni::ast::NExpression &node) {
-  auto b = dynamic_cast<const ni::ast::NBinaryOperation *>(&node);
-  if (b != nullptr) {
-    return this->validate(*b);
-  }
-
-  auto l = dynamic_cast<const ni::ast::NVariableLookup *>(&node);
-  if (l != nullptr) {
-    return this->validate(*l);
-  }
-
-  auto fc = dynamic_cast<const ni::ast::NFunctionCall *>(&node);
-  if (fc != nullptr) {
-    return this->validate(*fc);
-  }
-}
-
-void ni::ast::Validator::validate(const ni::ast::NFunctionCall &node) {
+void ni::ast::ValidatorVisitor::visit(const ni::ast::NFunctionCall &node) {
   auto it = functions.find(node.identifier);
   if (it == functions.end()) {
     throw yy::parser::syntax_error(
@@ -92,37 +36,32 @@ void ni::ast::Validator::validate(const ni::ast::NFunctionCall &node) {
                            " arguments, " + std::to_string(node.params.size()) +
                            " were provided");
   }
+
+  ni::ast::Visitor::visit(node);
 }
 
-void ni::ast::Validator::validate(const ni::ast::NFunctionReturn &node) {
-  if (node.value != nullptr) {
-    this->validate(*node.value);
-  }
-}
-
-void ni::ast::Validator::validate(const ni::ast::NVariableLookup &node) {
+void ni::ast::ValidatorVisitor::visit(const ni::ast::NVariableLookup &node) {
   auto it = vars.find(node.identifier);
   if (it == vars.end()) {
     throw yy::parser::syntax_error(
         node.location, "variable \"" + node.identifier + "\" not defined");
   }
+
+  ni::ast::Visitor::visit(node);
 }
 
-void ni::ast::Validator::validate(const ni::ast::NVariableAssignment &node) {
+void ni::ast::ValidatorVisitor::visit(
+    const ni::ast::NVariableAssignment &node) {
   auto it = this->vars.find(node.identifier);
   if (it == this->vars.end()) {
     throw yy::parser::syntax_error(
         node.location, "variable \"" + node.identifier + "\" not defined");
   }
-  this->validate(*node.value);
+  ni::ast::Visitor::visit(node);
 }
 
-void ni::ast::Validator::validate(const ni::ast::NBinaryOperation &node) {
-  this->validate(*node.left);
-  this->validate(*node.right);
-}
-
-void ni::ast::Validator::validate(const ni::ast::NVariableDeclaration &node) {
+void ni::ast::ValidatorVisitor::visit(
+    const ni::ast::NVariableDeclaration &node) {
   auto it = this->vars.find(node.identifier);
   if (it != this->vars.end()) {
     throw yy::parser::syntax_error(node.location,
@@ -131,12 +70,15 @@ void ni::ast::Validator::validate(const ni::ast::NVariableDeclaration &node) {
                                        emitLocation(it->second) + ")");
   }
   this->vars.insert({node.identifier, node.location});
+
+  ni::ast::Visitor::visit(node);
 }
 
-void ni::ast::Validator::validate(const ni::ast::NFunctionDeclaration &n) {
+void ni::ast::ValidatorVisitor::visit(
+    const ni::ast::NFunctionDeclaration &node) {
   this->vars.clear();
 
-  for (auto &arg : n.args) {
+  for (auto &arg : node.args) {
     auto it = this->vars.find(arg->identifier);
     if (it != this->vars.end()) {
       throw yy::parser::syntax_error(
@@ -147,13 +89,11 @@ void ni::ast::Validator::validate(const ni::ast::NFunctionDeclaration &n) {
     this->vars.insert({arg->identifier, arg->location});
   }
 
-  for (auto &node : n.body) {
-    this->validate(*node);
-  }
+  ni::ast::Visitor::visit(node);
 }
 
-void ni::ast::Validator::validate(const ni::ast::NProgram &p) {
-  for (auto &n : p.instructions) {
+void ni::ast::ValidatorVisitor::visit(const ni::ast::NProgram &node) {
+  for (auto &n : node.instructions) {
     auto it = this->functions.find(n->identifier);
     if (it != this->functions.end()) {
       throw yy::parser::syntax_error(
@@ -164,9 +104,10 @@ void ni::ast::Validator::validate(const ni::ast::NProgram &p) {
     this->functions.insert({n->identifier, *n});
   }
 
-  for (auto &n : p.instructions) {
-    validate(*n);
-  }
+  ni::ast::Visitor::visit(node);
 }
 
-void ni::ast::Validator::validate() { this->validate(this->program); }
+void ni::ast::Validator::validate(const ni::ast::NProgram &node) {
+  ni::ast::ValidatorVisitor v;
+  v.visit(node);
+}

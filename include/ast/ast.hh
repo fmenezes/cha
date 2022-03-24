@@ -167,26 +167,42 @@ public:
   void parse(const std::string &f);
 };
 
-class Validator {
+class Visitor {
 public:
-  Validator(const NProgram &program) : program(program){};
-  const NProgram &program;
-  void validate();
+  Visitor(){};
+  virtual void visit(const Node &node);
+  virtual void visit(const NProgram &node);
+  virtual void visit(const NStatement &node);
+  virtual void visit(const NExpression &node);
+  virtual void visit(const NConstant &node);
+  virtual void visit(const NConstantInteger &node);
+  virtual void visit(const NVariableDeclaration &node);
+  virtual void visit(const NVariableAssignment &node);
+  virtual void visit(const NVariableLookup &node);
+  virtual void visit(const NBinaryOperation &node);
+  virtual void visit(const NFunctionDeclaration &node);
+  virtual void visit(const NFunctionCall &node);
+  virtual void visit(const NFunctionReturn &node);
+};
+
+class ValidatorVisitor : public Visitor {
+public:
+  ValidatorVisitor(){};
+  void visit(const NProgram &node) override;
+  void visit(const NVariableDeclaration &node) override;
+  void visit(const NVariableAssignment &node) override;
+  void visit(const NVariableLookup &node) override;
+  void visit(const NFunctionDeclaration &node) override;
+  void visit(const NFunctionCall &node) override;
 
 private:
   std::map<std::string, const NFunctionDeclaration &> functions;
   std::map<std::string, yy::location> vars;
-  void validate(const Node &node);
-  void validate(const NProgram &node);
-  void validate(const NStatement &node);
-  void validate(const NExpression &node);
-  void validate(const NVariableDeclaration &node);
-  void validate(const NVariableAssignment &node);
-  void validate(const NVariableLookup &node);
-  void validate(const NBinaryOperation &node);
-  void validate(const NFunctionDeclaration &node);
-  void validate(const NFunctionCall &node);
-  void validate(const NFunctionReturn &node);
+};
+
+class Validator {
+public:
+  static void validate(const NProgram &node);
 };
 
 std::string emitLocation(const yy::location &loc);
