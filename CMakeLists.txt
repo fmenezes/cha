@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.0.0)
 project(ni VERSION 0.0.1 LANGUAGES CXX)
 
+set(CMAKE_CXX_CLANG_TIDY clang-tidy)
+
 find_package(FLEX REQUIRED)
 find_package(BISON REQUIRED)
 
@@ -86,6 +88,7 @@ file(GLOB TEST
         "test/**/*.cpp"
         )
 
+include(CTest)
 enable_testing()
 
 set(SRC_WITHOUT_MAIN ${SRC})
@@ -104,3 +107,8 @@ set_property(TARGET ni_unit_test PROPERTY CXX_STANDARD 14)
 
 include(GoogleTest)
 gtest_discover_tests(ni_unit_test)
+
+set(CPACK_PROJECT_NAME ${PROJECT_NAME})
+set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})
+include(CPack)
+
