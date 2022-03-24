@@ -1,6 +1,25 @@
 cmake_minimum_required(VERSION 3.0.0)
 project(ni VERSION 0.0.1 LANGUAGES CXX)
 
+find_program(CLANG_TIDY_EXECUTABLE clang-tidy)
+IF(CLANG_TIDY_EXECUTABLE)
+    EXECUTE_PROCESS(COMMAND ${CLANG_TIDY_EXECUTABLE} --version
+        OUTPUT_VARIABLE CLANG_TIDY_version_output
+        ERROR_VARIABLE CLANG_TIDY_version_error
+        RESULT_VARIABLE CLANG_TIDY_version_result
+        OUTPUT_STRIP_TRAILING_WHITESPACE)
+
+    IF(NOT ${CLANG_TIDY_version_result} EQUAL 0)
+        MESSAGE(SEND_ERROR "Command \"${CLANG_TIDY_EXECUTABLE} --version\" failed with output:\n${CLANG_TIDY_version_error}")
+    ELSE()
+        IF("${CLANG_TIDY_version_output}" MATCHES "version (.*)")
+            SET(CLANG_TIDY_VERSION "${CMAKE_MATCH_1}")
+        ENDIF()
+        MESSAGE(NOTICE "-- Found CLANG_TIDY: ${CLANG_TIDY_EXECUTABLE} (found version \"${CLANG_TIDY_VERSION}\")")
+    ENDIF()
+    set(CMAKE_CXX_CLANG_TIDY ${CLANG_TIDY_EXECUTABLE})
+ENDIF(CLANG_TIDY_EXECUTABLE)
+
 find_package(FLEX REQUIRED)
 find_package(BISON REQUIRED)
 
@@ -44,7 +63,7 @@ IF(CLANG_FORMAT_EXECUTABLE)
         OUTPUT_STRIP_TRAILING_WHITESPACE)
 
     IF(NOT ${CLANG_FORMAT_version_result} EQUAL 0)
-        MESSAGE(SEND_ERROR "Command \"${CLANG_FORMAT_PATH} --version\" failed with output:\n${CLANG_FORMAT_version_error}")
+        MESSAGE(SEND_ERROR "Command \"${CLANG_FORMAT_EXECUTABLE} --version\" failed with output:\n${CLANG_FORMAT_version_error}")
     ELSE()
         IF("${CLANG_FORMAT_version_output}" MATCHES "version (.*)")
             SET(CLANG_FORMAT_VERSION "${CMAKE_MATCH_1}")
@@ -86,6 +105,7 @@ file(GLOB TEST
         "test/**/*.cpp"
         )
 
+include(CTest)
 enable_testing()
 
 set(SRC_WITHOUT_MAIN ${SRC})
@@ -104,3 +124,8 @@ set_property(TARGET ni_unit_test PROPERTY CXX_STANDARD 14)
 
 include(GoogleTest)
 gtest_discover_tests(ni_unit_test)
+
+set(CPACK_PROJECT_NAME ${PROJECT_NAME})
+set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})
+include(CPack)
+
