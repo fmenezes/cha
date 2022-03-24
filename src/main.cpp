@@ -25,9 +25,8 @@ int main(int argc, char *argv[]) {
   ni::codegen::Codegen *c = nullptr;
   try {
     parser.parse(input);
-    ni::ast::Validator v(*parser.program);
-    v.validate();
-
+    ni::ast::Validator::validate(*parser.program);
+    
     if (format.compare("-asm") == 0) {
       c = new ni::codegen::ASMCodegen(*parser.program);
     } else {
