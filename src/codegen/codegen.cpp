@@ -3,7 +3,7 @@
 
 #include "ast/ast.hh"
 #include "codegen/codegen.hh"
-#include "parser.tab.hh"
+#include "generated/parser.tab.hh"
 
 ni::codegen::OS ni::codegen::Context::defaultOs() {
 #if defined(__APPLE__) || defined(__MACH__)

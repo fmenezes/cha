@@ -3,8 +3,8 @@
 #include <stdlib.h>
 
 #include "ast/ast.hh"
-#include "location.hh"
-#include "parser.tab.hh"
+#include "generated/location.hh"
+#include "generated/parser.tab.hh"
 
 std::string ni::ast::emitLocation(const yy::location &loc) {
   std::string ret = *loc.begin.filename + ":" + std::to_string(loc.begin.line) +

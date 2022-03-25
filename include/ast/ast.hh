@@ -6,7 +6,7 @@
 #include <string>
 #include <vector>
 
-#include "location.hh"
+#include "generated/location.hh"
 
 namespace ni {
 namespace ast {

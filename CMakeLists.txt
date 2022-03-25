@@ -1,25 +1,6 @@
 cmake_minimum_required(VERSION 3.0.0)
 project(ni VERSION 0.0.1 LANGUAGES CXX)
 
-find_program(CLANG_TIDY_EXECUTABLE clang-tidy)
-IF(CLANG_TIDY_EXECUTABLE)
-    EXECUTE_PROCESS(COMMAND ${CLANG_TIDY_EXECUTABLE} --version
-        OUTPUT_VARIABLE CLANG_TIDY_version_output
-        ERROR_VARIABLE CLANG_TIDY_version_error
-        RESULT_VARIABLE CLANG_TIDY_version_result
-        OUTPUT_STRIP_TRAILING_WHITESPACE)
-
-    IF(NOT ${CLANG_TIDY_version_result} EQUAL 0)
-        MESSAGE(SEND_ERROR "Command \"${CLANG_TIDY_EXECUTABLE} --version\" failed with output:\n${CLANG_TIDY_version_error}")
-    ELSE()
-        IF("${CLANG_TIDY_version_output}" MATCHES "version (.*)")
-            SET(CLANG_TIDY_VERSION "${CMAKE_MATCH_1}")
-        ENDIF()
-        MESSAGE(NOTICE "-- Found CLANG_TIDY: ${CLANG_TIDY_EXECUTABLE} (found version \"${CLANG_TIDY_VERSION}\")")
-    ENDIF()
-    set(CMAKE_CXX_CLANG_TIDY ${CLANG_TIDY_EXECUTABLE})
-ENDIF(CLANG_TIDY_EXECUTABLE)
-
 find_package(FLEX REQUIRED)
 find_package(BISON REQUIRED)
 
@@ -45,7 +26,7 @@ flex_target(parser src/ast/parser.l "${GENERATED_DIR}/parser.yy.c")
 
 bison_target(parser src/ast/parser.yy "${GENERATED_DIR}/parser.tab.cc")
 
-include_directories(include ${GENERATED_DIR})
+include_directories(include ${CMAKE_CURRENT_BINARY_DIR})
 
 set_source_files_properties(${FLEX_parser_OUTPUTS} PROPERTIES LANGUAGE CXX)
 
@@ -89,10 +70,11 @@ IF(CLANG_FORMAT_EXECUTABLE)
     )
 ENDIF(CLANG_FORMAT_EXECUTABLE)
 
+set(GTEST_SHA "0affd45b62371c1de44064a5a5f8817242208442")
 include(FetchContent)
 FetchContent_Declare(
   googletest
-  URL https://github.com/google/googletest/archive/0affd45b62371c1de44064a5a5f8817242208442.zip
+  URL https://github.com/google/googletest/archive/${GTEST_SHA}.zip
 )
 # For Windows: Prevent overriding the parent project's compiler/linker settings
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
@@ -128,4 +110,28 @@ gtest_discover_tests(ni_unit_test)
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})
 set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})
 include(CPack)
+
+
+find_program(CLANG_TIDY_EXECUTABLE clang-tidy)
+IF(CLANG_TIDY_EXECUTABLE)
+    EXECUTE_PROCESS(COMMAND ${CLANG_TIDY_EXECUTABLE} --version
+        OUTPUT_VARIABLE CLANG_TIDY_version_output
+        ERROR_VARIABLE CLANG_TIDY_version_error
+        RESULT_VARIABLE CLANG_TIDY_version_result
+        OUTPUT_STRIP_TRAILING_WHITESPACE)
+
+    IF(NOT ${CLANG_TIDY_version_result} EQUAL 0)
+        MESSAGE(SEND_ERROR "Command \"${CLANG_TIDY_EXECUTABLE} --version\" failed with output:\n${CLANG_TIDY_version_error}")
+    ELSE()
+        IF("${CLANG_TIDY_version_output}" MATCHES "version (.*)")
+            SET(CLANG_TIDY_VERSION "${CMAKE_MATCH_1}")
+        ENDIF()
+        MESSAGE(NOTICE "-- Found CLANG_TIDY: ${CLANG_TIDY_EXECUTABLE} (found version \"${CLANG_TIDY_VERSION}\")")
+    ENDIF()
+    set_target_properties(
+        ni
+        PROPERTIES
+            CXX_CLANG_TIDY ${CLANG_TIDY_EXECUTABLE}
+    )
+ENDIF(CLANG_TIDY_EXECUTABLE)
 
