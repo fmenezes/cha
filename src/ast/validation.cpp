@@ -50,8 +50,7 @@ void ni::ast::Validator::visit(const ni::ast::NVariableLookup &node) {
   ni::ast::Visitor::visit(node);
 }
 
-void ni::ast::Validator::visit(
-    const ni::ast::NVariableAssignment &node) {
+void ni::ast::Validator::visit(const ni::ast::NVariableAssignment &node) {
   auto it = this->vars.find(node.identifier);
   if (it == this->vars.end()) {
     throw yy::parser::syntax_error(
@@ -60,8 +59,7 @@ void ni::ast::Validator::visit(
   ni::ast::Visitor::visit(node);
 }
 
-void ni::ast::Validator::visit(
-    const ni::ast::NVariableDeclaration &node) {
+void ni::ast::Validator::visit(const ni::ast::NVariableDeclaration &node) {
   auto it = this->vars.find(node.identifier);
   if (it != this->vars.end()) {
     throw yy::parser::syntax_error(node.location,
@@ -74,8 +72,7 @@ void ni::ast::Validator::visit(
   ni::ast::Visitor::visit(node);
 }
 
-void ni::ast::Validator::visit(
-    const ni::ast::NFunctionDeclaration &node) {
+void ni::ast::Validator::visit(const ni::ast::NFunctionDeclaration &node) {
   this->vars.clear();
 
   for (auto &arg : node.args) {
