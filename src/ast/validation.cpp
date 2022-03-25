@@ -22,7 +22,7 @@ std::string ni::ast::emitLocation(const yy::location &loc) {
   return ret;
 }
 
-void ni::ast::ValidatorVisitor::visit(const ni::ast::NFunctionCall &node) {
+void ni::ast::Validator::visit(const ni::ast::NFunctionCall &node) {
   auto it = functions.find(node.identifier);
   if (it == functions.end()) {
     throw yy::parser::syntax_error(
@@ -40,7 +40,7 @@ void ni::ast::ValidatorVisitor::visit(const ni::ast::NFunctionCall &node) {
   ni::ast::Visitor::visit(node);
 }
 
-void ni::ast::ValidatorVisitor::visit(const ni::ast::NVariableLookup &node) {
+void ni::ast::Validator::visit(const ni::ast::NVariableLookup &node) {
   auto it = vars.find(node.identifier);
   if (it == vars.end()) {
     throw yy::parser::syntax_error(
@@ -50,8 +50,7 @@ void ni::ast::ValidatorVisitor::visit(const ni::ast::NVariableLookup &node) {
   ni::ast::Visitor::visit(node);
 }
 
-void ni::ast::ValidatorVisitor::visit(
-    const ni::ast::NVariableAssignment &node) {
+void ni::ast::Validator::visit(const ni::ast::NVariableAssignment &node) {
   auto it = this->vars.find(node.identifier);
   if (it == this->vars.end()) {
     throw yy::parser::syntax_error(
@@ -60,8 +59,7 @@ void ni::ast::ValidatorVisitor::visit(
   ni::ast::Visitor::visit(node);
 }
 
-void ni::ast::ValidatorVisitor::visit(
-    const ni::ast::NVariableDeclaration &node) {
+void ni::ast::Validator::visit(const ni::ast::NVariableDeclaration &node) {
   auto it = this->vars.find(node.identifier);
   if (it != this->vars.end()) {
     throw yy::parser::syntax_error(node.location,
@@ -74,8 +72,7 @@ void ni::ast::ValidatorVisitor::visit(
   ni::ast::Visitor::visit(node);
 }
 
-void ni::ast::ValidatorVisitor::visit(
-    const ni::ast::NFunctionDeclaration &node) {
+void ni::ast::Validator::visit(const ni::ast::NFunctionDeclaration &node) {
   this->vars.clear();
 
   for (auto &arg : node.args) {
@@ -92,7 +89,7 @@ void ni::ast::ValidatorVisitor::visit(
   ni::ast::Visitor::visit(node);
 }
 
-void ni::ast::ValidatorVisitor::visit(const ni::ast::NProgram &node) {
+void ni::ast::Validator::visit(const ni::ast::NProgram &node) {
   for (auto &n : node.instructions) {
     auto it = this->functions.find(n->identifier);
     if (it != this->functions.end()) {
@@ -108,6 +105,6 @@ void ni::ast::ValidatorVisitor::visit(const ni::ast::NProgram &node) {
 }
 
 void ni::ast::Validator::validate(const ni::ast::NProgram &node) {
-  ni::ast::ValidatorVisitor v;
+  ni::ast::Validator v;
   v.visit(node);
 }

@@ -170,6 +170,8 @@ public:
 class Visitor {
 public:
   Visitor(){};
+
+protected:
   virtual void visit(const Node &node);
   virtual void visit(const NProgram &node);
   virtual void visit(const NStatement &node);
@@ -185,9 +187,11 @@ public:
   virtual void visit(const NFunctionReturn &node);
 };
 
-class ValidatorVisitor : public Visitor {
+class Validator : public Visitor {
 public:
-  ValidatorVisitor(){};
+  static void validate(const NProgram &node);
+
+protected:
   void visit(const NProgram &node) override;
   void visit(const NVariableDeclaration &node) override;
   void visit(const NVariableAssignment &node) override;
@@ -198,11 +202,6 @@ public:
 private:
   std::map<std::string, const NFunctionDeclaration &> functions;
   std::map<std::string, yy::location> vars;
-};
-
-class Validator {
-public:
-  static void validate(const NProgram &node);
 };
 
 std::string emitLocation(const yy::location &loc);
