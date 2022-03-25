@@ -13,150 +13,66 @@ const std::vector<ni::codegen::Operand>
           (ni::codegen::Operand)ni::codegen::Register32Bits::R8D,
           (ni::codegen::Operand)ni::codegen::Register32Bits::R9D});
 
-ni::codegen::Operand
-ni::codegen::ASMCodegen::internalCodegen(const ni::ast::Node &node) {
-  auto s = dynamic_cast<const ni::ast::NStatement *>(&node);
-  if (s != nullptr) {
-    return this->internalCodegen(*s);
-  }
-
-  auto fd = dynamic_cast<const ni::ast::NFunctionDeclaration *>(&node);
-  if (fd != nullptr) {
-    return this->internalCodegen(*fd);
-  }
-
-  auto p = dynamic_cast<const ni::ast::NProgram *>(&node);
-  if (p != nullptr) {
-    return this->internalCodegen(*p);
-  }
-
-  throw std::runtime_error("Unkown node type");
+void ni::codegen::ASMCodegen::visit(const ni::ast::NConstantInteger &node) {
+  this->returnOperand = ni::codegen::Operand(std::stoi(node.value));
 }
 
-ni::codegen::Operand
-ni::codegen::ASMCodegen::internalCodegen(const ni::ast::NStatement &node) {
-  auto d = dynamic_cast<const ni::ast::NVariableDeclaration *>(&node);
-  if (d != nullptr) {
-    return this->internalCodegen(*d);
-  }
-
-  auto a = dynamic_cast<const ni::ast::NVariableAssignment *>(&node);
-  if (a != nullptr) {
-    return this->internalCodegen(*a);
-  }
-
-  auto fr = dynamic_cast<const ni::ast::NFunctionReturn *>(&node);
-  if (fr != nullptr) {
-    return this->internalCodegen(*fr);
-  }
-
-  auto e = dynamic_cast<const ni::ast::NExpression *>(&node);
-  if (e != nullptr) {
-    return this->internalCodegen(*e);
-  }
-
-  throw std::runtime_error("Unkown node type");
-}
-
-ni::codegen::Operand
-ni::codegen::ASMCodegen::internalCodegen(const ni::ast::NExpression &node) {
-  auto c = dynamic_cast<const ni::ast::NConstant *>(&node);
-  if (c != nullptr) {
-    return this->internalCodegen(*c);
-  }
-
-  auto b = dynamic_cast<const ni::ast::NBinaryOperation *>(&node);
-  if (b != nullptr) {
-    return this->internalCodegen(*b);
-  }
-
-  auto l = dynamic_cast<const ni::ast::NVariableLookup *>(&node);
-  if (l != nullptr) {
-    return this->internalCodegen(*l);
-  }
-
-  auto fc = dynamic_cast<const ni::ast::NFunctionCall *>(&node);
-  if (fc != nullptr) {
-    return this->internalCodegen(*fc);
-  }
-
-  throw std::runtime_error("Unkown node type");
-}
-
-ni::codegen::Operand
-ni::codegen::ASMCodegen::internalCodegen(const ni::ast::NConstant &node) {
-  auto i = dynamic_cast<const ni::ast::NConstantInteger *>(&node);
-  if (i != nullptr) {
-    return this->internalCodegen(*i);
-  }
-
-  throw std::runtime_error("Unkown node type");
-}
-
-ni::codegen::Operand ni::codegen::ASMCodegen::internalCodegen(
-    const ni::ast::NConstantInteger &node) {
-  return ni::codegen::Operand(std::stoi(node.value));
-}
-
-ni::codegen::Operand ni::codegen::ASMCodegen::internalCodegen(
-    const ni::ast::NBinaryOperation &node) {
-  ni::codegen::Operand laddr = this->internalCodegen(*node.left);
+void ni::codegen::ASMCodegen::visit(const ni::ast::NBinaryOperation &node) {
+  ni::ast::Visitor::visit(*node.left);
+  ni::codegen::Operand laddr = this->returnOperand;
   if (laddr == Register32Bits::EAX) {
     this->printer.mov(Register32Bits::ECX, laddr);
     laddr = (ni::codegen::Operand)Register32Bits::ECX;
   }
 
-  ni::codegen::Operand raddr = this->internalCodegen(*node.right);
+  ni::ast::Visitor::visit(*node.right);
+  ni::codegen::Operand raddr = this->returnOperand;
   if (raddr != Register32Bits::EAX) {
     this->printer.mov(Register32Bits::EAX, raddr);
     raddr = (ni::codegen::Operand)Register32Bits::EAX;
   }
 
+  this->returnOperand = raddr;
+
   if (node.op.compare("+") == 0) {
     this->printer.add(raddr, laddr);
-    return raddr;
   } else if (node.op.compare("-") == 0) {
     this->printer.sub(raddr, laddr);
-    return raddr;
   } else if (node.op.compare("*") == 0) {
     this->printer.imul(raddr, laddr);
-    return raddr;
+  } else {
+    throw std::runtime_error("invalid operation " + node.op);
   }
-
-  throw std::runtime_error("Invalid operation " + node.op);
 }
 
-ni::codegen::Operand
-ni::codegen::ASMCodegen::internalCodegen(const ni::ast::NVariableLookup &node) {
+void ni::codegen::ASMCodegen::visit(const ni::ast::NVariableLookup &node) {
   auto s = this->vars.find(node.identifier);
   if (s == this->vars.end()) {
     throw std::runtime_error(node.identifier + " not found.");
   }
-  return s->second;
+  this->returnOperand = s->second;
 }
 
-ni::codegen::Operand ni::codegen::ASMCodegen::internalCodegen(
-    const ni::ast::NVariableAssignment &node) {
+void ni::codegen::ASMCodegen::visit(const ni::ast::NVariableAssignment &node) {
   auto s = this->vars.find(node.identifier);
   if (s == this->vars.end()) {
     throw std::runtime_error(node.identifier + " not found.");
   }
-  ni::codegen::Operand addr = this->internalCodegen(*node.value);
-  this->printer.mov(s->second, addr);
-  return s->second;
+  ni::ast::Visitor::visit(*node.value);
+  this->printer.mov(s->second, this->returnOperand);
+  this->returnOperand = s->second;
 }
 
-ni::codegen::Operand ni::codegen::ASMCodegen::internalCodegen(
-    const ni::ast::NVariableDeclaration &node) {
+void ni::codegen::ASMCodegen::visit(const ni::ast::NVariableDeclaration &node) {
   auto s = this->vars.find(node.identifier);
   if (s != this->vars.end()) {
     throw std::runtime_error(node.identifier + " already exists.");
   }
 
   this->currentStackPosition -= 4;
-  Operand returnAddr = Operand(Register64Bits::RBP, this->currentStackPosition);
-  this->vars.insert({node.identifier, returnAddr});
-  return returnAddr;
+  this->returnOperand =
+      Operand(Register64Bits::RBP, this->currentStackPosition);
+  this->vars.insert({node.identifier, this->returnOperand});
 }
 int calculateMemorySize(const ni::ast::Node *node) {
   auto b = dynamic_cast<const ni::ast::NBinaryOperation *>(node);
@@ -186,8 +102,7 @@ int calculateMemorySize(const ni::ast::Node *node) {
   return 0;
 }
 
-ni::codegen::Operand ni::codegen::ASMCodegen::internalCodegen(
-    const ni::ast::NFunctionDeclaration &node) {
+void ni::codegen::ASMCodegen::visit(const ni::ast::NFunctionDeclaration &node) {
   this->currentFunctionName = node.identifier;
 
   this->printer.global(this->currentFunctionName);
@@ -223,19 +138,16 @@ ni::codegen::Operand ni::codegen::ASMCodegen::internalCodegen(
   }
 
   for (const auto &it : node.body) {
-    this->internalCodegen(*it);
+    ni::ast::Visitor::visit(*it);
   }
 
   this->printer.label(this->currentFunctionName + "_epilogue");
   this->printer.add(Register64Bits::RSP, memorySize);
   this->printer.pop(Register64Bits::RBP);
   this->printer.ret();
-
-  return Operand();
 }
 
-ni::codegen::Operand
-ni::codegen::ASMCodegen::internalCodegen(const ni::ast::NFunctionCall &node) {
+void ni::codegen::ASMCodegen::visit(const ni::ast::NFunctionCall &node) {
   int argc = node.params.size();
   if (argc > REGS.size()) {
     argc = REGS.size();
@@ -243,13 +155,13 @@ ni::codegen::ASMCodegen::internalCodegen(const ni::ast::NFunctionCall &node) {
   for (int i = 0; i < argc; i++) {
     auto &param = *node.params[i];
     auto reg = REGS[i];
-    auto addr = this->internalCodegen(param);
-    this->printer.mov(REGS[i], addr);
+    ni::ast::Visitor::visit(param);
+    this->printer.mov(REGS[i], this->returnOperand);
   }
   for (int i = (node.params.size() - 1); i >= 6; i--) {
     auto &param = *node.params[i];
-    auto addr = this->internalCodegen(param);
-    this->printer.push(addr);
+    ni::ast::Visitor::visit(param);
+    this->printer.push(this->returnOperand);
   }
 
   this->printer.call(node.identifier);
@@ -260,19 +172,19 @@ ni::codegen::ASMCodegen::internalCodegen(const ni::ast::NFunctionCall &node) {
     this->printer.add(Register64Bits::RSP, (argc * 8));
   }
 
-  return Register32Bits::EAX;
+  this->returnOperand = Register32Bits::EAX;
 }
 
-ni::codegen::Operand
-ni::codegen::ASMCodegen::internalCodegen(const ni::ast::NFunctionReturn &node) {
+void ni::codegen::ASMCodegen::visit(const ni::ast::NFunctionReturn &node) {
   if (node.value.get() != nullptr) {
-    auto addr = this->internalCodegen(*node.value.get());
+    ni::ast::Visitor::visit(*node.value);
+    auto addr = this->returnOperand;
     if (addr != Register32Bits::EAX) {
       this->printer.mov(Register32Bits::EAX, addr);
     }
   }
   this->printer.jmp(this->currentFunctionName + "_epilogue");
-  return (ni::codegen::Operand)Register32Bits::EAX;
+  this->returnOperand = Register32Bits::EAX;
 }
 
 void ni::codegen::ASMCodegen::generateExitCall() {
@@ -285,14 +197,10 @@ void ni::codegen::ASMCodegen::generateExitCall() {
   this->printer.syscall();
 }
 
-ni::codegen::Operand
-ni::codegen::ASMCodegen::internalCodegen(const ni::ast::NProgram &node) {
+void ni::codegen::ASMCodegen::visit(const ni::ast::NProgram &node) {
   this->printer.textHeader();
-  for (const auto &it : node.instructions) {
-    this->internalCodegen(*it);
-  }
   this->generateStartFunction();
-  return Operand();
+  ni::ast::Visitor::visit(node);
 }
 
 void ni::codegen::ASMCodegen::generateStartFunction() {
@@ -304,6 +212,6 @@ void ni::codegen::ASMCodegen::generateStartFunction() {
 
 void ni::codegen::ASMCodegen::codegen(const std::string &output) {
   this->printer.openFile(output);
-  this->internalCodegen(this->program);
+  this->visit(this->program);
   this->printer.closeFile();
 }

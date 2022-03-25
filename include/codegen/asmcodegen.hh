@@ -12,12 +12,23 @@
 
 namespace ni {
 namespace codegen {
-class ASMCodegen : public Codegen {
+class ASMCodegen : public ni::ast::Visitor, public Codegen {
 public:
   ASMCodegen(const ni::ast::NProgram &p) : Codegen(p){};
   ASMCodegen(const ni::ast::NProgram &p, const Context &context)
       : Codegen(p, context), printer(context){};
-  virtual void codegen(const std::string &output);
+  void codegen(const std::string &output) override;
+
+protected:
+  void visit(const ni::ast::NProgram &node) override;
+  void visit(const ni::ast::NFunctionDeclaration &node) override;
+  void visit(const ni::ast::NFunctionCall &node) override;
+  void visit(const ni::ast::NFunctionReturn &node) override;
+  void visit(const ni::ast::NVariableLookup &node) override;
+  void visit(const ni::ast::NVariableDeclaration &node) override;
+  void visit(const ni::ast::NVariableAssignment &node) override;
+  void visit(const ni::ast::NBinaryOperation &node) override;
+  void visit(const ni::ast::NConstantInteger &node) override;
 
 private:
   ATTPrinter printer;
@@ -26,19 +37,7 @@ private:
   int currentStackPosition;
   void generateExitCall();
   void generateStartFunction();
-  Operand internalCodegen(const ni::ast::NProgram &node);
-  Operand internalCodegen(const ni::ast::NStatement &node);
-  Operand internalCodegen(const ni::ast::NConstant &node);
-  Operand internalCodegen(const ni::ast::NExpression &node);
-  Operand internalCodegen(const ni::ast::NFunctionDeclaration &node);
-  Operand internalCodegen(const ni::ast::NFunctionCall &node);
-  Operand internalCodegen(const ni::ast::NFunctionReturn &node);
-  Operand internalCodegen(const ni::ast::NVariableLookup &node);
-  Operand internalCodegen(const ni::ast::NVariableDeclaration &node);
-  Operand internalCodegen(const ni::ast::NVariableAssignment &node);
-  Operand internalCodegen(const ni::ast::NBinaryOperation &node);
-  Operand internalCodegen(const ni::ast::NConstantInteger &node);
-  Operand internalCodegen(const ni::ast::Node &node);
+  Operand returnOperand;
 };
 } // namespace codegen
 } // namespace ni

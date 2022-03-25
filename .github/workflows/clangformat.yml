@@ -35,4 +35,4 @@ jobs:
           cd build
           cmake ..
       - name: Check
-        run: cd build && make check-format
+        run: cmake --build build --target check-format
