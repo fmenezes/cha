@@ -4,7 +4,7 @@
 #include "ast/ast.hh"
 #include "codegen/asmcodegen.hh"
 #include "codegen/codegen.hh"
-#include "parser.tab.hh"
+#include "generated/parser.tab.hh"
 
 void printUsage(const std::string &app) {
   std::cerr << "Usage: " << app << " <format> <srcfile> <destfile>" << std::endl
