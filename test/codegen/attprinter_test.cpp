@@ -26,7 +26,7 @@ protected:
     return tmp;
   }
 
-  virtual void SetUp(const ni::codegen::Context &c) {
+  void SetUp(const ni::codegen::Context &c) {
     this->printer = new ni::codegen::ATTPrinter(c);
     this->filename.append(makeTempDir());
     this->filename.append("test");
@@ -41,7 +41,7 @@ protected:
     return buffer.str();
   }
 
-  virtual void TearDown() {
+  void TearDown() override {
     printer->closeFile();
     delete printer;
   }

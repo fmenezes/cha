@@ -7,8 +7,11 @@
 #include "generated/parser.tab.hh"
 
 std::string ni::ast::emitLocation(const yy::location &loc) {
-  std::string ret = *loc.begin.filename + ":" + std::to_string(loc.begin.line) +
-                    ":" + std::to_string(loc.begin.column);
+  std::string ret =
+      std::to_string(loc.begin.line) + ":" + std::to_string(loc.begin.column);
+  if (loc.begin.filename != nullptr) {
+    ret = *loc.begin.filename + ":" + ret;
+  }
   if (loc.begin.filename != nullptr && loc.end.filename != nullptr &&
       loc.begin.filename->compare(*loc.end.filename) != 0) {
     ret += "-" + *loc.end.filename + ":" + std::to_string(loc.end.line) + ":" +
