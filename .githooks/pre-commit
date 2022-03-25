@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+pushd "$(pwd)"
+if [ ! -d "./build" ]; then
+    mkdir build
+fi
+cd build
+
+echo "Preparing cmake"
+cmake ..
+result=$?
+if [ $result -ne 0 ]; then
+    echo "Something went wrong with cmake"
+    exit 1
+fi
+cmake --build . --target check-format
+result=$?
+if [ $result -ne 0 ]; then
+    echo "Something went wrong with format, try running:"
+    echo "cmake --build build --target format"
+    exit 1
+fi
+cmake --build .
+result=$?
+if [ $result -ne 0 ]; then
+    echo "Something went wrong with code build"
+    exit 1
+fi
+cd ..
+./scripts/test.sh
+result=$?
+if [ $result -ne 0 ]; then
+    echo "Something went wrong with code generation"
+    exit 1
+fi
+popd
