@@ -215,19 +215,19 @@ std::string getSuffix(const ni::codegen::Operand &dst,
   }
 
   switch (size) {
-  case 8: { //byte
+  case 8: { // byte
     return "b";
   }
-  case 16: { //word
+  case 16: { // word
     return "w";
   }
-  case 32: { //long
+  case 32: { // long
     return "l";
   }
-  case 64: { //quad word
+  case 64: { // quad word
     return "q";
   }
-  case 80: { //temporary decimal
+  case 80: { // temporary decimal
     return "t";
   }
   default: {
