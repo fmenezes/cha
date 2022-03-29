@@ -10,6 +10,7 @@ namespace {
 class ATTPrinterTest : public ::testing::Test {
 
 protected:
+  std::string dir;
   std::string filename;
   ni::codegen::ATTPrinter *printer;
 
@@ -18,18 +19,19 @@ protected:
   virtual ~ATTPrinterTest() {}
 
   std::string makeTempDir() {
-    char buf[] = "niXXXXXX";
+    char buf[] = "ni_unit_test_attprinter_XXXXXX";
     char *tmp = mkdtemp(buf);
     if (tmp == nullptr) {
       throw std::runtime_error("unexpected error: " + std::to_string(errno));
     }
-    return tmp;
+    return std::string("./") + tmp;
   }
 
   void SetUp(const ni::codegen::Context &c) {
     this->printer = new ni::codegen::ATTPrinter(c);
-    this->filename.append(makeTempDir());
-    this->filename.append("test");
+    this->dir = makeTempDir();
+    this->filename.append(this->dir);
+    this->filename.append("/test");
 
     printer->openFile(filename);
   }
@@ -43,6 +45,8 @@ protected:
 
   void TearDown() override {
     printer->closeFile();
+    remove(this->filename.c_str());
+    remove(this->dir.c_str());
     delete printer;
   }
 };
