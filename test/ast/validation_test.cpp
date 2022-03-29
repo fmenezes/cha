@@ -57,6 +57,13 @@ protected:
   }
 };
 
+TEST_F(ASTValidatorTest, Passes) {
+  auto p = Parse("fun main() int {\n"
+                 "  ret 1\n"
+                 "}\n");
+  EXPECT_NO_THROW(ni::ast::Validator::validate(*p));
+}
+
 TEST_F(ASTValidatorTest, DupFunctionTest) {
   auto p = Parse("fun test() {\n"
                  "  ret\n"
