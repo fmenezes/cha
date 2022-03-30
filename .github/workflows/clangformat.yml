@@ -6,7 +6,7 @@ jobs:
     name: check format
     runs-on: ubuntu-latest
     env:
-      LLVM_VERSION: 13
+      LLVM_VERSION: 14
     steps:
       - uses: actions/checkout@v2
         with:

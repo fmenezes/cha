@@ -19,6 +19,7 @@ using namespace std::string_literals;
 %nterm <std::unique_ptr<ni::ast::NConstant>> const;
 %nterm <std::unique_ptr<ni::ast::NStatement>> statement;
 %nterm <std::unique_ptr<ni::ast::NFunctionDeclaration>> function;
+%nterm <std::unique_ptr<ni::ast::NBlock>> block;
 %nterm <std::vector<std::unique_ptr<ni::ast::NStatement>>> statements;
 %nterm <std::unique_ptr<ni::ast::NType>> typedef;
 %nterm <std::vector<std::unique_ptr<ni::ast::NArgument>>> def_args;
@@ -58,10 +59,16 @@ instructions :
 	;
 
 function :
-	FUN IDENTIFIER OPENPAR CLOSEPAR OPENCUR statements CLOSECUR						{ $$ = std::make_unique<ni::ast::NFunctionDeclaration>($2, $6, yy::location(@1.begin, @7.end)); }
-	| FUN IDENTIFIER OPENPAR def_args CLOSEPAR OPENCUR statements CLOSECUR			{ $$ = std::make_unique<ni::ast::NFunctionDeclaration>($2, $4, $7, yy::location(@1.begin, @8.end)); }
-	| FUN IDENTIFIER OPENPAR CLOSEPAR typedef OPENCUR statements CLOSECUR			{ $$ = std::make_unique<ni::ast::NFunctionDeclaration>($2, $5, $7, yy::location(@1.begin, @8.end)); }
-	| FUN IDENTIFIER OPENPAR def_args CLOSEPAR typedef OPENCUR statements CLOSECUR	{ $$ = std::make_unique<ni::ast::NFunctionDeclaration>($2, $4, $6, $8, yy::location(@1.begin, @9.end)); }
+	FUN IDENTIFIER OPENPAR CLOSEPAR block											{ $$ = std::make_unique<ni::ast::NFunctionDeclaration>($2, $5, yy::location(@1.begin, @5.end)); }
+	| FUN IDENTIFIER OPENPAR def_args CLOSEPAR block								{ $$ = std::make_unique<ni::ast::NFunctionDeclaration>($2, $4, $6, yy::location(@1.begin, @6.end)); }
+	| FUN IDENTIFIER OPENPAR CLOSEPAR typedef block									{ $$ = std::make_unique<ni::ast::NFunctionDeclaration>($2, $5, $6, yy::location(@1.begin, @6.end)); }
+	| FUN IDENTIFIER OPENPAR def_args CLOSEPAR typedef block						{ $$ = std::make_unique<ni::ast::NFunctionDeclaration>($2, $4, $6, $7, yy::location(@1.begin, @7.end)); }
+	;
+
+block :
+	OPENCUR statements CLOSECUR														{ $$ = std::make_unique<ni::ast::NBlock>($2, yy::location(@1.begin, @3.end)); }
+	| OPENCUR CLOSECUR																{ std::vector<std::unique_ptr<ni::ast::NStatement>> e;
+																					  $$ = std::make_unique<ni::ast::NBlock>(e, yy::location(@1.begin, @2.end)); }
 	;
 
 def_args :

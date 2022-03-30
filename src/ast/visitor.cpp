@@ -1,9 +1,19 @@
 #include "ast/ast.hh"
 
 void ni::ast::Visitor::visit(const ni::ast::Node &node) {
+  auto a = dynamic_cast<const ni::ast::NArgument *>(&node);
+  if (a != nullptr) {
+    return this->visit(*a);
+  }
+
   auto s = dynamic_cast<const ni::ast::NStatement *>(&node);
   if (s != nullptr) {
     return this->visit(*s);
+  }
+
+  auto b = dynamic_cast<const ni::ast::NBlock *>(&node);
+  if (b != nullptr) {
+    return this->visit(*b);
   }
 
   auto fd = dynamic_cast<const ni::ast::NFunctionDeclaration *>(&node);
@@ -74,12 +84,19 @@ void ni::ast::Visitor::visit(const ni::ast::NVariableAssignment &node) {
   this->visit(*node.value);
 }
 void ni::ast::Visitor::visit(const ni::ast::NVariableLookup &node) {}
+void ni::ast::Visitor::visit(const ni::ast::NArgument &node) {}
 void ni::ast::Visitor::visit(const ni::ast::NBinaryOperation &node) {
   this->visit(*node.left);
   this->visit(*node.right);
 }
 void ni::ast::Visitor::visit(const ni::ast::NFunctionDeclaration &node) {
-  for (auto &it : node.body) {
+  for (auto &it : node.args) {
+    this->visit(*it);
+  }
+  this->visit(*node.body);
+}
+void ni::ast::Visitor::visit(const ni::ast::NBlock &node) {
+  for (auto &it : node.statements) {
     this->visit(*it);
   }
 }
