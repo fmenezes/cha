@@ -99,32 +99,40 @@ public:
       : identifier(identifier), NExpression(location){};
 };
 
+class NBlock : public Node {
+public:
+  const std::vector<std::unique_ptr<NStatement>> statements;
+  NBlock(std::vector<std::unique_ptr<NStatement>> &statements,
+         const yy::location &location)
+      : statements(std::move(statements)), Node(location){};
+};
+
 class NFunctionDeclaration : public Node {
 public:
   const std::string identifier;
+  const std::unique_ptr<NBlock> body;
   const std::unique_ptr<NType> returnType;
   const std::vector<std::unique_ptr<NArgument>> args;
-  const std::vector<std::unique_ptr<NStatement>> body;
   NFunctionDeclaration(const std::string &identifier,
-                       std::vector<std::unique_ptr<NStatement>> &body,
+                       std::unique_ptr<NBlock> &body,
                        const yy::location &location)
       : identifier(identifier), body(std::move(body)), Node(location){};
   NFunctionDeclaration(const std::string &identifier,
                        std::vector<std::unique_ptr<NArgument>> &args,
-                       std::vector<std::unique_ptr<NStatement>> &body,
+                       std::unique_ptr<NBlock> &body,
                        const yy::location &location)
       : identifier(identifier), args(std::move(args)), body(std::move(body)),
         Node(location){};
   NFunctionDeclaration(const std::string &identifier,
                        std::unique_ptr<NType> &returnType,
-                       std::vector<std::unique_ptr<NStatement>> &body,
+                       std::unique_ptr<NBlock> &body,
                        const yy::location &location)
       : identifier(identifier), returnType(std::move(returnType)),
         body(std::move(body)), Node(location){};
   NFunctionDeclaration(const std::string &identifier,
                        std::vector<std::unique_ptr<NArgument>> &args,
                        std::unique_ptr<NType> &returnType,
-                       std::vector<std::unique_ptr<NStatement>> &body,
+                       std::unique_ptr<NBlock> &body,
                        const yy::location &location)
       : identifier(identifier), returnType(std::move(returnType)),
         args(std::move(args)), body(std::move(body)), Node(location){};
@@ -185,6 +193,8 @@ protected:
   virtual void visit(const NFunctionDeclaration &node);
   virtual void visit(const NFunctionCall &node);
   virtual void visit(const NFunctionReturn &node);
+  virtual void visit(const NBlock &node);
+  virtual void visit(const NArgument &node);
 };
 
 class Validator : public Visitor {

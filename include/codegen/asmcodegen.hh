@@ -12,7 +12,17 @@
 
 namespace ni {
 namespace codegen {
-class ASMCodegen : public ni::ast::Visitor, public Codegen {
+
+const std::vector<ni::codegen::Operand>
+    REGS({(ni::codegen::Operand)ni::codegen::Register32Bits::EDI,
+          (ni::codegen::Operand)ni::codegen::Register32Bits::ESI,
+          (ni::codegen::Operand)ni::codegen::Register32Bits::EDX,
+          (ni::codegen::Operand)ni::codegen::Register32Bits::ECX,
+          (ni::codegen::Operand)ni::codegen::Register32Bits::R8D,
+          (ni::codegen::Operand)ni::codegen::Register32Bits::R9D});
+
+class ASMCodegen : public ni::ast::Visitor,
+                   public Codegen {
 public:
   ASMCodegen(const ni::ast::NProgram &p) : Codegen(p){};
   ASMCodegen(const ni::ast::NProgram &p, const Context &context)

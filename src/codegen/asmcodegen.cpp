@@ -4,14 +4,7 @@
 #include "ast/ast.hh"
 #include "codegen/asmcodegen.hh"
 #include "codegen/codegen.hh"
-
-const std::vector<ni::codegen::Operand>
-    REGS({(ni::codegen::Operand)ni::codegen::Register32Bits::EDI,
-          (ni::codegen::Operand)ni::codegen::Register32Bits::ESI,
-          (ni::codegen::Operand)ni::codegen::Register32Bits::EDX,
-          (ni::codegen::Operand)ni::codegen::Register32Bits::ECX,
-          (ni::codegen::Operand)ni::codegen::Register32Bits::R8D,
-          (ni::codegen::Operand)ni::codegen::Register32Bits::R9D});
+#include "codegen/memorycalculator.hh"
 
 void ni::codegen::ASMCodegen::visit(const ni::ast::NConstantInteger &node) {
   this->returnOperand = ni::codegen::Operand(std::stoi(node.value));
@@ -74,33 +67,6 @@ void ni::codegen::ASMCodegen::visit(const ni::ast::NVariableDeclaration &node) {
       Operand(Register64Bits::RBP, this->currentStackPosition);
   this->vars.insert({node.identifier, this->returnOperand});
 }
-int calculateMemorySize(const ni::ast::Node *node) {
-  auto b = dynamic_cast<const ni::ast::NBinaryOperation *>(node);
-  if (b != nullptr) {
-    return calculateMemorySize(b->left.get()) +
-           calculateMemorySize(b->right.get());
-  }
-
-  auto d = dynamic_cast<const ni::ast::NVariableDeclaration *>(node);
-  if (d != nullptr) {
-    return 4;
-  }
-
-  auto fd = dynamic_cast<const ni::ast::NFunctionDeclaration *>(node);
-  if (fd != nullptr) {
-    int ret = fd->args.size() * 4;
-    if (fd->args.size() > REGS.size()) {
-      ret = REGS.size() * 4;
-    }
-    ret += 4;
-    for (auto &it : fd->body) {
-      ret += calculateMemorySize(it.get());
-    }
-    return ret;
-  }
-
-  return 0;
-}
 
 void ni::codegen::ASMCodegen::visit(const ni::ast::NFunctionDeclaration &node) {
   this->currentFunctionName = node.identifier;
@@ -108,7 +74,7 @@ void ni::codegen::ASMCodegen::visit(const ni::ast::NFunctionDeclaration &node) {
   this->printer.global(this->currentFunctionName);
   this->printer.label(this->currentFunctionName);
 
-  int memorySize = calculateMemorySize(&node);
+  int memorySize = MemoryCalculator::calculare(node);
   this->printer.push(Register64Bits::RBP);
   this->printer.mov(Register64Bits::RBP, Register64Bits::RSP);
   this->printer.sub(Register64Bits::RSP, memorySize);
@@ -137,9 +103,7 @@ void ni::codegen::ASMCodegen::visit(const ni::ast::NFunctionDeclaration &node) {
     }
   }
 
-  for (const auto &it : node.body) {
-    ni::ast::Visitor::visit(*it);
-  }
+  ni::ast::Visitor::visit(*node.body);
 
   this->printer.label(this->currentFunctionName + "_epilogue");
   this->printer.add(Register64Bits::RSP, memorySize);
