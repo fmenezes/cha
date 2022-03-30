@@ -21,8 +21,7 @@ const std::vector<ni::codegen::Operand>
           (ni::codegen::Operand)ni::codegen::Register32Bits::R8D,
           (ni::codegen::Operand)ni::codegen::Register32Bits::R9D});
 
-class ASMCodegen : public ni::ast::Visitor,
-                   public Codegen {
+class ASMCodegen : public ni::ast::Visitor, public Codegen {
 public:
   ASMCodegen(const ni::ast::NProgram &p) : Codegen(p){};
   ASMCodegen(const ni::ast::NProgram &p, const Context &context)

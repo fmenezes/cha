@@ -15,7 +15,6 @@ protected:
 
 private:
   int total = 0;
-
 };
 } // namespace codegen
 } // namespace ni
