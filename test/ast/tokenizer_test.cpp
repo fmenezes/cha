@@ -1,6 +1,5 @@
 #include <sstream>
 
-#include <gtest/gtest-spi.h>
 #include <gtest/gtest.h>
 
 #include "ast/tokenizer.hh"
