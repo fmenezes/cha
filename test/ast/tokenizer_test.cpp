@@ -66,12 +66,12 @@ TEST(TokenizerTest, UnknownChar) {
   ss << "    ret 0\n";
   ss << "}\n";
 
-  EXPECT_ANY_THROW({
+  EXPECT_THROW({
     ni::ast::tokenizer t("file.ni", ss);
     while(t.scan()) {
       t.next();
     }
-  });
+  }, ni::ast::tokenizer_error);
 }
 
 } // namespace

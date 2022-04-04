@@ -3,31 +3,33 @@
 
 #include "ast/tokenizer.hh"
 
-bool isDigit(char c) { return c >= '0' && c <= '9'; }
+bool is_digit(char c) { return c >= '0' && c <= '9'; }
 
-bool isLetter(char c) { return c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z'; }
+bool is_letter(char c) { return c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z'; }
 
-bool isAlpha(char c) { return isDigit(c) || isLetter(c); }
+bool is_alpha(char c) { return is_digit(c) || is_letter(c); }
 
-bool isFirstCharIdentifier(char c) {
-  return c == '_' || c == '-' || isLetter(c);
+bool is_first_char_identifier(char c) {
+  return c == '_' || c == '-' || is_letter(c);
 }
 
-bool isSecondCharIdentifier(char c) {
-  return c == '_' || c == '-' || isAlpha(c);
+bool is_second_char_identifier(char c) {
+  return c == '_' || c == '-' || is_alpha(c);
 }
 
-bool isWhitespace(char c) { return c == ' ' || c == '\t' || c == '\r'; }
+bool is_whitespace(char c) { return c == ' ' || c == '\t' || c == '\r'; }
 
-bool isNewLine(char c) { return c == '\n'; }
+bool is_newLine(char c) { return c == '\n'; }
 
-bool isSymbol(char c) {
+bool is_symbol(char c) {
   return c == '{' || c == '}' || c == '(' || c == ')' || c == ',';
 }
 
-bool isOperator(char c) { return c == '=' || c == '+' || c == '-' || c == '*'; }
+bool is_operator(char c) {
+  return c == '=' || c == '+' || c == '-' || c == '*';
+}
 
-bool isReservedWord(std::string w) {
+bool is_reserved_word(std::string w) {
   return w == "fun" || w == "int" || w == "ret" || w == "var";
 }
 
@@ -41,17 +43,17 @@ bool ni::ast::tokenizer::scan() {
   }
 
   while (!this->_stream.eof()) {
-    if (isWhitespace(_c)) {
+    if (is_whitespace(_c)) {
       do {
         this->_location.column_begin++;
         this->_location.column_end = this->_location.column_begin;
 
         _c = this->_stream.get();
-      } while (isWhitespace(_c));
+      } while (is_whitespace(_c));
       continue;
     }
 
-    if (isNewLine(_c)) {
+    if (is_newLine(_c)) {
       do {
         this->_location.line_begin++;
         this->_location.line_end = this->_location.line_begin;
@@ -59,31 +61,31 @@ bool ni::ast::tokenizer::scan() {
         this->_location.column_end = this->_location.column_begin;
 
         _c = this->_stream.get();
-      } while (isNewLine(_c));
+      } while (is_newLine(_c));
       continue;
     }
 
-    if (isOperator(_c)) {
+    if (is_operator(_c)) {
       this->_next = ni::ast::token(ni::ast::token_kind::op, std::string(1, _c),
                                    this->_location);
       _c = this->_stream.get();
       return true;
     }
 
-    if (isSymbol(_c)) {
+    if (is_symbol(_c)) {
       this->_next = ni::ast::token(ni::ast::token_kind::symbol,
                                    std::string(1, _c), this->_location);
       _c = this->_stream.get();
       return true;
     }
 
-    if (isDigit(_c)) {
+    if (is_digit(_c)) {
       std::stringstream ss;
       do {
         ss << _c;
         this->_location.column_end++;
         _c = this->_stream.get();
-      } while (isDigit(_c));
+      } while (is_digit(_c));
       this->_next = ni::ast::token(ni::ast::token_kind::number, ss.str(),
                                    this->_location);
       this->_location.column_begin = this->_location.column_end + 1;
@@ -91,15 +93,15 @@ bool ni::ast::tokenizer::scan() {
       return true;
     }
 
-    if (isFirstCharIdentifier(_c)) {
+    if (is_first_char_identifier(_c)) {
       std::stringstream ss;
       do {
         ss << _c;
         this->_location.column_end++;
         _c = this->_stream.get();
-      } while (isSecondCharIdentifier(_c));
+      } while (is_second_char_identifier(_c));
       auto kind = ni::ast::token_kind::identifier;
-      if (isReservedWord(ss.str())) {
+      if (is_reserved_word(ss.str())) {
         kind = ni::ast::token_kind::reserved_word;
       }
       this->_next = ni::ast::token(kind, ss.str(), this->_location);
@@ -108,8 +110,8 @@ bool ni::ast::tokenizer::scan() {
       return true;
     }
 
-    throw std::runtime_error(_location.str() + " invalid char '" + _c + "' (" +
-                             std::to_string((int)_c) + ")");
+    throw ni::ast::tokenizer_error(std::string("invalid char '") + _c + "'",
+                                   _location);
   }
 
   this->_location.column_begin++;

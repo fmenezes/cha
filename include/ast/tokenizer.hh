@@ -46,7 +46,11 @@ public:
 class tokenizer_error : public std::runtime_error {
 public:
   tokenizer_error(const std::string &message, const location &location)
-      : location(location), std::runtime_error(message){};
+      : location(location), std::runtime_error(location.str() + " " +
+                                               message){};
+  tokenizer_error(const char *message, const location &location)
+      : location(location), std::runtime_error(location.str() + " " +
+                                               message){};
   location location;
 };
 
