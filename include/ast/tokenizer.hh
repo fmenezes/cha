@@ -35,23 +35,21 @@ enum token_kind { op, reserved_word, symbol, identifier, number, end_of_file };
 class token {
 public:
   token(token_kind kind, const location &location)
-      : kind(kind), text(""), location(location){};
+      : kind(kind), text(""), loc(location){};
   token(token_kind kind, const std::string &text, const location &location)
-      : kind(kind), text(text), location(location){};
+      : kind(kind), text(text), loc(location){};
   token_kind kind;
   std::string text;
-  location location;
+  location loc;
 };
 
 class tokenizer_error : public std::runtime_error {
 public:
-  tokenizer_error(const std::string &message, const location &location)
-      : location(location), std::runtime_error(location.str() + " " +
-                                               message){};
-  tokenizer_error(const char *message, const location &location)
-      : location(location), std::runtime_error(location.str() + " " +
-                                               message){};
-  location location;
+  tokenizer_error(const std::string &message, const location &loc)
+      : loc(loc), std::runtime_error(loc.str() + " " + message){};
+  tokenizer_error(const char *message, const location &loc)
+      : loc(loc), std::runtime_error(loc.str() + " " + message){};
+  location loc;
 };
 
 class tokenizer {
