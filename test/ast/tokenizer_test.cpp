@@ -17,7 +17,7 @@ TEST(TokenizerTest, Success) {
   ss << "    ret 0\n";
   ss << "}\n";
 
-  ni::ast::tokenizer t("file.ni", ss);
+  ni::ast::tokenizer t("file.ni", &ss);
 
   std::cout << "Debug 2 Success\n";
 
@@ -77,7 +77,7 @@ TEST(TokenizerTest, UnknownChar) {
   std::cout << "Debug 2 UnknownChar\n";
   EXPECT_THROW({
     std::cout << "Debug 3 UnknownChar\n";
-    ni::ast::tokenizer t("file.ni", ss);
+    ni::ast::tokenizer t("file.ni", &ss);
     std::cout << "Debug 4 UnknownChar\n";
     while(t.scan()) {
       std::cout << "Debug 5 UnknownChar\n";

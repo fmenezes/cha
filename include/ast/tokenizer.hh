@@ -54,7 +54,7 @@ public:
 
 class tokenizer {
 public:
-  tokenizer(const std::string &filename, std::istream &stream)
+  tokenizer(const std::string &filename, std::istream *stream)
       : _stream(stream), _location(location(filename)),
         _next(token(token_kind::end_of_file, _location)){};
   bool scan();
@@ -64,7 +64,7 @@ private:
   char _c = -1;
   token _next;
   location _location;
-  std::istream &_stream;
+  std::istream *_stream;
 };
 } // namespace ast
 } // namespace ni
