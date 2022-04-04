@@ -123,7 +123,7 @@ IF(CLANG_TIDY_EXECUTABLE)
     IF(NOT ${CLANG_TIDY_version_result} EQUAL 0)
         MESSAGE(SEND_ERROR "Command \"${CLANG_TIDY_EXECUTABLE} --version\" failed with output:\n${CLANG_TIDY_version_error}")
     ELSE()
-        IF("${CLANG_TIDY_version_output}" MATCHES "version (.*)")
+        IF("${CLANG_TIDY_version_output}" MATCHES "version ([0-9]+\\.[0-9]+\\.[0-9]+)")
             SET(CLANG_TIDY_VERSION "${CMAKE_MATCH_1}")
         ENDIF()
         MESSAGE(NOTICE "-- Found CLANG_TIDY: ${CLANG_TIDY_EXECUTABLE} (found version \"${CLANG_TIDY_VERSION}\")")
@@ -134,4 +134,3 @@ IF(CLANG_TIDY_EXECUTABLE)
             CXX_CLANG_TIDY ${CLANG_TIDY_EXECUTABLE}
     )
 ENDIF(CLANG_TIDY_EXECUTABLE)
-
