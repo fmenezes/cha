@@ -9,11 +9,13 @@ namespace test {
 namespace {
 
 TEST(TokenizerTest, Success) {
-  std::stringstream ss;
+  std::string s;
 
-  ss << "fun main() int {\n";
-  ss << "    ret 0\n";
-  ss << "}\n";
+  s = "fun main() int {\n";
+  s += "    ret 0\n";
+  s += "}\n";
+
+  std::istringstream ss(s);
 
   ni::ast::tokenizer t("file.ni", &ss);
 
@@ -97,15 +99,14 @@ TEST(TokenizerTest, Success) {
 }
 
 TEST(TokenizerTest, UnknownChar) {
-  std::cout << "Debug UnknownChar\n";
+  std::string s;
 
-  std::stringstream ss;
-
-  ss << "fun main(%) int {\n";
-  ss << "    ret 0\n";
-  ss << "}\n";
+  s = "fun main(%) int {\n";
+  s += "    ret 0\n";
+  s += "}\n";
 
   EXPECT_THROW({
+    std::istringstream ss(s);
     ni::ast::tokenizer t("file.ni", &ss);
     while(t.scan_next_token().kind != ni::ast::token_kind::end_of_file) {};
   }, ni::ast::tokenizer_error);
