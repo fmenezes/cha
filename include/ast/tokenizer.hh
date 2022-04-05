@@ -30,7 +30,7 @@ public:
   }
 };
 
-enum token_kind { op, reserved_word, symbol, identifier, number, end_of_file };
+enum token_kind { end_of_file, op, symbol, reserved_word, identifier, number };
 
 class token {
 public:
@@ -57,8 +57,8 @@ public:
   tokenizer(const std::string &filename, std::istream *stream)
       : _stream(stream), _location(location(filename)),
         _next(token(token_kind::end_of_file, _location)){};
-  bool scan();
-  token next() const;
+  token scan_next_token();
+  token last_token() const { return _next; };
 
 private:
   char _c = -1;

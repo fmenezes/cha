@@ -17,44 +17,83 @@ TEST(TokenizerTest, Success) {
 
   ni::ast::tokenizer t("file.ni", &ss);
 
-  EXPECT_EQ(t.scan(), true);
-  EXPECT_EQ(t.next().kind, ni::ast::token_kind::reserved_word);
-  EXPECT_EQ(t.next().text, "fun");
+  auto next = t.scan_next_token();
+  EXPECT_EQ(next.kind, ni::ast::token_kind::reserved_word);
+  EXPECT_EQ(next.text, "fun");
+  EXPECT_EQ(next.loc.line_begin, 1);
+  EXPECT_EQ(next.loc.line_end, 1);
+  EXPECT_EQ(next.loc.column_begin, 1);
+  EXPECT_EQ(next.loc.column_end, 4);
 
-  EXPECT_EQ(t.scan(), true);
-  EXPECT_EQ(t.next().kind, ni::ast::token_kind::identifier);
-  EXPECT_EQ(t.next().text, "main");
+  next = t.scan_next_token();
+  EXPECT_EQ(next.kind, ni::ast::token_kind::identifier);
+  EXPECT_EQ(next.text, "main");
+  EXPECT_EQ(next.loc.line_begin, 1);
+  EXPECT_EQ(next.loc.line_end, 1);
+  EXPECT_EQ(next.loc.column_begin, 5);
+  EXPECT_EQ(next.loc.column_end, 9);
 
-  EXPECT_EQ(t.scan(), true);
-  EXPECT_EQ(t.next().kind, ni::ast::token_kind::symbol);
-  EXPECT_EQ(t.next().text, "(");
+  next = t.scan_next_token();
+  EXPECT_EQ(next.kind, ni::ast::token_kind::symbol);
+  EXPECT_EQ(next.text, "(");
+  EXPECT_EQ(next.loc.line_begin, 1);
+  EXPECT_EQ(next.loc.line_end, 1);
+  EXPECT_EQ(next.loc.column_begin, 9);
+  EXPECT_EQ(next.loc.column_end, 10);
 
-  EXPECT_EQ(t.scan(), true);
-  EXPECT_EQ(t.next().kind, ni::ast::token_kind::symbol);
-  EXPECT_EQ(t.next().text, ")");
+  next = t.scan_next_token();
+  EXPECT_EQ(next.kind, ni::ast::token_kind::symbol);
+  EXPECT_EQ(next.text, ")");
+  EXPECT_EQ(next.loc.line_begin, 1);
+  EXPECT_EQ(next.loc.line_end, 1);
+  EXPECT_EQ(next.loc.column_begin, 10);
+  EXPECT_EQ(next.loc.column_end, 11);
 
-  EXPECT_EQ(t.scan(), true);
-  EXPECT_EQ(t.next().kind, ni::ast::token_kind::reserved_word);
-  EXPECT_EQ(t.next().text, "int");
+  next = t.scan_next_token();
+  EXPECT_EQ(next.kind, ni::ast::token_kind::reserved_word);
+  EXPECT_EQ(next.text, "int");
+  EXPECT_EQ(next.loc.line_begin, 1);
+  EXPECT_EQ(next.loc.line_end, 1);
+  EXPECT_EQ(next.loc.column_begin, 12);
+  EXPECT_EQ(next.loc.column_end, 15);
 
-  EXPECT_EQ(t.scan(), true);
-  EXPECT_EQ(t.next().kind, ni::ast::token_kind::symbol);
-  EXPECT_EQ(t.next().text, "{");
+  next = t.scan_next_token();
+  EXPECT_EQ(next.kind, ni::ast::token_kind::symbol);
+  EXPECT_EQ(next.text, "{");
+  EXPECT_EQ(next.loc.line_begin, 1);
+  EXPECT_EQ(next.loc.line_end, 1);
+  EXPECT_EQ(next.loc.column_begin, 16);
+  EXPECT_EQ(next.loc.column_end, 17);
 
-  EXPECT_EQ(t.scan(), true);
-  EXPECT_EQ(t.next().kind, ni::ast::token_kind::reserved_word);
-  EXPECT_EQ(t.next().text, "ret");
+  next = t.scan_next_token();
+  EXPECT_EQ(next.kind, ni::ast::token_kind::reserved_word);
+  EXPECT_EQ(next.text, "ret");
+  EXPECT_EQ(next.loc.line_begin, 2);
+  EXPECT_EQ(next.loc.line_end, 2);
+  EXPECT_EQ(next.loc.column_begin, 5);
+  EXPECT_EQ(next.loc.column_end, 8);
 
-  EXPECT_EQ(t.scan(), true);
-  EXPECT_EQ(t.next().kind, ni::ast::token_kind::number);
-  EXPECT_EQ(t.next().text, "0");
+  next = t.scan_next_token();
+  EXPECT_EQ(next.kind, ni::ast::token_kind::number);
+  EXPECT_EQ(next.text, "0");
+  EXPECT_EQ(next.loc.line_begin, 2);
+  EXPECT_EQ(next.loc.line_end, 2);
+  EXPECT_EQ(next.loc.column_begin, 9);
+  EXPECT_EQ(next.loc.column_end, 10);
 
-  EXPECT_EQ(t.scan(), true);
-  EXPECT_EQ(t.next().kind, ni::ast::token_kind::symbol);
-  EXPECT_EQ(t.next().text, "}");
+  next = t.scan_next_token();
+  EXPECT_EQ(next.kind, ni::ast::token_kind::symbol);
+  EXPECT_EQ(next.text, "}");
+  EXPECT_EQ(next.loc.line_begin, 3);
+  EXPECT_EQ(next.loc.line_end, 3);
+  EXPECT_EQ(next.loc.column_begin, 1);
+  EXPECT_EQ(next.loc.column_end, 2);
 
-  EXPECT_EQ(t.scan(), false);
-  EXPECT_EQ(t.next().kind, ni::ast::token_kind::end_of_file);
+  next = t.scan_next_token();
+  EXPECT_EQ(next.kind, ni::ast::token_kind::end_of_file);
+
+  next = t.scan_next_token();
+  EXPECT_EQ(next.kind, ni::ast::token_kind::end_of_file);
 }
 
 TEST(TokenizerTest, UnknownChar) {
@@ -68,9 +107,7 @@ TEST(TokenizerTest, UnknownChar) {
 
   EXPECT_THROW({
     ni::ast::tokenizer t("file.ni", &ss);
-    while(t.scan()) {
-      t.next();
-    }
+    while(t.scan_next_token().kind != ni::ast::token_kind::end_of_file) {};
   }, ni::ast::tokenizer_error);
 }
 
