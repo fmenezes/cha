@@ -56,7 +56,7 @@ class tokenizer {
 public:
   tokenizer(const std::string &filename, std::istream *stream)
       : _stream(stream), _location(location(filename)),
-        _next(token(token_kind::end_of_file, _location)){};
+        _next(token(token_kind::end_of_file, location(filename))){};
   token scan_next_token();
   token last_token() const { return _next; };
 
