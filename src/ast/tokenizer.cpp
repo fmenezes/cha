@@ -19,7 +19,7 @@ bool is_second_char_identifier(char c) {
 
 bool is_whitespace(char c) { return c == ' ' || c == '\t' || c == '\r'; }
 
-bool is_newLine(char c) { return c == '\n'; }
+bool is_newline(char c) { return c == '\n'; }
 
 bool is_symbol(char c) {
   return c == '{' || c == '}' || c == '(' || c == ')' || c == ',';
@@ -33,92 +33,89 @@ bool is_reserved_word(std::string w) {
   return w == "fun" || w == "int" || w == "ret" || w == "var";
 }
 
-bool ni::ast::tokenizer::scan() {
-  if (this->_stream->eof()) {
-    return false;
+ni::ast::token ni::ast::tokenizer::scan_next_token() {
+  if (_stream->eof()) {
+    return _next;
   }
 
   if (_c == -1) {
-    _c = this->_stream->get();
+    _c = _stream->get();
   }
 
-  while (!this->_stream->eof()) {
+  while (!_stream->eof()) {
     if (is_whitespace(_c)) {
       do {
-        this->_location.column_begin++;
-        this->_location.column_end = this->_location.column_begin;
+        _location.column_end++;
 
-        _c = this->_stream->get();
+        _c = _stream->get();
       } while (is_whitespace(_c));
+      _location.column_begin = _location.column_end;
       continue;
     }
 
-    if (is_newLine(_c)) {
+    if (is_newline(_c)) {
+      _location.column_end = 1;
       do {
-        this->_location.line_begin++;
-        this->_location.line_end = this->_location.line_begin;
-        this->_location.column_begin = 1;
-        this->_location.column_end = this->_location.column_begin;
-
-        _c = this->_stream->get();
-      } while (is_newLine(_c));
+        _location.line_end++;
+        _c = _stream->get();
+      } while (is_newline(_c));
+      _location.line_begin = _location.line_end;
+      _location.column_begin = _location.column_end;
       continue;
     }
 
     if (is_operator(_c)) {
-      this->_next = ni::ast::token(ni::ast::token_kind::op, std::string(1, _c),
-                                   this->_location);
-      _c = this->_stream->get();
-      return true;
+      _location.column_end++;
+      _next = ni::ast::token(ni::ast::token_kind::op, std::string(1, _c),
+                             _location);
+      _c = _stream->get();
+      _location.column_begin = _location.column_end;
+      return _next;
     }
 
     if (is_symbol(_c)) {
-      this->_next = ni::ast::token(ni::ast::token_kind::symbol,
-                                   std::string(1, _c), this->_location);
-      _c = this->_stream->get();
-      return true;
+      _location.column_end++;
+      _next = ni::ast::token(ni::ast::token_kind::symbol, std::string(1, _c),
+                             _location);
+      _c = _stream->get();
+      _location.column_begin = _location.column_end;
+      return _next;
     }
 
     if (is_digit(_c)) {
       std::stringstream ss;
       do {
         ss << _c;
-        this->_location.column_end++;
-        _c = this->_stream->get();
+        _location.column_end++;
+        _c = _stream->get();
       } while (is_digit(_c));
-      this->_next = ni::ast::token(ni::ast::token_kind::number, ss.str(),
-                                   this->_location);
-      this->_location.column_begin = this->_location.column_end + 1;
-      this->_location.column_end = this->_location.column_begin;
-      return true;
+      _next = ni::ast::token(ni::ast::token_kind::number, ss.str(), _location);
+      _location.column_begin = _location.column_end;
+      return _next;
     }
 
     if (is_first_char_identifier(_c)) {
       std::stringstream ss;
       do {
         ss << _c;
-        this->_location.column_end++;
-        _c = this->_stream->get();
+        _location.column_end++;
+        _c = _stream->get();
       } while (is_second_char_identifier(_c));
       auto kind = ni::ast::token_kind::identifier;
       if (is_reserved_word(ss.str())) {
         kind = ni::ast::token_kind::reserved_word;
       }
-      this->_next = ni::ast::token(kind, ss.str(), this->_location);
-      this->_location.column_begin = this->_location.column_end + 1;
-      this->_location.column_end = this->_location.column_begin;
-      return true;
+      _next = ni::ast::token(kind, ss.str(), _location);
+      _location.column_begin = _location.column_end;
+      return _next;
     }
 
     throw ni::ast::tokenizer_error(std::string("invalid char '") + _c + "'",
                                    _location);
   }
 
-  this->_location.column_begin++;
-  this->_location.column_end = this->_location.column_begin;
-  this->_next =
-      ni::ast::token(ni::ast::token_kind::end_of_file, this->_location);
-  return false;
+  _location.column_begin++;
+  _location.column_end = _location.column_begin;
+  _next = ni::ast::token(ni::ast::token_kind::end_of_file, _location);
+  return _next;
 }
-
-ni::ast::token ni::ast::tokenizer::next() const { return this->_next; }
