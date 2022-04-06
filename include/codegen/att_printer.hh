@@ -209,9 +209,9 @@ private:
 class att_printer {
 public:
   att_printer(){};
-  att_printer(const context &context) : context(context){};
+  att_printer(const context &ctx) : ctx(ctx){};
 
-  const context context;
+  const context ctx;
 
   void open_file(const std::string &filePath);
   bool opened_file() const;
