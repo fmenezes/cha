@@ -10,33 +10,33 @@
 
 namespace ni {
 namespace codegen {
-enum OS { MACOS, LINUX };
+enum os { MACOS, LINUX };
 
-enum ARCH { x86_64 };
+enum arch { x86_64 };
 
-class Context {
+class context {
 public:
-  Context() : Context(defaultOs(), defaultArch()){};
-  Context(const OS &os, const ARCH &arch) : targetOS(os), targetArch(arch){};
+  context() : context(default_os(), default_arch()){};
+  context(const os &os, const arch &arch) : target_os(os), target_arch(arch){};
 
-  const OS targetOS;
-  const ARCH targetArch;
+  const os target_os;
+  const arch target_arch;
 
-  static OS defaultOs();
-  static ARCH defaultArch();
+  static os default_os();
+  static arch default_arch();
 };
 
-class Codegen {
+class codegen {
 public:
-  Codegen(const ni::ast::NProgram &p) : program(p){};
-  Codegen(const ni::ast::NProgram &p, const Context &context)
-      : program(p), context(context){};
-  virtual void codegen(const std::string &output) = 0;
-  virtual ~Codegen() {}
-  const Context context;
+  codegen(const ni::ast::program &p) : program(p){};
+  codegen(const ni::ast::program &p, const context &ctx)
+      : program(p), ctx(ctx){};
+  virtual void generate(const std::string &output) = 0;
+  virtual ~codegen() {}
+  const context ctx;
 
 protected:
-  const ni::ast::NProgram &program;
+  const ni::ast::program &program;
 };
 } // namespace codegen
 } // namespace ni

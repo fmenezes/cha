@@ -6,7 +6,7 @@
 #include "generated/location.hh"
 #include "generated/parser.tab.hh"
 
-std::string ni::ast::emitLocation(const yy::location &loc) {
+std::string ni::ast::emit_location(const yy::location &loc) {
   std::string ret =
       std::to_string(loc.begin.line) + ":" + std::to_string(loc.begin.column);
   if (loc.begin.filename != nullptr) {
@@ -25,7 +25,7 @@ std::string ni::ast::emitLocation(const yy::location &loc) {
   return ret;
 }
 
-void ni::ast::Validator::visit(const ni::ast::NFunctionCall &node) {
+void ni::ast::validator::visit(const ni::ast::function_call &node) {
   auto it = functions.find(node.identifier);
   if (it == functions.end()) {
     throw yy::parser::syntax_error(
@@ -40,42 +40,42 @@ void ni::ast::Validator::visit(const ni::ast::NFunctionCall &node) {
                            " were provided");
   }
 
-  ni::ast::Visitor::visit(node);
+  ni::ast::visitor::visit(node);
 }
 
-void ni::ast::Validator::visit(const ni::ast::NVariableLookup &node) {
+void ni::ast::validator::visit(const ni::ast::variable_lookup &node) {
   auto it = vars.find(node.identifier);
   if (it == vars.end()) {
     throw yy::parser::syntax_error(
         node.location, "variable \"" + node.identifier + "\" not defined");
   }
 
-  ni::ast::Visitor::visit(node);
+  ni::ast::visitor::visit(node);
 }
 
-void ni::ast::Validator::visit(const ni::ast::NVariableAssignment &node) {
+void ni::ast::validator::visit(const ni::ast::variable_assignment &node) {
   auto it = this->vars.find(node.identifier);
   if (it == this->vars.end()) {
     throw yy::parser::syntax_error(
         node.location, "variable \"" + node.identifier + "\" not defined");
   }
-  ni::ast::Visitor::visit(node);
+  ni::ast::visitor::visit(node);
 }
 
-void ni::ast::Validator::visit(const ni::ast::NVariableDeclaration &node) {
+void ni::ast::validator::visit(const ni::ast::variable_declaration &node) {
   auto it = this->vars.find(node.identifier);
   if (it != this->vars.end()) {
     throw yy::parser::syntax_error(node.location,
                                    "variable \"" + node.identifier +
                                        "\" already defined (at " +
-                                       emitLocation(it->second) + ")");
+                                       emit_location(it->second) + ")");
   }
   this->vars.insert({node.identifier, node.location});
 
-  ni::ast::Visitor::visit(node);
+  ni::ast::visitor::visit(node);
 }
 
-void ni::ast::Validator::visit(const ni::ast::NFunctionDeclaration &node) {
+void ni::ast::validator::visit(const ni::ast::function_declaration &node) {
   this->vars.clear();
 
   for (auto &arg : node.args) {
@@ -84,30 +84,30 @@ void ni::ast::Validator::visit(const ni::ast::NFunctionDeclaration &node) {
       throw yy::parser::syntax_error(
           arg->location, "argument \"" + arg->identifier +
                              "\" already defined (at " +
-                             ni::ast::emitLocation(it->second) + ")");
+                             ni::ast::emit_location(it->second) + ")");
     }
     this->vars.insert({arg->identifier, arg->location});
   }
 
-  ni::ast::Visitor::visit(node);
+  ni::ast::visitor::visit(node);
 }
 
-void ni::ast::Validator::visit(const ni::ast::NProgram &node) {
+void ni::ast::validator::visit(const ni::ast::program &node) {
   for (auto &n : node.instructions) {
     auto it = this->functions.find(n->identifier);
     if (it != this->functions.end()) {
       throw yy::parser::syntax_error(
           n->location, "function \"" + n->identifier +
                            "\" already defined (at " +
-                           emitLocation(it->second.location) + ")");
+                           emit_location(it->second.location) + ")");
     }
     this->functions.insert({n->identifier, *n});
   }
 
-  ni::ast::Visitor::visit(node);
+  ni::ast::visitor::visit(node);
 }
 
-void ni::ast::Validator::validate(const ni::ast::NProgram &node) {
-  ni::ast::Validator v;
+void ni::ast::validator::validate(const ni::ast::program &node) {
+  ni::ast::validator v;
   v.visit(node);
 }

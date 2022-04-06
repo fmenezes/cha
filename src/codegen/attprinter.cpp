@@ -1,114 +1,114 @@
 #include <fstream>
 #include <iostream>
 
-#include "codegen/attprinter.hh"
+#include "codegen/att_printer.hh"
 
-std::string serializeConstant(const int &value) {
+std::string serialize_constant(const int &value) {
   return "$" + std::to_string(value);
 }
 
-std::string serializeRegister(const ni::codegen::Register32Bits &reg) {
+std::string serialize_register(const ni::codegen::register_32bits &reg) {
   switch (reg) {
-  case ni::codegen::Register32Bits::EAX:
+  case ni::codegen::register_32bits::EAX:
     return "%eax";
-  case ni::codegen::Register32Bits::EBX:
+  case ni::codegen::register_32bits::EBX:
     return "%ebx";
-  case ni::codegen::Register32Bits::ECX:
+  case ni::codegen::register_32bits::ECX:
     return "%ecx";
-  case ni::codegen::Register32Bits::EDX:
+  case ni::codegen::register_32bits::EDX:
     return "%edx";
-  case ni::codegen::Register32Bits::ESI:
+  case ni::codegen::register_32bits::ESI:
     return "%esi";
-  case ni::codegen::Register32Bits::EDI:
+  case ni::codegen::register_32bits::EDI:
     return "%edi";
-  case ni::codegen::Register32Bits::EBP:
+  case ni::codegen::register_32bits::EBP:
     return "%ebp";
-  case ni::codegen::Register32Bits::ESP:
+  case ni::codegen::register_32bits::ESP:
     return "%esp";
-  case ni::codegen::Register32Bits::R8D:
+  case ni::codegen::register_32bits::R8D:
     return "%r8d";
-  case ni::codegen::Register32Bits::R9D:
+  case ni::codegen::register_32bits::R9D:
     return "%r9d";
-  case ni::codegen::Register32Bits::R10D:
+  case ni::codegen::register_32bits::R10D:
     return "%r10d";
-  case ni::codegen::Register32Bits::R11D:
+  case ni::codegen::register_32bits::R11D:
     return "%r11d";
-  case ni::codegen::Register32Bits::R12D:
+  case ni::codegen::register_32bits::R12D:
     return "%r12d";
-  case ni::codegen::Register32Bits::R13D:
+  case ni::codegen::register_32bits::R13D:
     return "%r13d";
-  case ni::codegen::Register32Bits::R14D:
+  case ni::codegen::register_32bits::R14D:
     return "%r14d";
-  case ni::codegen::Register32Bits::R15D:
+  case ni::codegen::register_32bits::R15D:
     return "%r15d";
-  case ni::codegen::Register32Bits::EIP:
+  case ni::codegen::register_32bits::EIP:
     return "%eip";
-  case ni::codegen::Register32Bits::EFLAGS:
+  case ni::codegen::register_32bits::EFLAGS:
     return "%eflags";
   }
 
   throw std::runtime_error("invalid register");
 }
 
-std::string serializeRegister(const ni::codegen::Register64Bits &reg) {
+std::string serialize_register(const ni::codegen::register_64bits &reg) {
   switch (reg) {
-  case ni::codegen::Register64Bits::RAX:
+  case ni::codegen::register_64bits::RAX:
     return "%rax";
-  case ni::codegen::Register64Bits::RBX:
+  case ni::codegen::register_64bits::RBX:
     return "%rbx";
-  case ni::codegen::Register64Bits::RCX:
+  case ni::codegen::register_64bits::RCX:
     return "%rcx";
-  case ni::codegen::Register64Bits::RDX:
+  case ni::codegen::register_64bits::RDX:
     return "%rdx";
-  case ni::codegen::Register64Bits::RSI:
+  case ni::codegen::register_64bits::RSI:
     return "%rsi";
-  case ni::codegen::Register64Bits::RDI:
+  case ni::codegen::register_64bits::RDI:
     return "%rdi";
-  case ni::codegen::Register64Bits::RBP:
+  case ni::codegen::register_64bits::RBP:
     return "%rbp";
-  case ni::codegen::Register64Bits::RSP:
+  case ni::codegen::register_64bits::RSP:
     return "%rsp";
-  case ni::codegen::Register64Bits::R8:
+  case ni::codegen::register_64bits::R8:
     return "%r8";
-  case ni::codegen::Register64Bits::R9:
+  case ni::codegen::register_64bits::R9:
     return "%r9";
-  case ni::codegen::Register64Bits::R10:
+  case ni::codegen::register_64bits::R10:
     return "%r10";
-  case ni::codegen::Register64Bits::R11:
+  case ni::codegen::register_64bits::R11:
     return "%r11";
-  case ni::codegen::Register64Bits::R12:
+  case ni::codegen::register_64bits::R12:
     return "%r12";
-  case ni::codegen::Register64Bits::R13:
+  case ni::codegen::register_64bits::R13:
     return "%r13";
-  case ni::codegen::Register64Bits::R14:
+  case ni::codegen::register_64bits::R14:
     return "%r14";
-  case ni::codegen::Register64Bits::R15:
+  case ni::codegen::register_64bits::R15:
     return "%r15";
-  case ni::codegen::Register64Bits::RIP:
+  case ni::codegen::register_64bits::RIP:
     return "%rip";
-  case ni::codegen::Register64Bits::RFLAGS:
+  case ni::codegen::register_64bits::RFLAGS:
     return "%rflags";
   }
 
   throw std::runtime_error("invalid register");
 }
 
-std::string serializeRegister(const int &reg, const int &size) {
+std::string serialize_register(const int &reg, const int &size) {
   switch (size) {
   case 32: {
-    return serializeRegister((ni::codegen::Register32Bits)reg);
+    return serialize_register((ni::codegen::register_32bits)reg);
   }
   case 64: {
-    return serializeRegister((ni::codegen::Register64Bits)reg);
+    return serialize_register((ni::codegen::register_64bits)reg);
   }
   }
 
   throw std::runtime_error("invalid register");
 }
 
-std::string serializeOffsetRegister(const int &reg, const int &size,
-                                    const int &offset) {
-  std::string serializedReg = serializeRegister(reg, size);
+std::string serialize_offset_register(const int &reg, const int &size,
+                                      const int &offset) {
+  std::string serializedReg = serialize_register(reg, size);
   if (offset == 0) {
     return "(" + serializedReg + ")";
   }
@@ -116,19 +116,19 @@ std::string serializeOffsetRegister(const int &reg, const int &size,
   return std::to_string(offset) + "(" + serializedReg + ")";
 }
 
-std::string serializeOperand(const ni::codegen::Operand &op) {
-  switch (op.getType()) {
-  case ni::codegen::OperandType::CONSTANT: {
-    return serializeConstant(op.getValue());
+std::string serialize_operand(const ni::codegen::operand &op) {
+  switch (op.get_type()) {
+  case ni::codegen::operand_type::CONSTANT: {
+    return serialize_constant(op.get_value());
     break;
   }
-  case ni::codegen::OperandType::REGISTER: {
-    return serializeRegister(op.getRegister(), op.getSize());
+  case ni::codegen::operand_type::REGISTER: {
+    return serialize_register(op.get_register(), op.get_size());
     break;
   }
-  case ni::codegen::OperandType::OFFSET_REGISTER: {
-    return serializeOffsetRegister(op.getRegister(), op.getSize(),
-                                   op.getOffset());
+  case ni::codegen::operand_type::OFFSET_REGISTER: {
+    return serialize_offset_register(op.get_register(), op.get_size(),
+                                     op.get_offset());
     break;
   }
   default: {
@@ -137,81 +137,81 @@ std::string serializeOperand(const ni::codegen::Operand &op) {
   };
 }
 
-void ni::codegen::ATTPrinter::openFile(const std::string &filePath) {
-  if (outputFile != nullptr) {
+void ni::codegen::att_printer::open_file(const std::string &filePath) {
+  if (output_file != nullptr) {
     throw new std::runtime_error("file already opened");
   }
 
-  this->outputFile = new std::ofstream();
-  this->outputFile->open(filePath, std::ios::trunc);
+  this->output_file = new std::ofstream();
+  this->output_file->open(filePath, std::ios::trunc);
 }
 
-bool ni::codegen::ATTPrinter::openedFile() const {
-  return outputFile != nullptr;
+bool ni::codegen::att_printer::opened_file() const {
+  return output_file != nullptr;
 }
 
-void ni::codegen::ATTPrinter::checkFile() const {
-  if (!this->openedFile()) {
+void ni::codegen::att_printer::check_file() const {
+  if (!this->opened_file()) {
     throw new std::runtime_error("no file opened");
   }
 }
 
-void ni::codegen::ATTPrinter::closeFile() {
-  this->checkFile();
+void ni::codegen::att_printer::close_file() {
+  this->check_file();
 
-  this->outputFile->close();
-  this->outputFile = nullptr;
+  this->output_file->close();
+  this->output_file = nullptr;
 }
 
-void ni::codegen::ATTPrinter::textHeader() {
-  this->checkFile();
+void ni::codegen::att_printer::text_header() {
+  this->check_file();
 
-  if (this->context.targetOS == ni::codegen::OS::MACOS) {
-    *this->outputFile << ".section\t__TEXT,__text" << std::endl;
+  if (this->context.target_os == ni::codegen::os::MACOS) {
+    *this->output_file << ".section\t__TEXT,__text" << std::endl;
   } else {
-    *this->outputFile << ".text" << std::endl;
+    *this->output_file << ".text" << std::endl;
   }
 }
 
-void ni::codegen::ATTPrinter::global(const std::string &label) {
-  this->checkFile();
+void ni::codegen::att_printer::global(const std::string &label) {
+  this->check_file();
 
-  if (this->context.targetOS == ni::codegen::OS::MACOS) {
-    *this->outputFile << ".globl\t_" << label << std::endl;
+  if (this->context.target_os == ni::codegen::os::MACOS) {
+    *this->output_file << ".globl\t_" << label << std::endl;
   } else {
-    *this->outputFile << ".globl\t" << label << std::endl;
+    *this->output_file << ".globl\t" << label << std::endl;
   }
 }
 
-void ni::codegen::ATTPrinter::label(const std::string &label) {
-  this->checkFile();
+void ni::codegen::att_printer::label(const std::string &label) {
+  this->check_file();
 
-  if (this->context.targetOS == ni::codegen::OS::MACOS) {
-    *this->outputFile << "_" << label << ":" << std::endl;
+  if (this->context.target_os == ni::codegen::os::MACOS) {
+    *this->output_file << "_" << label << ":" << std::endl;
   } else {
-    *this->outputFile << label << ":" << std::endl;
+    *this->output_file << label << ":" << std::endl;
   }
 }
 
-void ni::codegen::ATTPrinter::labelStart() {
-  this->checkFile();
+void ni::codegen::att_printer::label_start() {
+  this->check_file();
 
-  if (this->context.targetOS == ni::codegen::OS::MACOS) {
-    *this->outputFile << ".globl\tstart" << std::endl;
-    *this->outputFile << "start:" << std::endl;
+  if (this->context.target_os == ni::codegen::os::MACOS) {
+    *this->output_file << ".globl\tstart" << std::endl;
+    *this->output_file << "start:" << std::endl;
   } else {
-    *this->outputFile << ".globl\t_start" << std::endl;
-    *this->outputFile << "_start:" << std::endl;
+    *this->output_file << ".globl\t_start" << std::endl;
+    *this->output_file << "_start:" << std::endl;
   }
 }
 
-std::string getSuffix(const ni::codegen::Operand &dst,
-                      const ni::codegen::Operand &src) {
+std::string get_suffix(const ni::codegen::operand &dst,
+                       const ni::codegen::operand &src) {
   int size;
-  if (src.getSize() > 0 && src.getSize() < dst.getSize()) {
-    size = src.getSize();
+  if (src.get_size() > 0 && src.get_size() < dst.get_size()) {
+    size = src.get_size();
   } else {
-    size = dst.getSize();
+    size = dst.get_size();
   }
 
   switch (size) {
@@ -236,78 +236,78 @@ std::string getSuffix(const ni::codegen::Operand &dst,
   }
 }
 
-void ni::codegen::ATTPrinter::mov(const Operand &dst, const Operand &src) {
-  this->checkFile();
+void ni::codegen::att_printer::mov(const operand &dst, const operand &src) {
+  this->check_file();
 
-  *this->outputFile << "\tmov" << getSuffix(dst, src) << "\t"
-                    << serializeOperand(src) << ", " << serializeOperand(dst)
-                    << std::endl;
+  *this->output_file << "\tmov" << get_suffix(dst, src) << "\t"
+                     << serialize_operand(src) << ", " << serialize_operand(dst)
+                     << std::endl;
 }
 
-void ni::codegen::ATTPrinter::syscall() {
-  this->checkFile();
+void ni::codegen::att_printer::syscall() {
+  this->check_file();
 
-  *this->outputFile << "\tsyscall" << std::endl;
+  *this->output_file << "\tsyscall" << std::endl;
 }
 
-void ni::codegen::ATTPrinter::add(const Operand &dst, const Operand &src) {
-  this->checkFile();
+void ni::codegen::att_printer::add(const operand &dst, const operand &src) {
+  this->check_file();
 
-  *this->outputFile << "\tadd" << getSuffix(dst, src) << "\t"
-                    << serializeOperand(src) << ", " << serializeOperand(dst)
-                    << std::endl;
+  *this->output_file << "\tadd" << get_suffix(dst, src) << "\t"
+                     << serialize_operand(src) << ", " << serialize_operand(dst)
+                     << std::endl;
 }
 
-void ni::codegen::ATTPrinter::sub(const Operand &dst, const Operand &src) {
-  this->checkFile();
+void ni::codegen::att_printer::sub(const operand &dst, const operand &src) {
+  this->check_file();
 
-  *this->outputFile << "\tsub" << getSuffix(dst, src) << "\t"
-                    << serializeOperand(src) << ", " << serializeOperand(dst)
-                    << std::endl;
+  *this->output_file << "\tsub" << get_suffix(dst, src) << "\t"
+                     << serialize_operand(src) << ", " << serialize_operand(dst)
+                     << std::endl;
 }
 
-void ni::codegen::ATTPrinter::imul(const Operand &dst, const Operand &src) {
-  this->checkFile();
+void ni::codegen::att_printer::imul(const operand &dst, const operand &src) {
+  this->check_file();
 
-  *this->outputFile << "\timul" << getSuffix(dst, src) << "\t"
-                    << serializeOperand(src) << ", " << serializeOperand(dst)
-                    << std::endl;
+  *this->output_file << "\timul" << get_suffix(dst, src) << "\t"
+                     << serialize_operand(src) << ", " << serialize_operand(dst)
+                     << std::endl;
 }
 
-void ni::codegen::ATTPrinter::call(const std::string &label) {
-  this->checkFile();
+void ni::codegen::att_printer::call(const std::string &label) {
+  this->check_file();
 
-  if (this->context.targetOS == ni::codegen::OS::MACOS) {
-    *this->outputFile << "\tcallq\t_" << label << std::endl;
+  if (this->context.target_os == ni::codegen::os::MACOS) {
+    *this->output_file << "\tcallq\t_" << label << std::endl;
   } else {
-    *this->outputFile << "\tcallq\t" << label << std::endl;
+    *this->output_file << "\tcallq\t" << label << std::endl;
   }
 }
 
-void ni::codegen::ATTPrinter::jmp(const std::string &label) {
-  this->checkFile();
+void ni::codegen::att_printer::jmp(const std::string &label) {
+  this->check_file();
 
-  if (this->context.targetOS == ni::codegen::OS::MACOS) {
-    *this->outputFile << "\tjmp\t_" << label << std::endl;
+  if (this->context.target_os == ni::codegen::os::MACOS) {
+    *this->output_file << "\tjmp\t_" << label << std::endl;
   } else {
-    *this->outputFile << "\tjmp\t" << label << std::endl;
+    *this->output_file << "\tjmp\t" << label << std::endl;
   }
 }
 
-void ni::codegen::ATTPrinter::push(const Operand &src) {
-  this->checkFile();
+void ni::codegen::att_printer::push(const operand &src) {
+  this->check_file();
 
-  *this->outputFile << "\tpushq\t" << serializeOperand(src) << std::endl;
+  *this->output_file << "\tpushq\t" << serialize_operand(src) << std::endl;
 }
 
-void ni::codegen::ATTPrinter::pop(const Operand &dst) {
-  this->checkFile();
+void ni::codegen::att_printer::pop(const operand &dst) {
+  this->check_file();
 
-  *this->outputFile << "\tpopq\t" << serializeOperand(dst) << std::endl;
+  *this->output_file << "\tpopq\t" << serialize_operand(dst) << std::endl;
 }
 
-void ni::codegen::ATTPrinter::ret() {
-  this->checkFile();
+void ni::codegen::att_printer::ret() {
+  this->check_file();
 
-  *this->outputFile << "\tretq" << std::endl;
+  *this->output_file << "\tretq" << std::endl;
 }

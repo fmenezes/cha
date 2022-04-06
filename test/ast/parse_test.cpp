@@ -57,13 +57,13 @@ TEST_F(ASTParserTest, Success) {
   WriteFile("fun main() int {\n"
               "  ret 0\n"
               "}\n");
-  ni::ast::Parser p;
+  ni::ast::parser p;
   EXPECT_NO_THROW(p.parse(this->filename));
 }
 
 TEST_F(ASTParserTest, Fail) {
   WriteFile("fun ma.in() int {\n");
-  ni::ast::Parser p;
+  ni::ast::parser p;
   EXPECT_THROW(p.parse(this->filename), yy::parser::syntax_error);
 }
 

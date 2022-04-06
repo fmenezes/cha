@@ -10,210 +10,210 @@
 
 namespace ni {
 namespace ast {
-class Node {
+class node {
 public:
   const yy::location location;
-  Node(const yy::location &location) : location(location){};
+  node(const yy::location &location) : location(location){};
 
-  virtual ~Node(){};
+  virtual ~node(){};
 };
 
-class NStatement : public Node {
+class statement : public node {
 public:
-  NStatement(const yy::location &location) : Node(location){};
+  statement(const yy::location &location) : node(location){};
 };
 
-class NExpression : public NStatement {
+class expression : public statement {
 public:
-  NExpression(const yy::location &location) : NStatement(location){};
+  expression(const yy::location &location) : statement(location){};
 };
 
-class NConstant : public NExpression {
+class constant : public expression {
 public:
-  NConstant(const yy::location &location) : NExpression(location){};
+  constant(const yy::location &location) : expression(location){};
 };
 
-class NType : public Node {
+class node_type : public node {
 public:
-  NType(const yy::location &location) : Node(location){};
+  node_type(const yy::location &location) : node(location){};
 };
 
-class NInteger : public NType {
+class integer : public node_type {
 public:
-  NInteger(const yy::location &location) : NType(location){};
+  integer(const yy::location &location) : node_type(location){};
 };
 
-class NConstantInteger : public NConstant {
+class constant_integer : public constant {
 public:
   const std::string value;
-  NConstantInteger(const std::string &value, const yy::location &location)
-      : value(value), NConstant(location){};
+  constant_integer(const std::string &value, const yy::location &location)
+      : value(value), constant(location){};
 };
 
-class NBinaryOperation : public NExpression {
+class binary_operation : public expression {
 public:
-  const std::unique_ptr<NExpression> left;
-  const std::unique_ptr<NExpression> right;
+  const std::unique_ptr<expression> left;
+  const std::unique_ptr<expression> right;
   const std::string op;
 
-  NBinaryOperation(const std::string &op, std::unique_ptr<NExpression> &left,
-                   std::unique_ptr<NExpression> &right,
+  binary_operation(const std::string &op, std::unique_ptr<expression> &left,
+                   std::unique_ptr<expression> &right,
                    const yy::location &location)
       : op(op), left(std::move(left)), right(std::move(right)),
-        NExpression(location){};
+        expression(location){};
 };
 
-class NVariableDeclaration : public NStatement {
+class variable_declaration : public statement {
 public:
   const std::string identifier;
-  const std::unique_ptr<NType> type;
-  NVariableDeclaration(const std::string &identifier,
-                       std::unique_ptr<NType> &type,
+  const std::unique_ptr<node_type> type;
+  variable_declaration(const std::string &identifier,
+                       std::unique_ptr<node_type> &type,
                        const yy::location &location)
-      : identifier(identifier), type(std::move(type)), NStatement(location){};
+      : identifier(identifier), type(std::move(type)), statement(location){};
 };
 
-class NArgument : public Node {
+class argument : public node {
 public:
   const std::string identifier;
-  const std::unique_ptr<NType> type;
-  NArgument(const std::string &identifier, std::unique_ptr<NType> &type,
-            const yy::location &location)
-      : identifier(identifier), type(std::move(type)), Node(location){};
+  const std::unique_ptr<node_type> type;
+  argument(const std::string &identifier, std::unique_ptr<node_type> &type,
+           const yy::location &location)
+      : identifier(identifier), type(std::move(type)), node(location){};
 };
 
-class NVariableAssignment : public NStatement {
+class variable_assignment : public statement {
 public:
   const std::string identifier;
-  const std::unique_ptr<NExpression> value;
-  NVariableAssignment(const std::string &identifier,
-                      std::unique_ptr<NExpression> &value,
+  const std::unique_ptr<expression> value;
+  variable_assignment(const std::string &identifier,
+                      std::unique_ptr<expression> &value,
                       const yy::location &location)
-      : identifier(identifier), value(std::move(value)), NStatement(location){};
+      : identifier(identifier), value(std::move(value)), statement(location){};
 };
 
-class NVariableLookup : public NExpression {
+class variable_lookup : public expression {
 public:
   const std::string identifier;
-  NVariableLookup(const std::string &identifier, const yy::location &location)
-      : identifier(identifier), NExpression(location){};
+  variable_lookup(const std::string &identifier, const yy::location &location)
+      : identifier(identifier), expression(location){};
 };
 
-class NBlock : public Node {
+class block : public node {
 public:
-  const std::vector<std::unique_ptr<NStatement>> statements;
-  NBlock(std::vector<std::unique_ptr<NStatement>> &statements,
-         const yy::location &location)
-      : statements(std::move(statements)), Node(location){};
+  const std::vector<std::unique_ptr<statement>> statements;
+  block(std::vector<std::unique_ptr<statement>> &statements,
+        const yy::location &location)
+      : statements(std::move(statements)), node(location){};
 };
 
-class NFunctionDeclaration : public Node {
+class function_declaration : public node {
 public:
   const std::string identifier;
-  const std::unique_ptr<NBlock> body;
-  const std::unique_ptr<NType> returnType;
-  const std::vector<std::unique_ptr<NArgument>> args;
-  NFunctionDeclaration(const std::string &identifier,
-                       std::unique_ptr<NBlock> &body,
+  const std::unique_ptr<block> body;
+  const std::unique_ptr<node_type> return_type;
+  const std::vector<std::unique_ptr<argument>> args;
+  function_declaration(const std::string &identifier,
+                       std::unique_ptr<block> &body,
                        const yy::location &location)
-      : identifier(identifier), body(std::move(body)), Node(location){};
-  NFunctionDeclaration(const std::string &identifier,
-                       std::vector<std::unique_ptr<NArgument>> &args,
-                       std::unique_ptr<NBlock> &body,
+      : identifier(identifier), body(std::move(body)), node(location){};
+  function_declaration(const std::string &identifier,
+                       std::vector<std::unique_ptr<argument>> &args,
+                       std::unique_ptr<block> &body,
                        const yy::location &location)
       : identifier(identifier), args(std::move(args)), body(std::move(body)),
-        Node(location){};
-  NFunctionDeclaration(const std::string &identifier,
-                       std::unique_ptr<NType> &returnType,
-                       std::unique_ptr<NBlock> &body,
+        node(location){};
+  function_declaration(const std::string &identifier,
+                       std::unique_ptr<node_type> &return_type,
+                       std::unique_ptr<block> &body,
                        const yy::location &location)
-      : identifier(identifier), returnType(std::move(returnType)),
-        body(std::move(body)), Node(location){};
-  NFunctionDeclaration(const std::string &identifier,
-                       std::vector<std::unique_ptr<NArgument>> &args,
-                       std::unique_ptr<NType> &returnType,
-                       std::unique_ptr<NBlock> &body,
+      : identifier(identifier), return_type(std::move(return_type)),
+        body(std::move(body)), node(location){};
+  function_declaration(const std::string &identifier,
+                       std::vector<std::unique_ptr<argument>> &args,
+                       std::unique_ptr<node_type> &return_type,
+                       std::unique_ptr<block> &body,
                        const yy::location &location)
-      : identifier(identifier), returnType(std::move(returnType)),
-        args(std::move(args)), body(std::move(body)), Node(location){};
+      : identifier(identifier), return_type(std::move(return_type)),
+        args(std::move(args)), body(std::move(body)), node(location){};
 };
 
-class NFunctionCall : public NExpression {
+class function_call : public expression {
 public:
   const std::string identifier;
-  const std::vector<std::unique_ptr<NExpression>> params;
-  NFunctionCall(const std::string &identifier, const yy::location &location)
-      : identifier(identifier), NExpression(location){};
-  NFunctionCall(const std::string &identifier,
-                std::vector<std::unique_ptr<NExpression>> &params,
+  const std::vector<std::unique_ptr<expression>> params;
+  function_call(const std::string &identifier, const yy::location &location)
+      : identifier(identifier), expression(location){};
+  function_call(const std::string &identifier,
+                std::vector<std::unique_ptr<expression>> &params,
                 const yy::location &location)
       : identifier(identifier), params(std::move(params)),
-        NExpression(location){};
+        expression(location){};
 };
 
-class NFunctionReturn : public NStatement {
+class function_return : public statement {
 public:
-  const std::unique_ptr<NExpression> value;
-  NFunctionReturn(std::unique_ptr<NExpression> &value,
+  const std::unique_ptr<expression> value;
+  function_return(std::unique_ptr<expression> &value,
                   const yy::location &location)
-      : value(std::move(value)), NStatement(location){};
-  NFunctionReturn(const yy::location &location) : NStatement(location){};
+      : value(std::move(value)), statement(location){};
+  function_return(const yy::location &location) : statement(location){};
 };
 
-class NProgram : public Node {
+class program : public node {
 public:
-  const std::vector<std::unique_ptr<NFunctionDeclaration>> instructions;
-  NProgram(std::vector<std::unique_ptr<NFunctionDeclaration>> &instructions,
-           const yy::location &location)
-      : instructions(std::move(instructions)), Node(location){};
+  const std::vector<std::unique_ptr<function_declaration>> instructions;
+  program(std::vector<std::unique_ptr<function_declaration>> &instructions,
+          const yy::location &location)
+      : instructions(std::move(instructions)), node(location){};
 };
 
-class Parser {
+class parser {
 public:
   yy::location location;
-  std::unique_ptr<NProgram> program;
+  std::unique_ptr<program> program;
   void parse(const std::string &f);
 };
 
-class Visitor {
+class visitor {
 public:
-  Visitor(){};
+  visitor(){};
 
 protected:
-  virtual void visit(const Node &node);
-  virtual void visit(const NProgram &node);
-  virtual void visit(const NStatement &node);
-  virtual void visit(const NExpression &node);
-  virtual void visit(const NConstant &node);
-  virtual void visit(const NConstantInteger &node);
-  virtual void visit(const NVariableDeclaration &node);
-  virtual void visit(const NVariableAssignment &node);
-  virtual void visit(const NVariableLookup &node);
-  virtual void visit(const NBinaryOperation &node);
-  virtual void visit(const NFunctionDeclaration &node);
-  virtual void visit(const NFunctionCall &node);
-  virtual void visit(const NFunctionReturn &node);
-  virtual void visit(const NBlock &node);
-  virtual void visit(const NArgument &node);
+  virtual void visit(const node &node);
+  virtual void visit(const program &node);
+  virtual void visit(const statement &node);
+  virtual void visit(const expression &node);
+  virtual void visit(const constant &node);
+  virtual void visit(const constant_integer &node);
+  virtual void visit(const variable_declaration &node);
+  virtual void visit(const variable_assignment &node);
+  virtual void visit(const variable_lookup &node);
+  virtual void visit(const binary_operation &node);
+  virtual void visit(const function_declaration &node);
+  virtual void visit(const function_call &node);
+  virtual void visit(const function_return &node);
+  virtual void visit(const block &node);
+  virtual void visit(const argument &node);
 };
 
-class Validator : public Visitor {
+class validator : public visitor {
 public:
-  static void validate(const NProgram &node);
+  static void validate(const program &node);
 
 protected:
-  void visit(const NProgram &node) override;
-  void visit(const NVariableDeclaration &node) override;
-  void visit(const NVariableAssignment &node) override;
-  void visit(const NVariableLookup &node) override;
-  void visit(const NFunctionDeclaration &node) override;
-  void visit(const NFunctionCall &node) override;
+  void visit(const program &node) override;
+  void visit(const variable_declaration &node) override;
+  void visit(const variable_assignment &node) override;
+  void visit(const variable_lookup &node) override;
+  void visit(const function_declaration &node) override;
+  void visit(const function_call &node) override;
 
 private:
-  std::map<std::string, const NFunctionDeclaration &> functions;
+  std::map<std::string, const function_declaration &> functions;
   std::map<std::string, yy::location> vars;
 };
 
-std::string emitLocation(const yy::location &loc);
+std::string emit_location(const yy::location &loc);
 } // namespace ast
 } // namespace ni

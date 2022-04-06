@@ -6,7 +6,7 @@
 
 extern FILE *yyin;
 
-void ni::ast::Parser::parse(const std::string &f) {
+void ni::ast::parser::parse(const std::string &f) {
   if (!(yyin = fopen(f.c_str(), "r"))) {
     throw std::runtime_error("cannot open " + f);
   }
