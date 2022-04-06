@@ -9,7 +9,7 @@
 #include <gtest/gtest.h>
 
 #include "ast/ast.hh"
-#include "codegen/memorycalculator.hh"
+#include "codegen/memory_calculator.hh"
 #include "generated/location.hh"
 #include "generated/parser.tab.hh"
 
@@ -41,15 +41,15 @@ protected:
     this->filename.append("/test");
   }
 
-  ni::ast::NProgram *Parse(std::string contents) {
+  ni::ast::program *Parse(std::string contents) {
     std::ofstream myfile;
     myfile.open(this->filename);
     myfile << contents;
     myfile.close();
 
-    ni::ast::Parser parser;
+    ni::ast::parser parser;
     parser.parse(this->filename);
-    return parser.program.release();
+    return parser.prg.release();
   }
 
   void TearDown() override {
@@ -63,7 +63,7 @@ TEST_F(MemoryCalculatorTest, NoMemory) {
                  "  ret 1\n"
                  "}\n");
   auto &funMain = *p->instructions[0];
-  EXPECT_EQ(ni::codegen::MemoryCalculator::calculare(funMain), 0);
+  EXPECT_EQ(ni::codegen::memory_calculator::calculare(funMain), 0);
 }
 
 TEST_F(MemoryCalculatorTest, OneArg) {
@@ -71,7 +71,7 @@ TEST_F(MemoryCalculatorTest, OneArg) {
                  "  ret i\n"
                  "}\n");
   auto &funMain = *p->instructions[0];
-  EXPECT_EQ(ni::codegen::MemoryCalculator::calculare(funMain), 4);
+  EXPECT_EQ(ni::codegen::memory_calculator::calculare(funMain), 4);
 }
 
 TEST_F(MemoryCalculatorTest, OneVar) {
@@ -80,7 +80,7 @@ TEST_F(MemoryCalculatorTest, OneVar) {
                  "  ret i\n"
                  "}\n");
   auto &funMain = *p->instructions[0];
-  EXPECT_EQ(ni::codegen::MemoryCalculator::calculare(funMain), 4);
+  EXPECT_EQ(ni::codegen::memory_calculator::calculare(funMain), 4);
 }
 
 TEST_F(MemoryCalculatorTest, OneArgOneVar) {
@@ -89,7 +89,7 @@ TEST_F(MemoryCalculatorTest, OneArgOneVar) {
                  "  ret i + j\n"
                  "}\n");
   auto &funMain = *p->instructions[0];
-  EXPECT_EQ(ni::codegen::MemoryCalculator::calculare(funMain), 8);
+  EXPECT_EQ(ni::codegen::memory_calculator::calculare(funMain), 8);
 }
 
 } // namespace

@@ -2,7 +2,7 @@
 #include <gtest/gtest.h>
 #include <stdio.h>
 
-#include "codegen/attprinter.hh"
+#include "codegen/att_printer.hh"
 
 namespace ni {
 namespace test {
@@ -12,7 +12,7 @@ class ATTPrinterTest : public ::testing::Test {
 protected:
   std::string dir;
   std::string filename;
-  ni::codegen::ATTPrinter *printer;
+  ni::codegen::att_printer *printer;
 
   ATTPrinterTest() {}
 
@@ -27,13 +27,13 @@ protected:
     return std::string("./") + tmp;
   }
 
-  void SetUp(const ni::codegen::Context &c) {
-    this->printer = new ni::codegen::ATTPrinter(c);
+  void SetUp(const ni::codegen::context &c) {
+    this->printer = new ni::codegen::att_printer(c);
     this->dir = makeTempDir();
     this->filename.append(this->dir);
     this->filename.append("/test");
 
-    printer->openFile(filename);
+    printer->open_file(filename);
   }
 
   std::string readFile() {
@@ -44,7 +44,7 @@ protected:
   }
 
   void TearDown() override {
-    printer->closeFile();
+    printer->close_file();
     remove(this->filename.c_str());
     remove(this->dir.c_str());
     delete printer;
@@ -53,7 +53,7 @@ protected:
 
 TEST_F(ATTPrinterTest, Linux) {
   this->SetUp(
-      ni::codegen::Context(ni::codegen::OS::LINUX, ni::codegen::ARCH::x86_64));
+      ni::codegen::context(ni::codegen::os::LINUX, ni::codegen::arch::x86_64));
 
   std::string expected;
   expected.append(".text\n");
@@ -72,16 +72,16 @@ TEST_F(ATTPrinterTest, Linux) {
   expected.append("\tjmp\ttest2\n");
   expected.append("\tretq\n");
 
-  this->printer->textHeader();
-  this->printer->labelStart();
+  this->printer->text_header();
+  this->printer->label_start();
   this->printer->call("test");
   this->printer->global("test");
   this->printer->label("test");
-  this->printer->mov(ni::codegen::Register64Bits::RAX, 10);
-  this->printer->mov(ni::codegen::Register32Bits::EAX, 10);
-  this->printer->add(ni::codegen::Register32Bits::EDI, 20);
-  this->printer->sub(ni::codegen::Register32Bits::ECX, 30);
-  this->printer->imul(ni::codegen::Register32Bits::EDX, 40);
+  this->printer->mov(ni::codegen::register_64bits::RAX, 10);
+  this->printer->mov(ni::codegen::register_32bits::EAX, 10);
+  this->printer->add(ni::codegen::register_32bits::EDI, 20);
+  this->printer->sub(ni::codegen::register_32bits::ECX, 30);
+  this->printer->imul(ni::codegen::register_32bits::EDX, 40);
   this->printer->push(50);
   this->printer->syscall();
   this->printer->jmp("test2");
@@ -91,7 +91,7 @@ TEST_F(ATTPrinterTest, Linux) {
 
 TEST_F(ATTPrinterTest, MacOS) {
   this->SetUp(
-      ni::codegen::Context(ni::codegen::OS::MACOS, ni::codegen::ARCH::x86_64));
+      ni::codegen::context(ni::codegen::os::MACOS, ni::codegen::arch::x86_64));
 
   std::string expected;
   expected.append(".section\t__TEXT,__text\n");
@@ -110,16 +110,16 @@ TEST_F(ATTPrinterTest, MacOS) {
   expected.append("\tjmp\t_test2\n");
   expected.append("\tretq\n");
 
-  this->printer->textHeader();
-  this->printer->labelStart();
+  this->printer->text_header();
+  this->printer->label_start();
   this->printer->call("test");
   this->printer->global("test");
   this->printer->label("test");
-  this->printer->mov(ni::codegen::Register64Bits::RAX, 10);
-  this->printer->mov(ni::codegen::Register32Bits::EAX, 10);
-  this->printer->add(ni::codegen::Register32Bits::EDI, 20);
-  this->printer->sub(ni::codegen::Register32Bits::ECX, 30);
-  this->printer->imul(ni::codegen::Register32Bits::EDX, 40);
+  this->printer->mov(ni::codegen::register_64bits::RAX, 10);
+  this->printer->mov(ni::codegen::register_32bits::EAX, 10);
+  this->printer->add(ni::codegen::register_32bits::EDI, 20);
+  this->printer->sub(ni::codegen::register_32bits::ECX, 30);
+  this->printer->imul(ni::codegen::register_32bits::EDX, 40);
   this->printer->push(50);
   this->printer->syscall();
   this->printer->jmp("test2");

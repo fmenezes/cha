@@ -2,7 +2,7 @@
 #include <string>
 
 #include "ast/ast.hh"
-#include "codegen/asmcodegen.hh"
+#include "codegen/asm_codegen.hh"
 #include "codegen/codegen.hh"
 #include "generated/parser.tab.hh"
 
@@ -21,22 +21,22 @@ int main(int argc, char *argv[]) {
   auto input = std::string(argv[2]);
   auto output = std::string(argv[3]);
 
-  ni::ast::Parser parser;
-  ni::codegen::Codegen *c = nullptr;
+  ni::ast::parser parser;
+  ni::codegen::codegen *c = nullptr;
   try {
     parser.parse(input);
-    ni::ast::Validator::validate(*parser.program);
+    ni::ast::validator::validate(*parser.prg);
 
     if (format.compare("-asm") == 0) {
-      c = new ni::codegen::ASMCodegen(*parser.program);
+      c = new ni::codegen::asm_codegen(*parser.prg);
     } else {
       std::cerr << "Error: invalid format" << std::endl << std::endl;
       printUsage(argv[0]);
       return 1;
     }
-    c->codegen(output);
+    c->generate(output);
   } catch (const yy::parser::syntax_error &e) {
-    std::cerr << ni::ast::emitLocation(e.location)
+    std::cerr << ni::ast::emit_location(e.location)
               << ": error occurred: " << e.what() << std::endl;
   } catch (const std::exception &e) {
     std::cerr << "error occurred: " << e.what() << std::endl;

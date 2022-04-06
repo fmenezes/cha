@@ -5,14 +5,14 @@
 #include "codegen/codegen.hh"
 #include "generated/parser.tab.hh"
 
-ni::codegen::OS ni::codegen::Context::defaultOs() {
+ni::codegen::os ni::codegen::context::default_os() {
 #if defined(__APPLE__) || defined(__MACH__)
-  return ni::codegen::OS::MACOS;
+  return ni::codegen::os::MACOS;
 #else
-  return ni::codegen::OS::LINUX;
+  return ni::codegen::os::LINUX;
 #endif
 }
 
-ni::codegen::ARCH ni::codegen::Context::defaultArch() {
-  return ni::codegen::ARCH::x86_64;
+ni::codegen::arch ni::codegen::context::default_arch() {
+  return ni::codegen::arch::x86_64;
 }
