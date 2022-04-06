@@ -46,7 +46,7 @@ using namespace std::string_literals;
 %%
 
 parse :
-	program																			{ p.program = std::move($1); }
+	program																			{ p.prg = std::move($1); }
 	;
 
 program :

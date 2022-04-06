@@ -25,10 +25,10 @@ int main(int argc, char *argv[]) {
   ni::codegen::codegen *c = nullptr;
   try {
     parser.parse(input);
-    ni::ast::validator::validate(*parser.program);
+    ni::ast::validator::validate(*parser.prg);
 
     if (format.compare("-asm") == 0) {
-      c = new ni::codegen::asm_codegen(*parser.program);
+      c = new ni::codegen::asm_codegen(*parser.prg);
     } else {
       std::cerr << "Error: invalid format" << std::endl << std::endl;
       printUsage(argv[0]);

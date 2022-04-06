@@ -49,7 +49,7 @@ protected:
 
     ni::ast::parser parser;
     parser.parse(this->filename);
-    return parser.program.release();
+    return parser.prg.release();
   }
 
   void TearDown() override {

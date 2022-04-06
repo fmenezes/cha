@@ -171,7 +171,7 @@ public:
 class parser {
 public:
   yy::location location;
-  std::unique_ptr<program> program;
+  std::unique_ptr<program> prg;
   void parse(const std::string &f);
 };
 
