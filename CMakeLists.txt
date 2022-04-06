@@ -80,6 +80,8 @@ file(GLOB TEST_SRC
 include(CTest)
 enable_testing()
 
+set(THREADS_PREFER_PTHREAD_FLAG ON)
+find_package(Threads REQUIRED)
 find_package(GTest REQUIRED)
 
 set(SRC_WITHOUT_MAIN ${SRC})
@@ -91,8 +93,10 @@ add_executable(
 )
 target_link_libraries(
   ni_unit_test
-  ${GTEST_MAIN_LIBRARIES}
+  ${GTEST_BOTH_LIBRARIES}
+  Threads::Threads
 )
+target_include_directories(ni_unit_test PUBLIC ${GTEST_INCLUDE_DIRS})
 
 set_property(TARGET ni_unit_test PROPERTY CXX_STANDARD 14)
 
