@@ -70,17 +70,7 @@ IF(CLANG_FORMAT_EXECUTABLE)
     )
 ENDIF(CLANG_FORMAT_EXECUTABLE)
 
-set(GTEST_SHA "0affd45b62371c1de44064a5a5f8817242208442")
-include(FetchContent)
-FetchContent_Declare(
-  googletest
-  URL https://github.com/google/googletest/archive/${GTEST_SHA}.zip
-)
-# For Windows: Prevent overriding the parent project's compiler/linker settings
-set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
-FetchContent_MakeAvailable(googletest)
-
-file(GLOB TEST
+file(GLOB TEST_SRC
         "test/*.cc"
         "test/*.cpp"
         "test/**/*.cc"
@@ -90,16 +80,18 @@ file(GLOB TEST
 include(CTest)
 enable_testing()
 
+find_package(GTest REQUIRED)
+
 set(SRC_WITHOUT_MAIN ${SRC})
 list(FILTER SRC_WITHOUT_MAIN EXCLUDE REGEX "main.cpp") 
 
 add_executable(
   ni_unit_test
-  ${TEST} ${SRC_WITHOUT_MAIN} ${BISON_parser_OUTPUTS} ${FLEX_parser_OUTPUTS}
+  ${TEST_SRC} ${SRC_WITHOUT_MAIN} ${BISON_parser_OUTPUTS} ${FLEX_parser_OUTPUTS}
 )
 target_link_libraries(
   ni_unit_test
-  gtest_main
+  ${GTEST_MAIN_LIBRARIES}
 )
 
 set_property(TARGET ni_unit_test PROPERTY CXX_STANDARD 14)
@@ -110,7 +102,6 @@ gtest_discover_tests(ni_unit_test)
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})
 set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})
 include(CPack)
-
 
 find_program(CLANG_TIDY_EXECUTABLE clang-tidy)
 IF(CLANG_TIDY_EXECUTABLE)

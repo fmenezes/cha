@@ -11,6 +11,7 @@ This is a new ahead of time compiled programing language from the ground up.
 * Modern C++ compiler ([Clang 13](https://clang.llvm.org/) recommended)
 * [Bison](https://www.gnu.org/software/bison/)
 * [Flex](https://ftp.gnu.org/old-gnu/Manuals/flex-2.5.4/)
+* [Google Test](https://github.com/google/googletest)
 
 ### Build
 
