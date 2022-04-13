@@ -2,6 +2,7 @@
 #include <stdlib.h>
 
 #include "ast/ast.hh"
+#include "ast/parser.hh"
 #include "generated/parser.tab.hh"
 
 extern FILE *yyin;

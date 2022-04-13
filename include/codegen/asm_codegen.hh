@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "ast/ast.hh"
+#include "ast/visitor.hh"
 #include "codegen/att_printer.hh"
 #include "codegen/codegen.hh"
 

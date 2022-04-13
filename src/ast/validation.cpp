@@ -3,6 +3,8 @@
 #include <stdlib.h>
 
 #include "ast/ast.hh"
+#include "ast/parser.hh"
+#include "ast/validator.hh"
 #include "generated/location.hh"
 #include "generated/parser.tab.hh"
 

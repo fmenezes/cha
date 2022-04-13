@@ -2,6 +2,8 @@
 #include <string>
 
 #include "ast/ast.hh"
+#include "ast/parser.hh"
+#include "ast/validator.hh"
 #include "codegen/asm_codegen.hh"
 #include "codegen/codegen.hh"
 #include "generated/parser.tab.hh"

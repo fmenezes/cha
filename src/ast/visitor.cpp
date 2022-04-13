@@ -1,3 +1,4 @@
+#include "ast/visitor.hh"
 #include "ast/ast.hh"
 
 void ni::ast::visitor::visit(const ni::ast::node &node) {
