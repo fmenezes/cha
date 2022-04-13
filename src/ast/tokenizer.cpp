@@ -1,121 +1,181 @@
+#include <istream>
 #include <regex>
 #include <sstream>
 
 #include "ast/tokenizer.hh"
 
-bool is_digit(char c) { return c >= '0' && c <= '9'; }
-
-bool is_letter(char c) { return c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z'; }
-
-bool is_alpha(char c) { return is_digit(c) || is_letter(c); }
-
-bool is_first_char_identifier(char c) {
-  return c == '_' || c == '-' || is_letter(c);
+bool is_number(const std::string &str) {
+  return std::regex_match(str, std::regex("[0-9]+"));
 }
 
-bool is_second_char_identifier(char c) {
-  return c == '_' || c == '-' || is_alpha(c);
+bool is_identifier(const std::string &str) {
+  return std::regex_match(str, std::regex("[a-zA-Z_][a-zA-Z0-9_-]*"));
+  ;
 }
 
-bool is_whitespace(char c) { return c == ' ' || c == '\t' || c == '\r'; }
-
-bool is_newline(char c) { return c == '\n'; }
-
-bool is_symbol(char c) {
-  return c == '{' || c == '}' || c == '(' || c == ')' || c == ',';
+bool is_whitespace(const std::string &str) {
+  return std::regex_match(str, std::regex("[ \t\r]+"));
+  ;
 }
 
-bool is_operator(char c) {
-  return c == '=' || c == '+' || c == '-' || c == '*';
+bool is_newline(const std::string &str) {
+  return std::regex_match(str, std::regex("\n+"));
+  ;
 }
 
-bool is_reserved_word(std::string w) {
-  return w == "fun" || w == "int" || w == "ret" || w == "var";
+ni::ast::token_tag reserved_word(const std::string &str) {
+  if (str == "fun") {
+    return ni::ast::token_tag::fun;
+  }
+
+  if (str == "var") {
+    return ni::ast::token_tag::var;
+  }
+
+  if (str == "ret") {
+    return ni::ast::token_tag::ret;
+  }
+
+  if (str == "int") {
+    return ni::ast::token_tag::type_int;
+  }
+
+  return ni::ast::token_tag::identifier;
+}
+
+ni::ast::token_tag symbol_tag(char c) {
+  switch (c) {
+  case '=':
+    return ni::ast::token_tag::equals;
+  case '+':
+    return ni::ast::token_tag::plus;
+  case '-':
+    return ni::ast::token_tag::minus;
+  case '*':
+    return ni::ast::token_tag::star;
+  case '(':
+    return ni::ast::token_tag::open_parentheses;
+  case ')':
+    return ni::ast::token_tag::close_parentheses;
+  case '{':
+    return ni::ast::token_tag::open_braces;
+  case '}':
+    return ni::ast::token_tag::close_braces;
+  case ',':
+    return ni::ast::token_tag::comma;
+  default:
+    return ni::ast::token_tag::unknown;
+  }
+}
+
+bool ni::ast::tokenizer::read() {
+  if (lexemeBegin > 0 && lexemeBegin < c_len) {
+    auto s = lexemeForward - lexemeBegin;
+    memmove(&c, &c[lexemeBegin], s);
+    _stream->read(&c[s], sizeof(c) - s);
+    c_len = _stream->gcount() + s;
+    lexemeBegin = 0;
+    lexemeForward = s;
+    return ((c_len - s) > 0);
+  } else {
+    _stream->read(c, sizeof(c));
+    c_len = _stream->gcount();
+    lexemeBegin = 0;
+    lexemeForward = 1;
+    return (c_len > 0);
+  }
+}
+
+std::string ni::ast::tokenizer::current_lexeme() {
+  return std::string(&c[lexemeBegin], lexemeForward - lexemeBegin);
+}
+
+void ni::ast::tokenizer::step_begin() {
+  _location.line_begin = _location.line_end;
+  _location.column_begin = _location.column_end;
+  lexemeBegin = (lexemeForward - 1);
+}
+
+ni::ast::token ni::ast::tokenizer::set_token(ni::ast::token_tag tag) {
+  step();
+  _next = ni::ast::token(
+      tag, std::string(&c[lexemeBegin], lexemeForward - lexemeBegin - 1),
+      _location);
+  step_begin();
+  return _next;
+}
+
+ni::ast::token ni::ast::tokenizer::set_identifier_token() {
+  step();
+  auto word = std::string(&c[lexemeBegin], lexemeForward - lexemeBegin - 1);
+  auto tag = reserved_word(word);
+  _next = ni::ast::token(tag, word, _location);
+  step_begin();
+  return _next;
+}
+
+void ni::ast::tokenizer::peek() { lexemeForward++; }
+
+void ni::ast::tokenizer::step() {
+  _location.column_end += (lexemeForward - lexemeBegin - 1);
+}
+
+bool ni::ast::tokenizer::eof() {
+  if (lexemeBegin == -1 || lexemeForward >= c_len) {
+    return !read();
+  }
+
+  return false;
+}
+
+void ni::ast::tokenizer::step_line() {
+  _location.line_end++;
+  _location.column_end = 1;
 }
 
 ni::ast::token ni::ast::tokenizer::scan_next_token() {
-  if (_stream->eof()) {
-    return _next;
-  }
-
-  if (_c == -1) {
-    _c = _stream->get();
-  }
-
-  while (!_stream->eof()) {
-    if (is_whitespace(_c)) {
+  while (!eof()) {
+    if (is_whitespace(current_lexeme())) {
       do {
-        _location.column_end++;
-
-        _c = _stream->get();
-      } while (is_whitespace(_c));
-      _location.column_begin = _location.column_end;
+        peek();
+      } while ((is_whitespace(current_lexeme())));
+      step();
+      step_begin();
       continue;
     }
 
-    if (is_newline(_c)) {
-      _location.column_end = 1;
+    if (is_newline(current_lexeme())) {
       do {
-        _location.line_end++;
-        _c = _stream->get();
-      } while (is_newline(_c));
-      _location.line_begin = _location.line_end;
-      _location.column_begin = _location.column_end;
+        peek();
+        step_line();
+      } while ((is_newline(current_lexeme())));
+      step_begin();
       continue;
     }
 
-    if (is_operator(_c)) {
-      _location.column_end++;
-      _next = ni::ast::token(ni::ast::token_kind::op, std::string(1, _c),
-                             _location);
-      _c = _stream->get();
-      _location.column_begin = _location.column_end;
-      return _next;
+    auto s = symbol_tag(c[lexemeBegin]);
+    if (s != ni::ast::token_tag::unknown) {
+      peek();
+      return set_token(s);
     }
 
-    if (is_symbol(_c)) {
-      _location.column_end++;
-      _next = ni::ast::token(ni::ast::token_kind::symbol, std::string(1, _c),
-                             _location);
-      _c = _stream->get();
-      _location.column_begin = _location.column_end;
-      return _next;
-    }
-
-    if (is_digit(_c)) {
-      std::stringstream ss;
+    if (is_number(current_lexeme())) {
       do {
-        ss << _c;
-        _location.column_end++;
-        _c = _stream->get();
-      } while (is_digit(_c));
-      _next = ni::ast::token(ni::ast::token_kind::number, ss.str(), _location);
-      _location.column_begin = _location.column_end;
-      return _next;
+        peek();
+      } while (is_number(current_lexeme()));
+      return set_token(ni::ast::token_tag::number);
     }
 
-    if (is_first_char_identifier(_c)) {
-      std::stringstream ss;
+    if (is_identifier(current_lexeme())) {
       do {
-        ss << _c;
-        _location.column_end++;
-        _c = _stream->get();
-      } while (is_second_char_identifier(_c));
-      auto kind = ni::ast::token_kind::identifier;
-      if (is_reserved_word(ss.str())) {
-        kind = ni::ast::token_kind::reserved_word;
-      }
-      _next = ni::ast::token(kind, ss.str(), _location);
-      _location.column_begin = _location.column_end;
-      return _next;
+        peek();
+      } while (is_identifier(current_lexeme()));
+      return set_identifier_token();
     }
 
-    throw ni::ast::tokenizer_error(std::string("invalid char '") + _c + "'",
-                                   _location);
+    peek();
+    return set_token(ni::ast::token_tag::unknown);
   }
 
-  _location.column_begin++;
-  _location.column_end = _location.column_begin;
-  _next = ni::ast::token(ni::ast::token_kind::end_of_file, _location);
-  return _next;
+  return set_token(ni::ast::token_tag::end_of_file);
 }
