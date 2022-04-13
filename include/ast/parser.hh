@@ -3,8 +3,8 @@
 #include <memory>
 
 #include "ast.hh"
-#include "location.hh"
 #include "generated/location.hh"
+#include "location.hh"
 
 namespace ni {
 namespace ast {
