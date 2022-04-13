@@ -10,7 +10,6 @@
 
 #include "ast/ast.hh"
 #include "ast/parser.hh"
-#include "generated/location.hh"
 #include "generated/parser.tab.hh"
 
 namespace ni {
@@ -65,7 +64,7 @@ TEST_F(ASTParserTest, Success) {
 TEST_F(ASTParserTest, Fail) {
   WriteFile("fun ma.in() int {\n");
   ni::ast::parser p;
-  EXPECT_THROW(p.parse(this->filename), yy::parser::syntax_error);
+  EXPECT_THROW(p.parse(this->filename), ni::ast::syntax_error);
 }
 
 } // namespace

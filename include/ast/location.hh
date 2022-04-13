@@ -1,4 +1,7 @@
+#pragma once
+
 #include <istream>
+#include <sstream>
 
 namespace ni {
 namespace ast {
