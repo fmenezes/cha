@@ -3,7 +3,7 @@
 #include <map>
 
 #include "ast.hh"
-#include "generated/location.hh"
+#include "location.hh"
 #include "visitor.hh"
 
 namespace ni {
@@ -22,7 +22,7 @@ protected:
 
 private:
   std::map<std::string, const function_declaration &> functions;
-  std::map<std::string, yy::location> vars;
+  std::map<std::string, location> vars;
 };
 } // namespace ast
 } // namespace ni

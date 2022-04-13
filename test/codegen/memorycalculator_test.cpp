@@ -11,7 +11,6 @@
 #include "ast/ast.hh"
 #include "ast/parser.hh"
 #include "codegen/memory_calculator.hh"
-#include "generated/location.hh"
 #include "generated/parser.tab.hh"
 
 namespace ni {

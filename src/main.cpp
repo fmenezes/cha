@@ -37,9 +37,8 @@ int main(int argc, char *argv[]) {
       return 1;
     }
     c->generate(output);
-  } catch (const yy::parser::syntax_error &e) {
-    std::cerr << ni::ast::emit_location(e.location)
-              << ": error occurred: " << e.what() << std::endl;
+  } catch (const ni::ast::syntax_error &e) {
+    std::cerr << e.loc.str() << ": error occurred: " << e.what() << std::endl;
   } catch (const std::exception &e) {
     std::cerr << "error occurred: " << e.what() << std::endl;
   }
