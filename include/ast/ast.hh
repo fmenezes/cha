@@ -168,52 +168,6 @@ public:
       : instructions(std::move(instructions)), node(location){};
 };
 
-class parser {
-public:
-  yy::location location;
-  std::unique_ptr<program> prg;
-  void parse(const std::string &f);
-};
-
-class visitor {
-public:
-  visitor(){};
-
-protected:
-  virtual void visit(const node &node);
-  virtual void visit(const program &node);
-  virtual void visit(const statement &node);
-  virtual void visit(const expression &node);
-  virtual void visit(const constant &node);
-  virtual void visit(const constant_integer &node);
-  virtual void visit(const variable_declaration &node);
-  virtual void visit(const variable_assignment &node);
-  virtual void visit(const variable_lookup &node);
-  virtual void visit(const binary_operation &node);
-  virtual void visit(const function_declaration &node);
-  virtual void visit(const function_call &node);
-  virtual void visit(const function_return &node);
-  virtual void visit(const block &node);
-  virtual void visit(const argument &node);
-};
-
-class validator : public visitor {
-public:
-  static void validate(const program &node);
-
-protected:
-  void visit(const program &node) override;
-  void visit(const variable_declaration &node) override;
-  void visit(const variable_assignment &node) override;
-  void visit(const variable_lookup &node) override;
-  void visit(const function_declaration &node) override;
-  void visit(const function_call &node) override;
-
-private:
-  std::map<std::string, const function_declaration &> functions;
-  std::map<std::string, yy::location> vars;
-};
-
 std::string emit_location(const yy::location &loc);
 } // namespace ast
 } // namespace ni

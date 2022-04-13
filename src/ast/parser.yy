@@ -3,6 +3,7 @@
 #include <string>
 #include <memory>
 #include "ast/ast.hh"
+#include "ast/parser.hh"
 
 using namespace std::string_literals;
 %}
@@ -29,6 +30,7 @@ using namespace std::string_literals;
 
 %code {
 # include "ast/ast.hh"
+# include "ast/parser.hh"
 # include "ast/parserdecl.h"
 }
 

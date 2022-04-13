@@ -69,37 +69,37 @@ ni::ast::token_tag symbol_tag(char c) {
 }
 
 bool ni::ast::tokenizer::read() {
-  if (lexemeBegin > 0 && lexemeBegin < c_len) {
-    auto s = lexemeForward - lexemeBegin;
-    memmove(&c, &c[lexemeBegin], s);
+  if (lexeme_begin > 0 && lexeme_begin < c_len) {
+    auto s = lexeme_forward - lexeme_begin;
+    memmove(&c, &c[lexeme_begin], s);
     _stream->read(&c[s], sizeof(c) - s);
     c_len = _stream->gcount() + s;
-    lexemeBegin = 0;
-    lexemeForward = s;
+    lexeme_begin = 0;
+    lexeme_forward = s;
     return ((c_len - s) > 0);
   } else {
     _stream->read(c, sizeof(c));
     c_len = _stream->gcount();
-    lexemeBegin = 0;
-    lexemeForward = 1;
+    lexeme_begin = 0;
+    lexeme_forward = 1;
     return (c_len > 0);
   }
 }
 
 std::string ni::ast::tokenizer::current_lexeme() {
-  return std::string(&c[lexemeBegin], lexemeForward - lexemeBegin);
+  return std::string(&c[lexeme_begin], lexeme_forward - lexeme_begin);
 }
 
 void ni::ast::tokenizer::step_begin() {
   _location.line_begin = _location.line_end;
   _location.column_begin = _location.column_end;
-  lexemeBegin = (lexemeForward - 1);
+  lexeme_begin = (lexeme_forward - 1);
 }
 
 ni::ast::token ni::ast::tokenizer::set_token(ni::ast::token_tag tag) {
   step();
   _next = ni::ast::token(
-      tag, std::string(&c[lexemeBegin], lexemeForward - lexemeBegin - 1),
+      tag, std::string(&c[lexeme_begin], lexeme_forward - lexeme_begin - 1),
       _location);
   step_begin();
   return _next;
@@ -107,21 +107,21 @@ ni::ast::token ni::ast::tokenizer::set_token(ni::ast::token_tag tag) {
 
 ni::ast::token ni::ast::tokenizer::set_identifier_token() {
   step();
-  auto word = std::string(&c[lexemeBegin], lexemeForward - lexemeBegin - 1);
+  auto word = std::string(&c[lexeme_begin], lexeme_forward - lexeme_begin - 1);
   auto tag = reserved_word(word);
   _next = ni::ast::token(tag, word, _location);
   step_begin();
   return _next;
 }
 
-void ni::ast::tokenizer::peek() { lexemeForward++; }
+void ni::ast::tokenizer::peek() { lexeme_forward++; }
 
 void ni::ast::tokenizer::step() {
-  _location.column_end += (lexemeForward - lexemeBegin - 1);
+  _location.column_end += (lexeme_forward - lexeme_begin - 1);
 }
 
 bool ni::ast::tokenizer::eof() {
-  if (lexemeBegin == -1 || lexemeForward >= c_len) {
+  if (lexeme_begin == -1 || lexeme_forward >= c_len) {
     return !read();
   }
 
@@ -153,7 +153,7 @@ ni::ast::token ni::ast::tokenizer::scan_next_token() {
       continue;
     }
 
-    auto s = symbol_tag(c[lexemeBegin]);
+    auto s = symbol_tag(c[lexeme_begin]);
     if (s != ni::ast::token_tag::unknown) {
       peek();
       return set_token(s);
