@@ -2,11 +2,10 @@
 #include <string>
 
 #include "ast/ast.hh"
-#include "ast/parser.hh"
 #include "ast/validator.hh"
 #include "codegen/asm_codegen.hh"
 #include "codegen/codegen.hh"
-#include "generated/parser.tab.hh"
+#include "parse/syntax_parser.hh"
 
 void printUsage(const std::string &app) {
   std::cerr << "Usage: " << app << " <format> <srcfile> <destfile>" << std::endl
@@ -23,7 +22,7 @@ int main(int argc, char *argv[]) {
   auto input = std::string(argv[2]);
   auto output = std::string(argv[3]);
 
-  ni::ast::parser parser;
+  ni::parse::syntax_parser parser;
   ni::codegen::codegen *c = nullptr;
   try {
     parser.parse(input);
@@ -37,7 +36,7 @@ int main(int argc, char *argv[]) {
       return 1;
     }
     c->generate(output);
-  } catch (const ni::ast::syntax_error &e) {
+  } catch (const ni::parse::syntax_error &e) {
     std::cerr << e.loc.str() << ": error occurred: " << e.what() << std::endl;
   } catch (const std::exception &e) {
     std::cerr << "error occurred: " << e.what() << std::endl;

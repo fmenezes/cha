@@ -2,24 +2,24 @@
 
 #include <memory>
 
-#include "ast.hh"
+#include "ast/ast.hh"
+#include "ast/location.hh"
 #include "generated/location.hh"
-#include "location.hh"
 
 namespace ni {
-namespace ast {
+namespace parse {
 class syntax_error : public std::runtime_error {
 public:
-  syntax_error(const location &loc, const std::string &m)
+  syntax_error(const ni::ast::location &loc, const std::string &m)
       : loc(loc), std::runtime_error(m) {}
-  location loc;
+  ni::ast::location loc;
 };
 
-class parser {
+class syntax_parser {
 public:
   yy::location location;
-  std::unique_ptr<program> prg;
+  std::unique_ptr<ni::ast::program> prg;
   void parse(const std::string &f);
 };
-} // namespace ast
+} // namespace parse
 } // namespace ni

@@ -3,7 +3,7 @@
 #include <string>
 #include <memory>
 #include "ast/ast.hh"
-#include "ast/parser.hh"
+#include "parse/syntax_parser.hh"
 
 using namespace std::string_literals;
 %}
@@ -30,14 +30,14 @@ using namespace std::string_literals;
 
 %code {
 # include "ast/ast.hh"
-# include "ast/parser.hh"
-# include "ast/parserdecl.h"
+# include "parse/syntax_parser.hh"
+# include "parse/parserdecl.h"
 
 ni::ast::location convert_loc(yy::location l);
 ni::ast::location convert_loc(yy::position l, yy::position r);
 }
 
-%param { ni::ast::parser &p }
+%param { ni::parse::syntax_parser &p }
 
 %token <std::string> CONST_INTEGER IDENTIFIER
 %token VAR PLUS MINUS MULTIPLY OPENPAR CLOSEPAR EQUALS OPENCUR CLOSECUR FUN RET COMMA INT
@@ -122,7 +122,7 @@ const :
 
 void yy::parser::error (const location_type& loc, const std::string& m)
 {
-  throw ni::ast::syntax_error(ni::ast::location(std::string(*loc.begin.filename), loc.begin.line, loc.begin.column, loc.end.line, loc.end.column), "invalid syntax: " + m);
+  throw ni::parse::syntax_error(ni::ast::location(std::string(*loc.begin.filename), loc.begin.line, loc.begin.column, loc.end.line, loc.end.column), "invalid syntax: " + m);
 }
 
 ni::ast::location convert_loc(yy::location l) {

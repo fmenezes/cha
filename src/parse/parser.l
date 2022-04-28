@@ -1,8 +1,8 @@
 %{
 #include "ast/ast.hh"
-#include "ast/parser.hh"
-#include "parser.tab.hh"
-#include "ast/parserdecl.h"
+#include "parse/syntax_parser.hh"
+#include "generated/parser.tab.hh"
+#include "parse/parserdecl.h"
 
 # define YY_USER_ACTION  loc.columns (yyleng);
 %}
