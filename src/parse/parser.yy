@@ -24,6 +24,7 @@ using namespace std::string_literals;
 %nterm <std::vector<std::unique_ptr<ni::ast::statement>>> statements;
 %nterm <std::unique_ptr<ni::ast::node_type>> typedef;
 %nterm <std::vector<std::unique_ptr<ni::ast::argument>>> def_args;
+%nterm <std::unique_ptr<ni::ast::argument>> arg;
 %nterm <std::vector<std::unique_ptr<ni::ast::expression>>> call_args;
 %nterm <std::vector<std::unique_ptr<ni::ast::function_declaration>>> instructions;
 %nterm <std::unique_ptr<ni::ast::program>> program;
@@ -76,9 +77,13 @@ block :
 																					  $$ = std::make_unique<ni::ast::block>(e, convert_loc(@1.begin, @2.end)); }
 	;
 
+arg :
+	IDENTIFIER typedef																{ $$ = std::make_unique<ni::ast::argument>($1, $2, convert_loc(@1.begin, @2.end)); }
+	;
+
 def_args :
-	IDENTIFIER typedef																{ $$.push_back(std::move(std::make_unique<ni::ast::argument>($1, $2, convert_loc(@1.begin, @2.end)))); }
-	| def_args COMMA IDENTIFIER typedef												{ $$ = std::move($1); $$.push_back(std::move(std::make_unique<ni::ast::argument>($3, $4, convert_loc(@3.begin, @4.end)))); }
+	arg																				{ $$.push_back(std::move($1)); }
+	| def_args COMMA arg															{ $$ = std::move($1); $$.push_back(std::move($3)); }
 	;
 
 call_args :
