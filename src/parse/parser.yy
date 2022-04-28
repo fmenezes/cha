@@ -3,7 +3,7 @@
 #include <string>
 #include <memory>
 #include "ast/ast.hh"
-#include "ast/parser.hh"
+#include "parse/syntax_parser.hh"
 
 using namespace std::string_literals;
 %}
@@ -24,20 +24,21 @@ using namespace std::string_literals;
 %nterm <std::vector<std::unique_ptr<ni::ast::statement>>> statements;
 %nterm <std::unique_ptr<ni::ast::node_type>> typedef;
 %nterm <std::vector<std::unique_ptr<ni::ast::argument>>> def_args;
+%nterm <std::unique_ptr<ni::ast::argument>> arg;
 %nterm <std::vector<std::unique_ptr<ni::ast::expression>>> call_args;
 %nterm <std::vector<std::unique_ptr<ni::ast::function_declaration>>> instructions;
 %nterm <std::unique_ptr<ni::ast::program>> program;
 
 %code {
 # include "ast/ast.hh"
-# include "ast/parser.hh"
-# include "ast/parserdecl.h"
+# include "parse/syntax_parser.hh"
+# include "parse/parserdecl.h"
 
 ni::ast::location convert_loc(yy::location l);
 ni::ast::location convert_loc(yy::position l, yy::position r);
 }
 
-%param { ni::ast::parser &p }
+%param { ni::parse::syntax_parser &p }
 
 %token <std::string> CONST_INTEGER IDENTIFIER
 %token VAR PLUS MINUS MULTIPLY OPENPAR CLOSEPAR EQUALS OPENCUR CLOSECUR FUN RET COMMA INT
@@ -76,9 +77,13 @@ block :
 																					  $$ = std::make_unique<ni::ast::block>(e, convert_loc(@1.begin, @2.end)); }
 	;
 
+arg :
+	IDENTIFIER typedef																{ $$ = std::make_unique<ni::ast::argument>($1, $2, convert_loc(@1.begin, @2.end)); }
+	;
+
 def_args :
-	IDENTIFIER typedef																{ $$.push_back(std::move(std::make_unique<ni::ast::argument>($1, $2, convert_loc(@1.begin, @2.end)))); }
-	| def_args COMMA IDENTIFIER typedef												{ $$ = std::move($1); $$.push_back(std::move(std::make_unique<ni::ast::argument>($3, $4, convert_loc(@3.begin, @4.end)))); }
+	arg																				{ $$.push_back(std::move($1)); }
+	| def_args COMMA arg															{ $$ = std::move($1); $$.push_back(std::move($3)); }
 	;
 
 call_args :
@@ -122,7 +127,7 @@ const :
 
 void yy::parser::error (const location_type& loc, const std::string& m)
 {
-  throw ni::ast::syntax_error(ni::ast::location(std::string(*loc.begin.filename), loc.begin.line, loc.begin.column, loc.end.line, loc.end.column), "invalid syntax: " + m);
+  throw ni::parse::syntax_error(ni::ast::location(std::string(*loc.begin.filename), loc.begin.line, loc.begin.column, loc.end.line, loc.end.column), "invalid syntax: " + m);
 }
 
 ni::ast::location convert_loc(yy::location l) {

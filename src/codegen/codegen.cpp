@@ -1,10 +1,4 @@
-#include <memory>
-#include <sstream>
-
-#include "ast/ast.hh"
-#include "ast/parser.hh"
 #include "codegen/codegen.hh"
-#include "generated/parser.tab.hh"
 
 ni::codegen::os ni::codegen::context::default_os() {
 #if defined(__APPLE__) || defined(__MACH__)

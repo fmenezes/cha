@@ -9,10 +9,9 @@
 #include <gtest/gtest.h>
 
 #include "ast/ast.hh"
-#include "ast/parser.hh"
+#include "parse/syntax_parser.hh"
 #include "ast/validator.hh"
 #include "generated/location.hh"
-#include "generated/parser.tab.hh"
 
 namespace ni {
 namespace test {
@@ -48,7 +47,7 @@ protected:
     myfile << contents;
     myfile.close();
 
-    ni::ast::parser parser;
+    ni::parse::syntax_parser parser;
     parser.parse(this->filename);
     return parser.prg.release();
   }
@@ -73,14 +72,14 @@ TEST_F(ASTValidatorTest, DupFunctionTest) {
                  "fun test() {\n"
                  "  ret\n"
                  "}\n");
-  EXPECT_THROW(ni::ast::validator::validate(*p), ni::ast::syntax_error);
+  EXPECT_THROW(ni::ast::validator::validate(*p), ni::parse::syntax_error);
 }
 
 TEST_F(ASTValidatorTest, FunctionNotFoundTest) {
   auto p = Parse("fun main() {\n"
                  "  test()\n"
                  "}\n");
-  EXPECT_THROW(ni::ast::validator::validate(*p), ni::ast::syntax_error);
+  EXPECT_THROW(ni::ast::validator::validate(*p), ni::parse::syntax_error);
 }
 
 TEST_F(ASTValidatorTest, VarNotFoundTest) {
@@ -88,7 +87,7 @@ TEST_F(ASTValidatorTest, VarNotFoundTest) {
                  "  ret a\n"
                  "}\n");
 
-  EXPECT_THROW(ni::ast::validator::validate(*p), ni::ast::syntax_error);
+  EXPECT_THROW(ni::ast::validator::validate(*p), ni::parse::syntax_error);
 }
 
 TEST_F(ASTValidatorTest, VarRedefinedTest) {
@@ -97,7 +96,7 @@ TEST_F(ASTValidatorTest, VarRedefinedTest) {
                  "  var a int\n"
                  "}\n");
 
-  EXPECT_THROW(ni::ast::validator::validate(*p), ni::ast::syntax_error);
+  EXPECT_THROW(ni::ast::validator::validate(*p), ni::parse::syntax_error);
 }
 
 TEST_F(ASTValidatorTest, VarRedefined2Test) {
@@ -105,7 +104,7 @@ TEST_F(ASTValidatorTest, VarRedefined2Test) {
                  "  var a int\n"
                  "}\n");
 
-  EXPECT_THROW(ni::ast::validator::validate(*p), ni::ast::syntax_error);
+  EXPECT_THROW(ni::ast::validator::validate(*p), ni::parse::syntax_error);
 }
 
 TEST_F(ASTValidatorTest, ArgMismatchTest) {
@@ -116,7 +115,7 @@ TEST_F(ASTValidatorTest, ArgMismatchTest) {
                  "  ret\n"
                  "}\n");
 
-  EXPECT_THROW(ni::ast::validator::validate(*p), ni::ast::syntax_error);
+  EXPECT_THROW(ni::ast::validator::validate(*p), ni::parse::syntax_error);
 }
 
 TEST_F(ASTValidatorTest, ArgMismatch2Test) {
@@ -127,7 +126,7 @@ TEST_F(ASTValidatorTest, ArgMismatch2Test) {
                  "  ret i\n"
                  "}\n");
 
-  EXPECT_THROW(ni::ast::validator::validate(*p), ni::ast::syntax_error);
+  EXPECT_THROW(ni::ast::validator::validate(*p), ni::parse::syntax_error);
 }
 
 TEST_F(ASTValidatorTest, DupArgTest) {
@@ -135,7 +134,7 @@ TEST_F(ASTValidatorTest, DupArgTest) {
                  "  ret i\n"
                  "}\n");
 
-  EXPECT_THROW(ni::ast::validator::validate(*p), ni::ast::syntax_error);
+  EXPECT_THROW(ni::ast::validator::validate(*p), ni::parse::syntax_error);
 }
 
 } // namespace

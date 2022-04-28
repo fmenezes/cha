@@ -9,8 +9,7 @@
 #include <gtest/gtest.h>
 
 #include "ast/ast.hh"
-#include "ast/parser.hh"
-#include "generated/parser.tab.hh"
+#include "parse/syntax_parser.hh"
 
 namespace ni {
 namespace test {
@@ -57,14 +56,14 @@ TEST_F(ASTParserTest, Success) {
   WriteFile("fun main() int {\n"
               "  ret 0\n"
               "}\n");
-  ni::ast::parser p;
+  ni::parse::syntax_parser p;
   EXPECT_NO_THROW(p.parse(this->filename));
 }
 
 TEST_F(ASTParserTest, Fail) {
   WriteFile("fun ma.in() int {\n");
-  ni::ast::parser p;
-  EXPECT_THROW(p.parse(this->filename), ni::ast::syntax_error);
+  ni::parse::syntax_parser p;
+  EXPECT_THROW(p.parse(this->filename), ni::parse::syntax_error);
 }
 
 } // namespace

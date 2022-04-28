@@ -9,9 +9,8 @@
 #include <gtest/gtest.h>
 
 #include "ast/ast.hh"
-#include "ast/parser.hh"
+#include "parse/syntax_parser.hh"
 #include "codegen/memory_calculator.hh"
-#include "generated/parser.tab.hh"
 
 namespace ni {
 namespace test {
@@ -47,7 +46,7 @@ protected:
     myfile << contents;
     myfile.close();
 
-    ni::ast::parser parser;
+    ni::parse::syntax_parser parser;
     parser.parse(this->filename);
     return parser.prg.release();
   }

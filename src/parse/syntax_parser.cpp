@@ -2,12 +2,14 @@
 #include <stdlib.h>
 
 #include "ast/ast.hh"
-#include "ast/parser.hh"
+#include "parse/syntax_parser.hh"
+
+#include "generated/location.hh"
 #include "generated/parser.tab.hh"
 
 extern FILE *yyin;
 
-void ni::ast::parser::parse(const std::string &f) {
+void ni::parse::syntax_parser::parse(const std::string &f) {
   if (!(yyin = fopen(f.c_str(), "r"))) {
     throw std::runtime_error("cannot open " + f);
   }

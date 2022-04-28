@@ -22,9 +22,9 @@ file(GLOB HEADERS
         "include/**/*.hh"
         )
 
-flex_target(parser src/ast/parser.l "${GENERATED_DIR}/parser.yy.c")
+flex_target(parser src/parse/parser.l "${GENERATED_DIR}/parser.yy.c")
 
-bison_target(parser src/ast/parser.yy "${GENERATED_DIR}/parser.tab.cc")
+bison_target(parser src/parse/parser.yy "${GENERATED_DIR}/parser.tab.cc")
 
 include_directories(include ${CMAKE_CURRENT_BINARY_DIR})
 
@@ -106,26 +106,3 @@ gtest_discover_tests(ni_unit_test)
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})
 set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})
 include(CPack)
-
-find_program(CLANG_TIDY_EXECUTABLE clang-tidy)
-IF(CLANG_TIDY_EXECUTABLE)
-    EXECUTE_PROCESS(COMMAND ${CLANG_TIDY_EXECUTABLE} --version
-        OUTPUT_VARIABLE CLANG_TIDY_version_output
-        ERROR_VARIABLE CLANG_TIDY_version_error
-        RESULT_VARIABLE CLANG_TIDY_version_result
-        OUTPUT_STRIP_TRAILING_WHITESPACE)
-
-    IF(NOT ${CLANG_TIDY_version_result} EQUAL 0)
-        MESSAGE(SEND_ERROR "Command \"${CLANG_TIDY_EXECUTABLE} --version\" failed with output:\n${CLANG_TIDY_version_error}")
-    ELSE()
-        IF("${CLANG_TIDY_version_output}" MATCHES "version ([0-9]+\\.[0-9]+\\.[0-9]+)")
-            SET(CLANG_TIDY_VERSION "${CMAKE_MATCH_1}")
-        ENDIF()
-        MESSAGE(NOTICE "-- Found CLANG_TIDY: ${CLANG_TIDY_EXECUTABLE} (found version \"${CLANG_TIDY_VERSION}\")")
-    ENDIF()
-    set_target_properties(
-        ni
-        PROPERTIES
-            CXX_CLANG_TIDY ${CLANG_TIDY_EXECUTABLE}
-    )
-ENDIF(CLANG_TIDY_EXECUTABLE)
