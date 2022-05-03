@@ -9,8 +9,10 @@ set(GENERATED_DIR "${CMAKE_CURRENT_BINARY_DIR}/generated")
 file(MAKE_DIRECTORY ${GENERATED_DIR})
 
 file(GLOB SRC
+        "src/*.c"
         "src/*.cc"
         "src/*.cpp"
+        "src/**/*.c"
         "src/**/*.cc"
         "src/**/*.cpp"
         )
@@ -58,6 +60,7 @@ IF(CLANG_FORMAT_EXECUTABLE)
         -i
         ${SRC}
         ${HEADERS}
+        ${TEST_SRC}
     )
 
     add_custom_target(
@@ -67,12 +70,15 @@ IF(CLANG_FORMAT_EXECUTABLE)
         --Werror
         ${SRC}
         ${HEADERS}
+        ${TEST_SRC}
     )
 ENDIF(CLANG_FORMAT_EXECUTABLE)
 
 file(GLOB TEST_SRC
+        "test/*.c"
         "test/*.cc"
         "test/*.cpp"
+        "test/**/*.c"
         "test/**/*.cc"
         "test/**/*.cpp"
         )
