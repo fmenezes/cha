@@ -7,10 +7,11 @@
 #include <type_traits>
 #include <vector>
 
-#include "codegen.hh"
+#include "codegen/codegen.hh"
 
 namespace ni {
 namespace codegen {
+namespace assembly {
 
 enum operand_type { NOP, REGISTER, OFFSET_REGISTER, CONSTANT };
 
@@ -242,5 +243,6 @@ private:
   void check_file() const;
 };
 
+} // namespace assembly
 } // namespace codegen
 } // namespace ni

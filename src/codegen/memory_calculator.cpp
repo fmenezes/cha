@@ -1,12 +1,12 @@
 #include "codegen/memory_calculator.hh"
 #include "ast/ast.hh"
-#include "codegen/asm_codegen.hh"
+#include "codegen/assembly/asm_codegen.hh"
 
 void ni::codegen::memory_calculator::visit(
     const ni::ast::function_declaration &node) {
   auto argc = node.args.size();
-  if (argc > REGS.size()) {
-    argc = REGS.size();
+  if (argc > ni::codegen::assembly::REGS.size()) {
+    argc = ni::codegen::assembly::REGS.size();
   }
   this->total += argc * 4;
   ni::ast::visitor::visit(node);

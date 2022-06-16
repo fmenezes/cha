@@ -8,19 +8,26 @@
 
 #include "ast/ast.hh"
 #include "ast/visitor.hh"
-#include "codegen/att_printer.hh"
+#include "codegen/assembly/att_printer.hh"
 #include "codegen/codegen.hh"
 
 namespace ni {
 namespace codegen {
+namespace assembly {
 
-const std::vector<ni::codegen::operand>
-    REGS({(ni::codegen::operand)ni::codegen::register_32bits::EDI,
-          (ni::codegen::operand)ni::codegen::register_32bits::ESI,
-          (ni::codegen::operand)ni::codegen::register_32bits::EDX,
-          (ni::codegen::operand)ni::codegen::register_32bits::ECX,
-          (ni::codegen::operand)ni::codegen::register_32bits::R8D,
-          (ni::codegen::operand)ni::codegen::register_32bits::R9D});
+const std::vector<ni::codegen::assembly::operand>
+    REGS({(ni::codegen::assembly::operand)
+              ni::codegen::assembly::register_32bits::EDI,
+          (ni::codegen::assembly::operand)
+              ni::codegen::assembly::register_32bits::ESI,
+          (ni::codegen::assembly::operand)
+              ni::codegen::assembly::register_32bits::EDX,
+          (ni::codegen::assembly::operand)
+              ni::codegen::assembly::register_32bits::ECX,
+          (ni::codegen::assembly::operand)
+              ni::codegen::assembly::register_32bits::R8D,
+          (ni::codegen::assembly::operand)
+              ni::codegen::assembly::register_32bits::R9D});
 
 class asm_codegen : public ni::ast::visitor, public codegen {
 public:
@@ -49,5 +56,6 @@ private:
   void generate_start_function();
   operand return_operand;
 };
+} // namespace assembly
 } // namespace codegen
 } // namespace ni

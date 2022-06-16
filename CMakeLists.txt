@@ -8,21 +8,21 @@ set(GENERATED_DIR "${CMAKE_CURRENT_BINARY_DIR}/generated")
 
 file(MAKE_DIRECTORY ${GENERATED_DIR})
 
-file(GLOB SRC
-        "src/*.c"
-        "src/*.cc"
-        "src/*.cpp"
-        "src/**/*.c"
-        "src/**/*.cc"
-        "src/**/*.cpp"
-        )
+file(GLOB_RECURSE SRC
+    "src/*.c"
+    "src/*.cc"
+    "src/*.cpp"
+    "src/**/*.c"
+    "src/**/*.cc"
+    "src/**/*.cpp"
+)
 
-file(GLOB HEADERS
-        "include/*.h"
-        "include/*.hh"
-        "include/**/*.h"
-        "include/**/*.hh"
-        )
+file(GLOB_RECURSE HEADERS
+    "include/*.h"
+    "include/*.hh"
+    "include/**/*.h"
+    "include/**/*.hh"
+)
 
 flex_target(parser src/parse/parser.l "${GENERATED_DIR}/parser.yy.c")
 
@@ -51,6 +51,7 @@ IF(CLANG_FORMAT_EXECUTABLE)
         IF("${CLANG_FORMAT_version_output}" MATCHES "version (.*)")
             SET(CLANG_FORMAT_VERSION "${CMAKE_MATCH_1}")
         ENDIF()
+
         MESSAGE(NOTICE "-- Found CLANG_FORMAT: ${CLANG_FORMAT_EXECUTABLE} (found version \"${CLANG_FORMAT_VERSION}\")")
     ENDIF()
 
@@ -74,14 +75,14 @@ IF(CLANG_FORMAT_EXECUTABLE)
     )
 ENDIF(CLANG_FORMAT_EXECUTABLE)
 
-file(GLOB TEST_SRC
-        "test/*.c"
-        "test/*.cc"
-        "test/*.cpp"
-        "test/**/*.c"
-        "test/**/*.cc"
-        "test/**/*.cpp"
-        )
+file(GLOB_RECURSE TEST_SRC
+    "test/*.c"
+    "test/*.cc"
+    "test/*.cpp"
+    "test/**/*.c"
+    "test/**/*.cc"
+    "test/**/*.cpp"
+)
 
 include(CTest)
 enable_testing()
@@ -91,16 +92,16 @@ find_package(Threads REQUIRED)
 find_package(GTest REQUIRED)
 
 set(SRC_WITHOUT_MAIN ${SRC})
-list(FILTER SRC_WITHOUT_MAIN EXCLUDE REGEX "main.cpp") 
+list(FILTER SRC_WITHOUT_MAIN EXCLUDE REGEX "main.cpp")
 
 add_executable(
-  ni_unit_test
-  ${TEST_SRC} ${SRC_WITHOUT_MAIN} ${BISON_parser_OUTPUTS} ${FLEX_parser_OUTPUTS}
+    ni_unit_test
+    ${TEST_SRC} ${SRC_WITHOUT_MAIN} ${BISON_parser_OUTPUTS} ${FLEX_parser_OUTPUTS}
 )
 target_link_libraries(
-  ni_unit_test
-  ${GTEST_BOTH_LIBRARIES}
-  Threads::Threads
+    ni_unit_test
+    ${GTEST_BOTH_LIBRARIES}
+    Threads::Threads
 )
 target_include_directories(ni_unit_test PUBLIC ${GTEST_INCLUDE_DIRS})
 

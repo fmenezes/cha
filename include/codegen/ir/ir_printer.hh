@@ -7,10 +7,11 @@
 #include <type_traits>
 #include <vector>
 
-#include "codegen.hh"
+#include "codegen/codegen.hh"
 
 namespace ni {
 namespace codegen {
+namespace ir {
 enum ir_operand_type { TEMPORARY, MEMORY, CONSTANT };
 
 class ir_operand {
@@ -62,5 +63,6 @@ private:
   std::ostream *out;
 };
 
+} // namespace ir
 } // namespace codegen
 } // namespace ni
