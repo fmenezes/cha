@@ -2,27 +2,29 @@
 #include <iostream>
 
 #include "ast/ast.hh"
-#include "codegen/asm_codegen.hh"
+#include "codegen/assembly/asm_codegen.hh"
 #include "codegen/codegen.hh"
 #include "codegen/memory_calculator.hh"
 
-void ni::codegen::asm_codegen::visit(const ni::ast::constant_integer &node) {
-  this->return_operand = ni::codegen::operand(std::stoi(node.value));
+void ni::codegen::assembly::asm_codegen::visit(
+    const ni::ast::constant_integer &node) {
+  this->return_operand = ni::codegen::assembly::operand(std::stoi(node.value));
 }
 
-void ni::codegen::asm_codegen::visit(const ni::ast::binary_operation &node) {
+void ni::codegen::assembly::asm_codegen::visit(
+    const ni::ast::binary_operation &node) {
   ni::ast::visitor::visit(*node.left);
-  ni::codegen::operand laddr = this->return_operand;
+  ni::codegen::assembly::operand laddr = this->return_operand;
   if (laddr == register_32bits::EAX) {
     this->printer.mov(register_32bits::ECX, laddr);
-    laddr = (ni::codegen::operand)register_32bits::ECX;
+    laddr = (ni::codegen::assembly::operand)register_32bits::ECX;
   }
 
   ni::ast::visitor::visit(*node.right);
-  ni::codegen::operand raddr = this->return_operand;
+  ni::codegen::assembly::operand raddr = this->return_operand;
   if (raddr != register_32bits::EAX) {
     this->printer.mov(register_32bits::EAX, raddr);
-    raddr = (ni::codegen::operand)register_32bits::EAX;
+    raddr = (ni::codegen::assembly::operand)register_32bits::EAX;
   }
 
   this->return_operand = raddr;
@@ -38,7 +40,8 @@ void ni::codegen::asm_codegen::visit(const ni::ast::binary_operation &node) {
   }
 }
 
-void ni::codegen::asm_codegen::visit(const ni::ast::variable_lookup &node) {
+void ni::codegen::assembly::asm_codegen::visit(
+    const ni::ast::variable_lookup &node) {
   auto s = this->vars.find(node.identifier);
   if (s == this->vars.end()) {
     throw std::runtime_error(node.identifier + " not found.");
@@ -46,7 +49,8 @@ void ni::codegen::asm_codegen::visit(const ni::ast::variable_lookup &node) {
   this->return_operand = s->second;
 }
 
-void ni::codegen::asm_codegen::visit(const ni::ast::variable_assignment &node) {
+void ni::codegen::assembly::asm_codegen::visit(
+    const ni::ast::variable_assignment &node) {
   auto s = this->vars.find(node.identifier);
   if (s == this->vars.end()) {
     throw std::runtime_error(node.identifier + " not found.");
@@ -56,7 +60,7 @@ void ni::codegen::asm_codegen::visit(const ni::ast::variable_assignment &node) {
   this->return_operand = s->second;
 }
 
-void ni::codegen::asm_codegen::visit(
+void ni::codegen::assembly::asm_codegen::visit(
     const ni::ast::variable_declaration &node) {
   auto s = this->vars.find(node.identifier);
   if (s != this->vars.end()) {
@@ -69,7 +73,7 @@ void ni::codegen::asm_codegen::visit(
   this->vars.insert({node.identifier, this->return_operand});
 }
 
-void ni::codegen::asm_codegen::visit(
+void ni::codegen::assembly::asm_codegen::visit(
     const ni::ast::function_declaration &node) {
   this->current_function_name = node.identifier;
 
@@ -114,7 +118,8 @@ void ni::codegen::asm_codegen::visit(
   this->printer.ret();
 }
 
-void ni::codegen::asm_codegen::visit(const ni::ast::function_call &node) {
+void ni::codegen::assembly::asm_codegen::visit(
+    const ni::ast::function_call &node) {
   int argc = node.params.size();
   if (argc > REGS.size()) {
     argc = REGS.size();
@@ -142,7 +147,8 @@ void ni::codegen::asm_codegen::visit(const ni::ast::function_call &node) {
   this->return_operand = register_32bits::EAX;
 }
 
-void ni::codegen::asm_codegen::visit(const ni::ast::function_return &node) {
+void ni::codegen::assembly::asm_codegen::visit(
+    const ni::ast::function_return &node) {
   if (node.value.get() != nullptr) {
     ni::ast::visitor::visit(*node.value);
     auto addr = this->return_operand;
@@ -154,7 +160,7 @@ void ni::codegen::asm_codegen::visit(const ni::ast::function_return &node) {
   this->return_operand = register_32bits::EAX;
 }
 
-void ni::codegen::asm_codegen::generate_exit_call() {
+void ni::codegen::assembly::asm_codegen::generate_exit_call() {
   int exitCode = 60;
   if (this->ctx.target_os == ni::codegen::os::MACOS) {
     exitCode = 0x2000001;
@@ -164,20 +170,20 @@ void ni::codegen::asm_codegen::generate_exit_call() {
   this->printer.syscall();
 }
 
-void ni::codegen::asm_codegen::visit(const ni::ast::program &node) {
+void ni::codegen::assembly::asm_codegen::visit(const ni::ast::program &node) {
   this->printer.text_header();
   this->generate_start_function();
   ni::ast::visitor::visit(node);
 }
 
-void ni::codegen::asm_codegen::generate_start_function() {
+void ni::codegen::assembly::asm_codegen::generate_start_function() {
   this->printer.label_start();
   this->printer.call("main");
   this->printer.mov(register_32bits::EDI, register_32bits::EAX);
   this->generate_exit_call();
 }
 
-void ni::codegen::asm_codegen::generate(const std::string &output) {
+void ni::codegen::assembly::asm_codegen::generate(const std::string &output) {
   this->printer.open_file(output);
   this->visit(this->program);
   this->printer.close_file();

@@ -2,7 +2,7 @@
 #include <gtest/gtest.h>
 #include <stdio.h>
 
-#include "codegen/att_printer.hh"
+#include "codegen/assembly/att_printer.hh"
 
 namespace ni {
 namespace test {
@@ -12,7 +12,7 @@ class ATTPrinterTest : public ::testing::Test {
 protected:
   std::string dir;
   std::string filename;
-  ni::codegen::att_printer *printer;
+  ni::codegen::assembly::att_printer *printer;
 
   ATTPrinterTest() {}
 
@@ -28,7 +28,7 @@ protected:
   }
 
   void SetUp(const ni::codegen::context &c) {
-    this->printer = new ni::codegen::att_printer(c);
+    this->printer = new ni::codegen::assembly::att_printer(c);
     this->dir = makeTempDir();
     this->filename.append(this->dir);
     this->filename.append("/test");
@@ -77,11 +77,11 @@ TEST_F(ATTPrinterTest, Linux) {
   this->printer->call("test");
   this->printer->global("test");
   this->printer->label("test");
-  this->printer->mov(ni::codegen::register_64bits::RAX, 10);
-  this->printer->mov(ni::codegen::register_32bits::EAX, 10);
-  this->printer->add(ni::codegen::register_32bits::EDI, 20);
-  this->printer->sub(ni::codegen::register_32bits::ECX, 30);
-  this->printer->imul(ni::codegen::register_32bits::EDX, 40);
+  this->printer->mov(ni::codegen::assembly::register_64bits::RAX, 10);
+  this->printer->mov(ni::codegen::assembly::register_32bits::EAX, 10);
+  this->printer->add(ni::codegen::assembly::register_32bits::EDI, 20);
+  this->printer->sub(ni::codegen::assembly::register_32bits::ECX, 30);
+  this->printer->imul(ni::codegen::assembly::register_32bits::EDX, 40);
   this->printer->push(50);
   this->printer->syscall();
   this->printer->jmp("test2");
@@ -115,11 +115,11 @@ TEST_F(ATTPrinterTest, MacOS) {
   this->printer->call("test");
   this->printer->global("test");
   this->printer->label("test");
-  this->printer->mov(ni::codegen::register_64bits::RAX, 10);
-  this->printer->mov(ni::codegen::register_32bits::EAX, 10);
-  this->printer->add(ni::codegen::register_32bits::EDI, 20);
-  this->printer->sub(ni::codegen::register_32bits::ECX, 30);
-  this->printer->imul(ni::codegen::register_32bits::EDX, 40);
+  this->printer->mov(ni::codegen::assembly::register_64bits::RAX, 10);
+  this->printer->mov(ni::codegen::assembly::register_32bits::EAX, 10);
+  this->printer->add(ni::codegen::assembly::register_32bits::EDI, 20);
+  this->printer->sub(ni::codegen::assembly::register_32bits::ECX, 30);
+  this->printer->imul(ni::codegen::assembly::register_32bits::EDX, 40);
   this->printer->push(50);
   this->printer->syscall();
   this->printer->jmp("test2");

@@ -3,7 +3,7 @@
 
 #include "ast/ast.hh"
 #include "ast/validator.hh"
-#include "codegen/asm_codegen.hh"
+#include "codegen/assembly/asm_codegen.hh"
 #include "codegen/codegen.hh"
 #include "parse/syntax_parser.hh"
 
@@ -29,7 +29,7 @@ int main(int argc, char *argv[]) {
     ni::ast::validator::validate(*parser.prg);
 
     if (format.compare("-asm") == 0) {
-      c = new ni::codegen::asm_codegen(*parser.prg);
+      c = new ni::codegen::assembly::asm_codegen(*parser.prg);
     } else {
       std::cerr << "Error: invalid format" << std::endl << std::endl;
       printUsage(argv[0]);

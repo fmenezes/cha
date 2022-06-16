@@ -2,7 +2,7 @@
 #include <gtest/gtest.h>
 #include <stdio.h>
 
-#include "codegen/ir_printer.hh"
+#include "codegen/ir/ir_printer.hh"
 
 namespace ni {
 namespace test {
@@ -30,7 +30,7 @@ TEST(IRPrinterTest, Linux) {
 
   std::stringstream ss;
 
-  ni::codegen::ir_printer ir(&ss);
+  ni::codegen::ir::ir_printer ir(&ss);
 
   ir.text_header();
   ir.global("start");
@@ -39,29 +39,29 @@ TEST(IRPrinterTest, Linux) {
   ir.global("test");
   ir.label("test");
   ir.mov(
-      ni::codegen::ir_operand(ni::codegen::ir_operand_type::TEMPORARY, "tmp1"),
-      ni::codegen::ir_operand(ni::codegen::ir_operand_type::CONSTANT, "10"));
+      ni::codegen::ir::ir_operand(ni::codegen::ir::ir_operand_type::TEMPORARY, "tmp1"),
+      ni::codegen::ir::ir_operand(ni::codegen::ir::ir_operand_type::CONSTANT, "10"));
   ir.mov(
-      ni::codegen::ir_operand(ni::codegen::ir_operand_type::TEMPORARY, "tmp2"),
-      ni::codegen::ir_operand(ni::codegen::ir_operand_type::CONSTANT, "20"));
+      ni::codegen::ir::ir_operand(ni::codegen::ir::ir_operand_type::TEMPORARY, "tmp2"),
+      ni::codegen::ir::ir_operand(ni::codegen::ir::ir_operand_type::CONSTANT, "20"));
   ir.mov(
-      ni::codegen::ir_operand(ni::codegen::ir_operand_type::TEMPORARY, "tmp3"),
-      ni::codegen::ir_operand(ni::codegen::ir_operand_type::CONSTANT, "30"));
+      ni::codegen::ir::ir_operand(ni::codegen::ir::ir_operand_type::TEMPORARY, "tmp3"),
+      ni::codegen::ir::ir_operand(ni::codegen::ir::ir_operand_type::CONSTANT, "30"));
   ir.mov(
-      ni::codegen::ir_operand(ni::codegen::ir_operand_type::TEMPORARY, "tmp4"),
-      ni::codegen::ir_operand(ni::codegen::ir_operand_type::CONSTANT, "40"));
+      ni::codegen::ir::ir_operand(ni::codegen::ir::ir_operand_type::TEMPORARY, "tmp4"),
+      ni::codegen::ir::ir_operand(ni::codegen::ir::ir_operand_type::CONSTANT, "40"));
   ir.add(
-      ni::codegen::ir_operand(ni::codegen::ir_operand_type::TEMPORARY, "tmp1"),
-      ni::codegen::ir_operand(ni::codegen::ir_operand_type::TEMPORARY, "tmp2"));
+      ni::codegen::ir::ir_operand(ni::codegen::ir::ir_operand_type::TEMPORARY, "tmp1"),
+      ni::codegen::ir::ir_operand(ni::codegen::ir::ir_operand_type::TEMPORARY, "tmp2"));
   ir.mul(
-      ni::codegen::ir_operand(ni::codegen::ir_operand_type::TEMPORARY, "tmp3"),
-      ni::codegen::ir_operand(ni::codegen::ir_operand_type::TEMPORARY, "tmp4"));
+      ni::codegen::ir::ir_operand(ni::codegen::ir::ir_operand_type::TEMPORARY, "tmp3"),
+      ni::codegen::ir::ir_operand(ni::codegen::ir::ir_operand_type::TEMPORARY, "tmp4"));
   ir.push(
-      ni::codegen::ir_operand(ni::codegen::ir_operand_type::CONSTANT, "20"));
+      ni::codegen::ir::ir_operand(ni::codegen::ir::ir_operand_type::CONSTANT, "20"));
   ir.alloc(
-      ni::codegen::ir_operand(ni::codegen::ir_operand_type::MEMORY, "a"), 4);
+      ni::codegen::ir::ir_operand(ni::codegen::ir::ir_operand_type::MEMORY, "a"), 4);
   ir.pop(
-      ni::codegen::ir_operand(ni::codegen::ir_operand_type::MEMORY, "a"));
+      ni::codegen::ir::ir_operand(ni::codegen::ir::ir_operand_type::MEMORY, "a"));
 
   ir.syscall();
   ir.jmp("test2");
