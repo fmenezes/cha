@@ -30,6 +30,7 @@ public:
     case ir_operand_type::TEMPORARY:
       return "%" + _identifier;
     case ir_operand_type::MEMORY:
+      return "&" + _identifier;
     default:
       return _identifier;
     }
@@ -44,20 +45,22 @@ class ir_printer {
 public:
   ir_printer(std::shared_ptr<std::ostream> out) : out(std::move(out)){};
 
-  void text_header();
   void global(const std::string &label);
   void alloc(const ir_operand &dst, const int b);
   void label(const std::string &label);
   void mov(const ir_operand &dst, const ir_operand &src);
-  void add(const ir_operand &dst, const ir_operand &src);
-  void sub(const ir_operand &dst, const ir_operand &src);
-  void mul(const ir_operand &dst, const ir_operand &src);
+  void add(const ir_operand &dst, const ir_operand &src,
+           const ir_operand &src2);
+  void sub(const ir_operand &dst, const ir_operand &src,
+           const ir_operand &src2);
+  void mul(const ir_operand &dst, const ir_operand &src,
+           const ir_operand &src2);
   void jmp(const std::string &label);
-  void call(const std::string &label);
+  void call(const ir_operand &dst, const std::string &label);
   void push(const ir_operand &src);
   void pop(const ir_operand &dst);
-  void exit(const ir_operand &dst);
-  void ret();
+  void exit(const ir_operand &src);
+  void ret(const ir_operand &src);
 
 private:
   std::shared_ptr<std::ostream> out;
