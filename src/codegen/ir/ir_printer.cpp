@@ -24,8 +24,8 @@ void ni::codegen::ir::ir_printer::mov(const ir_operand &dst,
   *out << "\tmov\t" << dst.str() << ", " << src.str() << std::endl;
 }
 
-void ni::codegen::ir::ir_printer::syscall() {
-  *out << "\tsyscall" << std::endl;
+void ni::codegen::ir::ir_printer::exit(const ir_operand &dst) {
+  *out << "\texit\t" << dst.str() << std::endl;
 }
 
 void ni::codegen::ir::ir_printer::add(const ir_operand &dst,

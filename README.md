@@ -27,6 +27,11 @@ cmake --build .
 
 To compile ni programs you can simply run:
 
+* To generate Intermediate Representation Code
+```
+ni -ir examples/test.ni output.ir
+```
+
 * To generate Assembly Code
 ```
 ni -asm examples/test.ni output.s
