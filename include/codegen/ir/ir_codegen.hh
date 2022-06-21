@@ -34,7 +34,6 @@ private:
   ir_operand return_operand = ir_operand(ir_operand_type::CONSTANT, "0");
   std::unique_ptr<ir_printer> printer;
   std::map<std::string, ir_operand> vars;
-  int current_memory_id = 0;
   int current_temprary_id = 0;
   std::string current_function_name;
   std::shared_ptr<std::ofstream> output_file;
