@@ -42,7 +42,7 @@ private:
 
 class ir_printer {
 public:
-  ir_printer(std::ostream *out) : out(out){};
+  ir_printer(std::shared_ptr<std::ostream> out) : out(std::move(out)){};
 
   void text_header();
   void global(const std::string &label);
@@ -56,11 +56,11 @@ public:
   void call(const std::string &label);
   void push(const ir_operand &src);
   void pop(const ir_operand &dst);
-  void syscall();
+  void exit(const ir_operand &dst);
   void ret();
 
 private:
-  std::ostream *out;
+  std::shared_ptr<std::ostream> out;
 };
 
 } // namespace ir

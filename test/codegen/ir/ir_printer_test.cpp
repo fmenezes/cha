@@ -7,7 +7,7 @@
 namespace ni {
 namespace test {
 namespace {
-TEST(IRPrinterTest, Linux) {
+TEST(IRPrinterTest, Main) {
   std::string expected;
   expected.append(".text\n");
   expected.append(".global\tstart\n");
@@ -24,13 +24,13 @@ TEST(IRPrinterTest, Linux) {
   expected.append("\tpush\t$20\n");
   expected.append("\talloc\ta, 4\n");
   expected.append("\tpop\ta\n");
-  expected.append("\tsyscall\n");
+  expected.append("\texit\ta\n");
   expected.append("\tjmp\ttest2\n");
   expected.append("\tret\n");
 
-  std::stringstream ss;
+  auto ss = std::make_shared<std::stringstream>();
 
-  ni::codegen::ir::ir_printer ir(&ss);
+  ni::codegen::ir::ir_printer ir(ss);
 
   ir.text_header();
   ir.global("start");
@@ -63,11 +63,12 @@ TEST(IRPrinterTest, Linux) {
   ir.pop(
       ni::codegen::ir::ir_operand(ni::codegen::ir::ir_operand_type::MEMORY, "a"));
 
-  ir.syscall();
+  ir.exit(ni::codegen::ir::ir_operand(ni::codegen::ir::ir_operand_type::MEMORY,
+                                      "a"));
   ir.jmp("test2");
   ir.ret();
 
-  EXPECT_EQ(ss.str(), expected);
+  EXPECT_EQ(ss->str(), expected);
 }
 } // namespace
 } // namespace test

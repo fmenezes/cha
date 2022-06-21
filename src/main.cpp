@@ -5,11 +5,13 @@
 #include "ast/validator.hh"
 #include "codegen/assembly/asm_codegen.hh"
 #include "codegen/codegen.hh"
+#include "codegen/ir/ir_codegen.hh"
 #include "parse/syntax_parser.hh"
 
 void printUsage(const std::string &app) {
   std::cerr << "Usage: " << app << " <format> <srcfile> <destfile>" << std::endl
-            << "format: -asm for Assembly" << std::endl;
+            << "format: -asm for Assembly" << std::endl
+            << "format: -ir for Intermediate Representation" << std::endl;
 }
 
 int main(int argc, char *argv[]) {
@@ -30,6 +32,8 @@ int main(int argc, char *argv[]) {
 
     if (format.compare("-asm") == 0) {
       c = new ni::codegen::assembly::asm_codegen(*parser.prg);
+    } else if (format.compare("-ir") == 0) {
+      c = new ni::codegen::ir::ir_codegen(*parser.prg);
     } else {
       std::cerr << "Error: invalid format" << std::endl << std::endl;
       printUsage(argv[0]);
