@@ -21,7 +21,7 @@ TEST(IRPrinterTest, Main) {
   expected.append("\tadd\t%tmp5,\t%tmp1,\t%tmp2\n");
   expected.append("\tmul\t%tmp6,\t%tmp3,\t%tmp4\n");
   expected.append("\tpush\t$20\n");
-  expected.append("\talloc\t&a,\t4\n");
+  expected.append("\talloc\t&a,\t$4\n");
   expected.append("\tpop\t&a\n");
   expected.append("\texit\t&a\n");
   expected.append("\tjmp\ttest2\n");

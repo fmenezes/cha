@@ -12,7 +12,7 @@ void ni::codegen::ir::ir_printer::label(const std::string &label) {
 }
 
 void ni::codegen::ir::ir_printer::alloc(const ir_operand &dst, const int b) {
-  *out << "\talloc\t" << dst.str() << ",\t" << b << std::endl;
+  *out << "\talloc\t" << dst.str() << ",\t$" << b << std::endl;
 }
 
 void ni::codegen::ir::ir_printer::mov(const ir_operand &dst,
