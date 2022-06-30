@@ -2,7 +2,7 @@
 #include <gtest/gtest.h>
 #include <stdio.h>
 
-#include "codegen/assembly/att_printer.hh"
+#include "ni/codegen/assembly/att_printer.hh"
 
 namespace ni {
 namespace test {

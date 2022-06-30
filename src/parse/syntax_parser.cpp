@@ -1,8 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "ast/ast.hh"
-#include "parse/syntax_parser.hh"
+#include "ni/ast/ast.hh"
+#include "ni/parse/syntax_parser.hh"
 
 #include "generated/location.hh"
 #include "generated/parser.tab.hh"

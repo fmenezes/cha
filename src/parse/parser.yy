@@ -2,8 +2,8 @@
 #include <iostream>
 #include <string>
 #include <memory>
-#include "ast/ast.hh"
-#include "parse/syntax_parser.hh"
+#include "ni/ast/ast.hh"
+#include "ni/parse/syntax_parser.hh"
 
 using namespace std::string_literals;
 %}
@@ -30,8 +30,8 @@ using namespace std::string_literals;
 %nterm <std::unique_ptr<ni::ast::program>> program;
 
 %code {
-# include "ast/ast.hh"
-# include "parse/syntax_parser.hh"
+# include "ni/ast/ast.hh"
+# include "ni/parse/syntax_parser.hh"
 # include "parse/parserdecl.h"
 
 ni::ast::location convert_loc(yy::location l);

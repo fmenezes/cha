@@ -2,10 +2,10 @@
 #include <fstream>
 #include <iostream>
 
-#include "ast/ast.hh"
-#include "codegen/codegen.hh"
-#include "codegen/ir/ir_codegen.hh"
-#include "codegen/memory_calculator.hh"
+#include "ni/ast/ast.hh"
+#include "ni/codegen/codegen.hh"
+#include "ni/codegen/ir/ir_codegen.hh"
+#include "ni/codegen/memory_calculator.hh"
 
 void ni::codegen::ir::ir_codegen::visit(const ni::ast::constant_integer &node) {
   return_operand = ni::codegen::ir::ir_operand(

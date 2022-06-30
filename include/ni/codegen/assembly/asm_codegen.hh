@@ -6,10 +6,10 @@
 #include <string>
 #include <vector>
 
-#include "ast/ast.hh"
-#include "ast/visitor.hh"
-#include "codegen/assembly/att_printer.hh"
-#include "codegen/codegen.hh"
+#include "ni/ast/ast.hh"
+#include "ni/ast/visitor.hh"
+#include "ni/codegen/assembly/att_printer.hh"
+#include "ni/codegen/codegen.hh"
 
 namespace ni {
 namespace codegen {

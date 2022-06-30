@@ -7,7 +7,7 @@
 #include <type_traits>
 #include <vector>
 
-#include "codegen/codegen.hh"
+#include "ni/codegen/codegen.hh"
 
 namespace ni {
 namespace codegen {

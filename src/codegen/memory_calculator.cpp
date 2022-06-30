@@ -1,6 +1,6 @@
-#include "codegen/memory_calculator.hh"
-#include "ast/ast.hh"
-#include "codegen/assembly/asm_codegen.hh"
+#include "ni/codegen/memory_calculator.hh"
+#include "ni/ast/ast.hh"
+#include "ni/codegen/assembly/asm_codegen.hh"
 
 void ni::codegen::memory_calculator::visit(
     const ni::ast::function_declaration &node) {

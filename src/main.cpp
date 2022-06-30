@@ -1,12 +1,12 @@
 #include <iostream>
 #include <string>
 
-#include "ast/ast.hh"
-#include "ast/validator.hh"
-#include "codegen/assembly/asm_codegen.hh"
-#include "codegen/codegen.hh"
-#include "codegen/ir/ir_codegen.hh"
-#include "parse/syntax_parser.hh"
+#include "ni/ast/ast.hh"
+#include "ni/ast/validator.hh"
+#include "ni/codegen/assembly/asm_codegen.hh"
+#include "ni/codegen/codegen.hh"
+#include "ni/codegen/ir/ir_codegen.hh"
+#include "ni/parse/syntax_parser.hh"
 
 void printUsage(const std::string &app) {
   std::cerr << "Usage: " << app << " <format> <srcfile> <destfile>" << std::endl

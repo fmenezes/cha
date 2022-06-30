@@ -2,9 +2,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "ast/ast.hh"
-#include "ast/validator.hh"
-#include "parse/syntax_parser.hh"
+#include "ni/ast/ast.hh"
+#include "ni/ast/validator.hh"
+#include "ni/parse/syntax_parser.hh"
 
 void ni::ast::validator::visit(const ni::ast::function_call &node) {
   auto it = functions.find(node.identifier);

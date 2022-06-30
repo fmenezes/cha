@@ -8,10 +8,10 @@
 #include <gtest/gtest-spi.h>
 #include <gtest/gtest.h>
 
-#include "ast/ast.hh"
-#include "parse/syntax_parser.hh"
-#include "ast/validator.hh"
 #include "generated/location.hh"
+#include "ni/ast/ast.hh"
+#include "ni/ast/validator.hh"
+#include "ni/parse/syntax_parser.hh"
 
 namespace ni {
 namespace test {
