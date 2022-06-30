@@ -1,10 +1,10 @@
 #include <fstream>
 #include <iostream>
 
-#include "ast/ast.hh"
-#include "codegen/assembly/asm_codegen.hh"
-#include "codegen/codegen.hh"
-#include "codegen/memory_calculator.hh"
+#include "ni/ast/ast.hh"
+#include "ni/codegen/assembly/asm_codegen.hh"
+#include "ni/codegen/codegen.hh"
+#include "ni/codegen/memory_calculator.hh"
 
 void ni::codegen::assembly::asm_codegen::visit(
     const ni::ast::constant_integer &node) {

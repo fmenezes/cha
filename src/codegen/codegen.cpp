@@ -1,4 +1,4 @@
-#include "codegen/codegen.hh"
+#include "ni/codegen/codegen.hh"
 
 ni::codegen::os ni::codegen::context::default_os() {
 #if defined(__APPLE__) || defined(__MACH__)

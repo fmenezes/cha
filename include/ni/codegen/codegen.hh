@@ -6,7 +6,7 @@
 #include <string>
 #include <vector>
 
-#include "ast/ast.hh"
+#include "ni/ast/ast.hh"
 
 namespace ni {
 namespace codegen {

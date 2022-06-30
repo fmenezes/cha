@@ -1,7 +1,7 @@
 #include <fstream>
 #include <iostream>
 
-#include "codegen/ir/ir_printer.hh"
+#include "ni/codegen/ir/ir_printer.hh"
 
 void ni::codegen::ir::ir_printer::global(const std::string &label) {
   *out << ".global\t" << label << std::endl;

@@ -1,7 +1,7 @@
 #pragma once
 
-#include "ast/ast.hh"
-#include "ast/visitor.hh"
+#include "ni/ast/ast.hh"
+#include "ni/ast/visitor.hh"
 
 namespace ni {
 namespace codegen {

@@ -2,9 +2,9 @@
 
 #include <memory>
 
-#include "ast/ast.hh"
-#include "ast/location.hh"
 #include "generated/location.hh"
+#include "ni/ast/ast.hh"
+#include "ni/ast/location.hh"
 
 namespace ni {
 namespace parse {

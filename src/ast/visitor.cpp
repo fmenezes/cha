@@ -1,5 +1,5 @@
-#include "ast/visitor.hh"
-#include "ast/ast.hh"
+#include "ni/ast/visitor.hh"
+#include "ni/ast/ast.hh"
 
 void ni::ast::visitor::visit(const ni::ast::node &node) {
   auto a = dynamic_cast<const ni::ast::argument *>(&node);

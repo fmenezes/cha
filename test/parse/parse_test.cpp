@@ -8,8 +8,8 @@
 #include <gtest/gtest-spi.h>
 #include <gtest/gtest.h>
 
-#include "ast/ast.hh"
-#include "parse/syntax_parser.hh"
+#include "ni/ast/ast.hh"
+#include "ni/parse/syntax_parser.hh"
 
 namespace ni {
 namespace test {

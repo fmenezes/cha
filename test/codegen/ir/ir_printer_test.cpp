@@ -2,7 +2,7 @@
 #include <gtest/gtest.h>
 #include <stdio.h>
 
-#include "codegen/ir/ir_printer.hh"
+#include "ni/codegen/ir/ir_printer.hh"
 
 namespace ni {
 namespace test {

@@ -1,7 +1,7 @@
 #include <fstream>
 #include <iostream>
 
-#include "codegen/assembly/att_printer.hh"
+#include "ni/codegen/assembly/att_printer.hh"
 
 std::string serialize_constant(const int &value) {
   return "$" + std::to_string(value);

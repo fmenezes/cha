@@ -28,7 +28,7 @@ flex_target(parser src/parse/parser.l "${GENERATED_DIR}/parser.yy.c")
 
 bison_target(parser src/parse/parser.yy "${GENERATED_DIR}/parser.tab.cc")
 
-include_directories(include ${CMAKE_CURRENT_BINARY_DIR})
+include_directories(include src/include ${CMAKE_CURRENT_BINARY_DIR})
 
 set_source_files_properties(${FLEX_parser_OUTPUTS} PROPERTIES LANGUAGE CXX)
 
