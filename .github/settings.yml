@@ -22,6 +22,13 @@ collaborators:
 branches:
   - name: main
     protection:
+      required_pull_request_reviews:
+        required_approving_review_count: 0
+        dismiss_stale_reviews: false
+        require_code_owner_reviews: false
+        dismissal_restrictions:
+          users: []
+          teams: []
       required_status_checks:
         strict: true
         contexts:
