@@ -22,7 +22,7 @@ collaborators:
 branches:
   - name: main
     protection:
-      required_pull_request_reviews:
+      required_pull_request_reviews: null
         required_approving_review_count: 0
         dismiss_stale_reviews: false
         require_code_owner_reviews: false
@@ -36,3 +36,7 @@ branches:
           - mac
       enforce_admins: true
       required_linear_history: true
+      restrictions:
+        apps: []
+        users: []
+        teams: []
