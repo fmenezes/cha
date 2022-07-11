@@ -14,7 +14,7 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install build-essential flex bison libgtest-dev -y
+          sudo apt-get install build-essential flex bison -y
           cd /tmp
           wget https://apt.llvm.org/llvm.sh
           chmod +x llvm.sh
