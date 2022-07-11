@@ -1,0 +1,17 @@
+.global	start
+start:
+	call	%tmp1,	test
+.global	test
+test:
+	mov	%tmp1,	$10
+	mov	%tmp2,	$20
+	mov	%tmp3,	$30
+	mov	%tmp4,	$40
+	add	%tmp5,	%tmp1,	%tmp2
+	mul	%tmp6,	%tmp3,	%tmp4
+	push	$20
+	alloc	&a,	$4
+	pop	&a
+	exit	&a
+	jmp	test2
+	ret	$0

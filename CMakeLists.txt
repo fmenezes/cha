@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.0.0)
+cmake_minimum_required(VERSION 3.0.2)
 project(ni VERSION 0.0.1 LANGUAGES CXX)
 
 find_package(FLEX REQUIRED)
@@ -9,6 +9,7 @@ set(GENERATED_DIR "${CMAKE_CURRENT_BINARY_DIR}/generated")
 file(MAKE_DIRECTORY ${GENERATED_DIR})
 
 file(GLOB_RECURSE SRC
+    CONFIGURE_DEPENDS
     "src/*.c"
     "src/*.cc"
     "src/*.cpp"
@@ -18,6 +19,7 @@ file(GLOB_RECURSE SRC
 )
 
 file(GLOB_RECURSE HEADERS
+    CONFIGURE_DEPENDS
     "include/*.h"
     "include/*.hh"
     "include/**/*.h"
@@ -75,7 +77,19 @@ IF(CLANG_FORMAT_EXECUTABLE)
     )
 ENDIF(CLANG_FORMAT_EXECUTABLE)
 
+file(GLOB_RECURSE TEST_LIB_SRC
+    CONFIGURE_DEPENDS
+    "test/lib/*.c"
+    "test/lib/*.cc"
+    "test/lib/*.cpp"
+    "test/lib/**/*.c"
+    "test/lib/**/*.cc"
+    "test/lib/**/*.cpp"
+)
+string(REPLACE "${CMAKE_SOURCE_DIR}/" ";" TEST_LIB_SRC ${TEST_LIB_SRC})
+
 file(GLOB_RECURSE TEST_SRC
+    CONFIGURE_DEPENDS
     "test/*.c"
     "test/*.cc"
     "test/*.cpp"
@@ -83,32 +97,36 @@ file(GLOB_RECURSE TEST_SRC
     "test/**/*.cc"
     "test/**/*.cpp"
 )
+string(REPLACE "${CMAKE_SOURCE_DIR}/" ";" TEST_SRC ${TEST_SRC})
+list(REMOVE_ITEM TEST_SRC ${TEST_LIB_SRC})
+
+set(SRC_WITHOUT_MAIN ${SRC} ${BISON_parser_OUTPUTS} ${FLEX_parser_OUTPUTS})
+list(FILTER SRC_WITHOUT_MAIN EXCLUDE REGEX "main.cpp")
 
 include(CTest)
 enable_testing()
 
-set(THREADS_PREFER_PTHREAD_FLAG ON)
-find_package(Threads REQUIRED)
-find_package(GTest REQUIRED)
+CREATE_TEST_SOURCELIST(ni_tests
+    ni_unit_test_main.cpp
+    ${TEST_SRC}
+)
 
-set(SRC_WITHOUT_MAIN ${SRC})
-list(FILTER SRC_WITHOUT_MAIN EXCLUDE REGEX "main.cpp")
+file(RENAME "${CMAKE_CURRENT_BINARY_DIR}/ni_unit_test_main.cpp" "${GENERATED_DIR}/ni_unit_test_main.cpp")
 
 add_executable(
     ni_unit_test
-    ${TEST_SRC} ${SRC_WITHOUT_MAIN} ${BISON_parser_OUTPUTS} ${FLEX_parser_OUTPUTS}
+    "${GENERATED_DIR}/ni_unit_test_main.cpp" ${TEST_SRC} ${TEST_LIB_SRC} ${SRC_WITHOUT_MAIN}
 )
-target_link_libraries(
-    ni_unit_test
-    ${GTEST_BOTH_LIBRARIES}
-    Threads::Threads
-)
-target_include_directories(ni_unit_test PUBLIC ${GTEST_INCLUDE_DIRS})
+
+target_include_directories(ni_unit_test PUBLIC "test/include")
 
 set_property(TARGET ni_unit_test PROPERTY CXX_STANDARD 14)
 
-include(GoogleTest)
-gtest_discover_tests(ni_unit_test)
+FOREACH(test ${TEST_SRC})
+    GET_FILENAME_COMPONENT(TName ${test} NAME_WE)
+    GET_FILENAME_COMPONENT(TPath ${test} DIRECTORY)
+    ADD_TEST(NAME ${TName} COMMAND ni_unit_test "${TPath}/${TName}" WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/test")
+ENDFOREACH(test)
 
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})
 set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})
