@@ -3,7 +3,7 @@ FROM ubuntu
 ENV DEBIAN_FRONTEND=noninteractive
 ENV TZ=Etc/UTC
 
-RUN apt-get update && apt-get install build-essential flex bison cmake libgtest-dev -y
+RUN apt-get update && apt-get install build-essential flex bison cmake -y
 
 WORKDIR /app
 COPY .clang-format CMakeLists.txt /app/

@@ -12,7 +12,7 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install build-essential flex bison cmake libgtest-dev -y
+          sudo apt-get install build-essential flex bison cmake -y
       - name: Build
         run: |
           mkdir build
@@ -35,7 +35,7 @@ jobs:
       - name: Install dependencies
         run: |
           brew update
-          brew install bison flex googletest
+          brew install bison flex
           echo "/usr/local/opt/flex/bin" >> $GITHUB_PATH
           echo "/usr/local/opt/bison/bin" >> $GITHUB_PATH
       - name: Build
