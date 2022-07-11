@@ -5,6 +5,7 @@ repository:
   description: ni programming language
   homepage: https://github.com/fmenezes/ni
   private: true
+  is_template : false
   has_issues: true
   has_projects: false
   has_wiki: false
@@ -13,22 +14,25 @@ repository:
   allow_squash_merge: true
   allow_merge_commit: false
   allow_rebase_merge: false
+  allow_auto_merge: false
+  allow_update_branch: false
+  archived: false
+  allow_forking: false
   delete_branch_on_merge: true
   enable_automated_security_fixes: false
   enable_vulnerability_alerts: false
+  use_squash_pr_title_as_default: true
 collaborators:
   - username: vinperdom
     permission: push
 branches:
   - name: main
     protection:
-      required_pull_request_reviews: null
+      required_pull_request_reviews:
         required_approving_review_count: 0
         dismiss_stale_reviews: false
         require_code_owner_reviews: false
-        dismissal_restrictions:
-          users: []
-          teams: []
+        dismissal_restrictions: {}
       required_status_checks:
         strict: true
         contexts:
