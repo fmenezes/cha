@@ -27,4 +27,5 @@ private:
 } // namespace codegen
 } // namespace ni
 
-std::ostream &operator<<(std::ostream &os, const ni::codegen::ir::ir_printer &printer);
+std::ostream &operator<<(std::ostream &os,
+                         const ni::codegen::ir::ir_printer &printer);
