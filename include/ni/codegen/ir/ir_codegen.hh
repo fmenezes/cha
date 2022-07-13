@@ -9,7 +9,7 @@
 #include "ni/ast/ast.hh"
 #include "ni/ast/visitor.hh"
 #include "ni/codegen/codegen.hh"
-#include "ni/codegen/ir/ir_printer.hh"
+#include "ni/codegen/ir/ir_common.hh"
 
 namespace ni {
 namespace codegen {
@@ -32,14 +32,15 @@ protected:
 
 private:
   ir_operand return_operand = ir_operand(ir_operand_type::CONSTANT, "0");
-  std::unique_ptr<ir_printer> printer;
   std::map<std::string, ir_operand> vars;
   int current_temprary_id = 0;
   std::string current_function_name;
-  std::shared_ptr<std::ofstream> output_file;
+  bool first_instruction = false;
   void generate_exit_call();
   void generate_start_function();
-  void close_file();
+  std::string generate_label();
+  void append_instruction(ir_instruction instruction);
+  ir_program instructions;
 };
 } // namespace ir
 } // namespace codegen

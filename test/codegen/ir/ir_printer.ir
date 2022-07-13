@@ -1,17 +1,15 @@
-.global	start
-start:
-	call	%tmp1,	test
-.global	test
-test:
-	mov	%tmp1,	$10
-	mov	%tmp2,	$20
-	mov	%tmp3,	$30
-	mov	%tmp4,	$40
-	add	%tmp5,	%tmp1,	%tmp2
-	mul	%tmp6,	%tmp3,	%tmp4
-	push	$20
-	alloc	&a,	$4
-	pop	&a
-	exit	&a
-	jmp	test2
-	ret	$0
+	GLOBAL	start
+start:	CALL	%tmp1,	test
+	GLOBAL	test
+test:	MOV	%tmp1,	$10
+	MOV	%tmp2,	$20
+	MOV	%tmp3,	$30
+	MOV	%tmp4,	$40
+	ADD	%tmp5,	%tmp1,	%tmp2
+	MUL	%tmp6,	%tmp3,	%tmp4
+	PUSH	$20
+	ALLOC	&a,	$4
+	POP	&a
+	EXIT	&a
+	JMP	test2
+	RET	$0
