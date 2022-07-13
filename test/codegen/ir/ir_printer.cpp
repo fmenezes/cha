@@ -111,16 +111,16 @@ int test_codegen_ir_ir_printer(int argc, char *argv[]) {
       std::vector<ni::codegen::ir::ir_operand>{ni::codegen::ir::ir_operand(
           ni::codegen::ir::ir_operand_type::CONSTANT, "0")}));
 
-  std::stringstream ss;
-  ss << ni::codegen::ir::ir_printer(p);
+  std::stringstream got;
+  got << ni::codegen::ir::ir_printer(p);
 
   std::ifstream t("codegen/ir/ir_printer.ir");
   std::stringstream expected;
   expected << t.rdbuf();
 
-  if (expected.str() != ss.str()) {
+  if (expected.str() != got.str()) {
     std::cout << "expected: " << expected.str() << std::endl;
-    std::cout << "actual: " << ss.str() << std::endl;
+    std::cout << "actual: " << got.str() << std::endl;
     return 1;
   }
 

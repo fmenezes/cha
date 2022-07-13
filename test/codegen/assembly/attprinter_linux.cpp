@@ -1,45 +1,98 @@
-#include <string>
 #include <fstream>
+#include <string>
 
 #include "ni/ast/ast.hh"
-#include "test/test.hh"
-#include "ni/codegen/codegen.hh"
+#include "ni/codegen/assembly/asm_common.hh"
 #include "ni/codegen/assembly/att_printer.hh"
-
+#include "ni/codegen/codegen.hh"
+#include "test/test.hh"
 
 int test_codegen_assembly_attprinter_linux(int argc, char *argv[]) {
-  auto c = ni::codegen::context(ni::codegen::os::LINUX, ni::codegen::arch::x86_64);
-  auto printer = new ni::codegen::assembly::att_printer(c);
-  std::string dir = makeTempDir();
-  std::string filename = dir + "/test";
+  ni::codegen::assembly::asm_program p;
 
-  printer->open_file(filename);
+  p.push_back(ni::codegen::assembly::asm_instruction(
+      ni::codegen::assembly::asm_operation::TEXT_SECTION));
 
-  printer->text_header();
-  printer->label_start();
-  printer->call("test");
-  printer->global("test");
-  printer->label("test");
-  printer->mov(ni::codegen::assembly::register_64bits::RAX, 10);
-  printer->mov(ni::codegen::assembly::register_32bits::EAX, 10);
-  printer->add(ni::codegen::assembly::register_32bits::EDI, 20);
-  printer->sub(ni::codegen::assembly::register_32bits::ECX, 30);
-  printer->imul(ni::codegen::assembly::register_32bits::EDX, 40);
-  printer->push(50);
-  printer->syscall();
-  printer->jmp("test2");
-  printer->ret();
+  p.push_back(ni::codegen::assembly::asm_instruction(
+      ni::codegen::assembly::asm_operation::GLOBAL,
+      std::vector<ni::codegen::assembly::asm_operand>{
+          ni::codegen::assembly::asm_operand(
+              ni::codegen::assembly::asm_operand_type::LABEL, "start")}));
 
-  printer->close_file();
+  p.push_back(ni::codegen::assembly::asm_instruction(
+      "start", ni::codegen::assembly::asm_operation::CALL,
+      std::vector<ni::codegen::assembly::asm_operand>{
+          ni::codegen::assembly::asm_operand(
+              ni::codegen::assembly::asm_operand_type::LABEL, "test")}));
 
-  std::ifstream gotFile(filename);
+  p.push_back(ni::codegen::assembly::asm_instruction(
+      ni::codegen::assembly::asm_operation::GLOBAL,
+      std::vector<ni::codegen::assembly::asm_operand>{
+          ni::codegen::assembly::asm_operand(
+              ni::codegen::assembly::asm_operand_type::LABEL, "test")}));
+
+  p.push_back(ni::codegen::assembly::asm_instruction(
+      "test", ni::codegen::assembly::asm_operation::MOV,
+      std::vector<ni::codegen::assembly::asm_operand>{
+          ni::codegen::assembly::asm_operand(
+              ni::codegen::assembly::asm_register::RAX),
+          ni::codegen::assembly::asm_operand(
+              ni::codegen::assembly::asm_operand_type::CONSTANT, "10")}));
+
+  p.push_back(ni::codegen::assembly::asm_instruction(
+      ni::codegen::assembly::asm_operation::MOV,
+      std::vector<ni::codegen::assembly::asm_operand>{
+          ni::codegen::assembly::asm_operand(
+              ni::codegen::assembly::asm_register::EAX),
+          ni::codegen::assembly::asm_operand(
+              ni::codegen::assembly::asm_operand_type::CONSTANT, "10")}));
+
+  p.push_back(ni::codegen::assembly::asm_instruction(
+      ni::codegen::assembly::asm_operation::ADD,
+      std::vector<ni::codegen::assembly::asm_operand>{
+          ni::codegen::assembly::asm_operand(ni::codegen::assembly::asm_register::EDI),
+          ni::codegen::assembly::asm_operand(
+              ni::codegen::assembly::asm_operand_type::CONSTANT, "20")}));
+
+  p.push_back(ni::codegen::assembly::asm_instruction(
+      ni::codegen::assembly::asm_operation::SUB,
+      std::vector<ni::codegen::assembly::asm_operand>{
+          ni::codegen::assembly::asm_operand(ni::codegen::assembly::asm_register::ECX),
+          ni::codegen::assembly::asm_operand(
+              ni::codegen::assembly::asm_operand_type::CONSTANT, "30")}));
+
+  p.push_back(ni::codegen::assembly::asm_instruction(
+      ni::codegen::assembly::asm_operation::IMUL,
+      std::vector<ni::codegen::assembly::asm_operand>{
+          ni::codegen::assembly::asm_operand(ni::codegen::assembly::asm_register::EDX),
+          ni::codegen::assembly::asm_operand(
+              ni::codegen::assembly::asm_operand_type::CONSTANT, "40")}));
+
+  p.push_back(ni::codegen::assembly::asm_instruction(
+      ni::codegen::assembly::asm_operation::PUSH,
+      std::vector<ni::codegen::assembly::asm_operand>{
+          ni::codegen::assembly::asm_operand(
+              ni::codegen::assembly::asm_operand_type::CONSTANT, "50", 64)}));
+
+  p.push_back(ni::codegen::assembly::asm_instruction(
+      ni::codegen::assembly::asm_operation::SYSCALL));
+
+  p.push_back(ni::codegen::assembly::asm_instruction(
+      ni::codegen::assembly::asm_operation::JMP,
+      std::vector<ni::codegen::assembly::asm_operand>{
+          ni::codegen::assembly::asm_operand(
+              ni::codegen::assembly::asm_operand_type::LABEL, "test2")}));
+
+  p.push_back(ni::codegen::assembly::asm_instruction(
+      ni::codegen::assembly::asm_operation::RET));
+
+  auto c =
+      ni::codegen::context(ni::codegen::os::LINUX, ni::codegen::arch::x86_64);
+
+  auto printer = new ni::codegen::assembly::att_printer(c, p);
+
   std::stringstream gotBuffer;
-  gotBuffer << gotFile.rdbuf();
-  gotFile.close();
-  
-  remove(filename.c_str());
-  remove(dir.c_str());
-  delete printer;
+  gotBuffer << ni::codegen::assembly::att_printer(c, p);
 
   std::ifstream expectedFile("codegen/assembly/attprinter_linux.s");
   std::stringstream expectedBuffer;
