@@ -5,6 +5,7 @@
 #include "ni/ast/ast.hh"
 #include "ni/codegen/codegen.hh"
 #include "ni/codegen/ir/ir_codegen.hh"
+#include "ni/codegen/ir/ir_printer.hh"
 #include "ni/codegen/memory_calculator.hh"
 
 void ni::codegen::ir::ir_codegen::visit(const ni::ast::constant_integer &node) {
@@ -24,11 +25,17 @@ void ni::codegen::ir::ir_codegen::visit(const ni::ast::binary_operation &node) {
       "TMP" + std::to_string(current_temprary_id++));
 
   if (node.op.compare("+") == 0) {
-    printer->add(return_operand, raddr, laddr);
+    append_instruction(
+        ir_instruction(ir_operation::ADD,
+                       std::vector<ir_operand>{return_operand, raddr, laddr}));
   } else if (node.op.compare("-") == 0) {
-    printer->sub(return_operand, raddr, laddr);
+    append_instruction(
+        ir_instruction(ir_operation::SUB,
+                       std::vector<ir_operand>{return_operand, raddr, laddr}));
   } else if (node.op.compare("*") == 0) {
-    printer->mul(return_operand, raddr, laddr);
+    append_instruction(
+        ir_instruction(ir_operation::MUL,
+                       std::vector<ir_operand>{return_operand, raddr, laddr}));
   } else {
     throw std::runtime_error("invalid operation " + node.op);
   }
@@ -49,7 +56,8 @@ void ni::codegen::ir::ir_codegen::visit(
     throw std::runtime_error(node.identifier + " not found.");
   }
   ni::ast::visitor::visit(*node.value);
-  printer->mov(s->second, return_operand);
+  append_instruction(ir_instruction(
+      ir_operation::MOV, std::vector<ir_operand>{s->second, return_operand}));
   return_operand = s->second;
 }
 
@@ -61,7 +69,10 @@ void ni::codegen::ir::ir_codegen::visit(
   }
 
   return_operand = ir_operand(ir_operand_type::MEMORY, node.identifier);
-  printer->alloc(return_operand, 4);
+  append_instruction(ir_instruction(
+      generate_label(), ir_operation::ALLOC,
+      std::vector<ir_operand>{return_operand,
+                              ir_operand(ir_operand_type::CONSTANT, "4")}));
   vars.insert({node.identifier, return_operand});
 }
 
@@ -69,9 +80,10 @@ void ni::codegen::ir::ir_codegen::visit(
     const ni::ast::function_declaration &node) {
   current_function_name = node.identifier;
 
-  printer->global(current_function_name);
-  printer->label(current_function_name);
-
+  append_instruction(
+      ir_instruction(ir_operation::GLOBAL,
+                     std::vector<ir_operand>{ir_operand(
+                         ir_operand_type::LABEL, current_function_name)}));
   current_temprary_id = 0;
   vars.clear();
 
@@ -83,10 +95,21 @@ void ni::codegen::ir::ir_codegen::visit(
     vars.insert({arg.identifier, addr});
   }
 
+  first_instruction = true;
   ni::ast::visitor::visit(*node.body);
+  first_instruction = false; // if body empty
 
-  printer->label(current_function_name + "_epilogue");
-  printer->ret(return_operand);
+  append_instruction(ir_instruction(current_function_name + "_epilogue",
+                                    ir_operation::RET,
+                                    std::vector<ir_operand>{return_operand}));
+}
+
+std::string ni::codegen::ir::ir_codegen::generate_label() {
+  if (first_instruction) {
+    first_instruction = false;
+    return current_function_name;
+  }
+  return "";
 }
 
 void ni::codegen::ir::ir_codegen::visit(const ni::ast::function_call &node) {
@@ -95,13 +118,17 @@ void ni::codegen::ir::ir_codegen::visit(const ni::ast::function_call &node) {
     ni::ast::visitor::visit(param);
     auto arg =
         ir_operand(ir_operand_type::TEMPORARY, "ARG" + std::to_string(i));
-    printer->mov(arg, return_operand);
+    append_instruction(ir_instruction(
+        ir_operation::MOV, std::vector<ir_operand>{arg, return_operand}));
   }
 
   return_operand = ir_operand(ir_operand_type::TEMPORARY,
                               "TMP" + std::to_string(current_temprary_id++));
 
-  printer->call(return_operand, node.identifier);
+  append_instruction(ir_instruction(
+      generate_label(), ir_operation::CALL,
+      std::vector<ir_operand>{return_operand, ir_operand(ir_operand_type::LABEL,
+                                                         node.identifier)}));
 }
 
 void ni::codegen::ir::ir_codegen::visit(const ni::ast::function_return &node) {
@@ -110,11 +137,16 @@ void ni::codegen::ir::ir_codegen::visit(const ni::ast::function_return &node) {
   } else {
     return_operand = ir_operand(ir_operand_type::CONSTANT, "0");
   }
-  printer->jmp(current_function_name + "_epilogue");
+  append_instruction(ir_instruction(
+      generate_label(), ir_operation::JMP,
+      std::vector<ir_operand>{
+          return_operand, ir_operand(ir_operand_type::LABEL,
+                                     current_function_name + "_epilogue")}));
 }
 
 void ni::codegen::ir::ir_codegen::generate_exit_call() {
-  printer->exit(return_operand);
+  append_instruction(ir_instruction(ir_operation::EXIT,
+                                    std::vector<ir_operand>{return_operand}));
 }
 
 void ni::codegen::ir::ir_codegen::visit(const ni::ast::program &node) {
@@ -123,22 +155,27 @@ void ni::codegen::ir::ir_codegen::visit(const ni::ast::program &node) {
 }
 
 void ni::codegen::ir::ir_codegen::generate_start_function() {
-  printer->label("start");
   return_operand = ir_operand(ir_operand_type::TEMPORARY,
                               "TMP" + std::to_string(current_temprary_id++));
-  printer->call(return_operand, "main");
+
+  append_instruction(ir_instruction(
+      "start", ir_operation::CALL,
+      std::vector<ir_operand>{return_operand,
+                              ir_operand(ir_operand_type::LABEL, "main")}));
   generate_exit_call();
 }
 
-void ni::codegen::ir::ir_codegen::close_file() {
-  if (output_file->is_open())
-    output_file->close();
+void ni::codegen::ir::ir_codegen::generate(const std::string &output) {
+  visit(program);
+
+  std::ofstream output_file;
+  output_file.open(output, std::ios::trunc);
+  output_file << ni::codegen::ir::ir_printer(instructions);
+  output_file.close();
 }
 
-void ni::codegen::ir::ir_codegen::generate(const std::string &output) {
-  output_file = std::make_shared<std::ofstream>();
-  output_file->open(output, std::ios::trunc);
-  printer = std::make_unique<ir_printer>(output_file);
-
-  visit(program);
+void ni::codegen::ir::ir_codegen::append_instruction(
+    ni::codegen::ir::ir_instruction instruction) {
+  instruction.label = generate_label();
+  append_instruction(std::move(instruction));
 }
