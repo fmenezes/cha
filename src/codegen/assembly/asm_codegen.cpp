@@ -20,7 +20,7 @@ void ni::codegen::assembly::asm_codegen::visit(
     p.push_back(asm_instruction(
         asm_operation::MOV,
         std::vector<ni::codegen::assembly::asm_operand>{
-            ni::codegen::assembly::asm_operand(asm_register::EBX), laddr}));
+            ni::codegen::assembly::asm_operand(asm_register::ECX), laddr}));
     laddr = (ni::codegen::assembly::asm_operand)asm_register::ECX;
   }
 

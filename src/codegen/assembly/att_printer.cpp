@@ -74,7 +74,7 @@ std::string ni::codegen::assembly::att_printer::print_operand(
   }
   case ni::codegen::assembly::asm_operand_type::OFFSET_REGISTER: {
     std::string tmp = "(%" + reg_names[operand.get_register()] + ")";
-    if (operand.get_offset() > 0) {
+    if (operand.get_offset() != 0) {
       return std::to_string(operand.get_offset()) + tmp;
     }
     return tmp;
