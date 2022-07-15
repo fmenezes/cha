@@ -89,12 +89,14 @@ std::string ni::codegen::assembly::att_printer::print_operand(
 }
 
 void print_operation(std::ostream &out,
-                     const ni::codegen::assembly::asm_instruction &inst, const ni::codegen::context &ctx) {
-  if (ctx.target_os == ni::codegen::os::MACOS && inst.operation == ni::codegen::assembly::asm_operation::TEXT_SECTION) {
+                     const ni::codegen::assembly::asm_instruction &inst,
+                     const ni::codegen::context &ctx) {
+  if (ctx.target_os == ni::codegen::os::MACOS &&
+      inst.operation == ni::codegen::assembly::asm_operation::TEXT_SECTION) {
     out << ".section\t__TEXT,__text";
     return;
   }
-  
+
   if (!is_directive(inst.operation)) {
     out << "\t";
   }

@@ -17,27 +17,37 @@ void ni::codegen::assembly::asm_codegen::visit(
   ni::ast::visitor::visit(*node.left);
   ni::codegen::assembly::asm_operand laddr = this->return_operand;
   if (laddr == asm_register::EAX) {
-    p.push_back(
-        asm_instruction(asm_operation::MOV, {asm_register::EBX, laddr}));
+    p.push_back(asm_instruction(
+        asm_operation::MOV,
+        std::vector<ni::codegen::assembly::asm_operand>{
+            ni::codegen::assembly::asm_operand(asm_register::EBX), laddr}));
     laddr = (ni::codegen::assembly::asm_operand)asm_register::ECX;
   }
 
   ni::ast::visitor::visit(*node.right);
   ni::codegen::assembly::asm_operand raddr = this->return_operand;
   if (raddr != asm_register::EAX) {
-    p.push_back(
-        asm_instruction(asm_operation::MOV, {asm_register::EAX, raddr}));
+    p.push_back(asm_instruction(
+        asm_operation::MOV,
+        std::vector<ni::codegen::assembly::asm_operand>{
+            ni::codegen::assembly::asm_operand(asm_register::EAX), raddr}));
     raddr = (ni::codegen::assembly::asm_operand)asm_register::EAX;
   }
 
   this->return_operand = raddr;
 
   if (node.op.compare("+") == 0) {
-    p.push_back(asm_instruction(asm_operation::ADD, {raddr, laddr}));
+    p.push_back(asm_instruction(
+        asm_operation::ADD,
+        std::vector<ni::codegen::assembly::asm_operand>{raddr, laddr}));
   } else if (node.op.compare("-") == 0) {
-    p.push_back(asm_instruction(asm_operation::SUB, {raddr, laddr}));
+    p.push_back(asm_instruction(
+        asm_operation::SUB,
+        std::vector<ni::codegen::assembly::asm_operand>{raddr, laddr}));
   } else if (node.op.compare("*") == 0) {
-    p.push_back(asm_instruction(asm_operation::IMUL, {raddr, laddr}));
+    p.push_back(asm_instruction(
+        asm_operation::IMUL,
+        std::vector<ni::codegen::assembly::asm_operand>{raddr, laddr}));
   } else {
     throw std::runtime_error("invalid operation " + node.op);
   }
@@ -60,7 +70,9 @@ void ni::codegen::assembly::asm_codegen::visit(
   }
   ni::ast::visitor::visit(*node.value);
 
-  p.push_back(asm_instruction(asm_operation::MOV, {s->second, return_operand}));
+  p.push_back(asm_instruction(asm_operation::MOV,
+                              std::vector<ni::codegen::assembly::asm_operand>{
+                                  s->second, return_operand}));
 
   this->return_operand = s->second;
 }
@@ -84,18 +96,22 @@ void ni::codegen::assembly::asm_codegen::visit(
 
   p.push_back(asm_instruction(
       asm_operation::GLOBAL,
-      {asm_operand(asm_operand_type::LABEL, this->current_function_name)}));
+      std::vector<ni::codegen::assembly::asm_operand>{
+          asm_operand(asm_operand_type::LABEL, this->current_function_name)}));
 
   int memorySize = memory_calculator::calculare(node);
   p.push_back(asm_instruction(this->current_function_name, asm_operation::PUSH,
-                              {asm_operand(asm_register::RBP)}));
-  p.push_back(
-      asm_instruction(asm_operation::MOV, {asm_operand(asm_register::RBP),
-                                           asm_operand(asm_register::RSP)}));
+                              std::vector<ni::codegen::assembly::asm_operand>{
+                                  asm_operand(asm_register::RBP)}));
   p.push_back(asm_instruction(
-      asm_operation::SUB,
-      {asm_operand(asm_register::RSP),
-       asm_operand(asm_operand_type::CONSTANT, std::to_string(memorySize))}));
+      asm_operation::MOV,
+      std::vector<ni::codegen::assembly::asm_operand>{
+          asm_operand(asm_register::RBP), asm_operand(asm_register::RSP)}));
+  p.push_back(asm_instruction(asm_operation::SUB,
+                              std::vector<ni::codegen::assembly::asm_operand>{
+                                  asm_operand(asm_register::RSP),
+                                  asm_operand(asm_operand_type::CONSTANT,
+                                              std::to_string(memorySize))}));
   this->current_stack_position = 0;
   this->vars.clear();
 
@@ -109,7 +125,9 @@ void ni::codegen::assembly::asm_codegen::visit(
 
     auto addr = asm_operand(asm_register::RBP, this->current_stack_position);
     this->vars.insert({arg.identifier, addr});
-    p.push_back(asm_instruction(asm_operation::MOV, {addr, REGS[a]}));
+    p.push_back(asm_instruction(
+        asm_operation::MOV,
+        std::vector<ni::codegen::assembly::asm_operand>{addr, REGS[a]}));
   }
 
   if (node.args.size() > 6) {
@@ -124,12 +142,15 @@ void ni::codegen::assembly::asm_codegen::visit(
 
   ni::ast::visitor::visit(*node.body);
 
-  p.push_back(asm_instruction(
-      this->current_function_name + "_epilogue", asm_operation::ADD,
-      {asm_register::RSP,
-       asm_operand(asm_operand_type::CONSTANT, std::to_string(memorySize))}));
-  p.push_back(
-      asm_instruction(asm_operation::POP, {asm_operand(asm_register::RBP)}));
+  p.push_back(asm_instruction(this->current_function_name + "_epilogue",
+                              asm_operation::ADD,
+                              std::vector<ni::codegen::assembly::asm_operand>{
+                                  asm_operand(asm_register::RSP),
+                                  asm_operand(asm_operand_type::CONSTANT,
+                                              std::to_string(memorySize))}));
+  p.push_back(asm_instruction(asm_operation::POP,
+                              std::vector<ni::codegen::assembly::asm_operand>{
+                                  asm_operand(asm_register::RBP)}));
   p.push_back(asm_instruction(asm_operation::RET));
 }
 
@@ -143,25 +164,31 @@ void ni::codegen::assembly::asm_codegen::visit(
     auto &param = *node.params[i];
     auto reg = REGS[i];
     ni::ast::visitor::visit(param);
-    p.push_back(asm_instruction(asm_operation::MOV, {REGS[i], return_operand}));
+    p.push_back(asm_instruction(asm_operation::MOV,
+                                std::vector<ni::codegen::assembly::asm_operand>{
+                                    REGS[i], return_operand}));
   }
   for (int i = (node.params.size() - 1); i >= 6; i--) {
     auto &param = *node.params[i];
     ni::ast::visitor::visit(param);
-    p.push_back(asm_instruction(asm_operation::PUSH, {return_operand}));
+    p.push_back(asm_instruction(
+        asm_operation::PUSH,
+        std::vector<ni::codegen::assembly::asm_operand>{return_operand}));
   }
 
-  p.push_back(
-      asm_instruction(asm_operation::CALL,
-                      {asm_operand(asm_operand_type::LABEL, node.identifier)}));
+  p.push_back(asm_instruction(
+      asm_operation::CALL,
+      std::vector<ni::codegen::assembly::asm_operand>{
+          asm_operand(asm_operand_type::LABEL, node.identifier)}));
 
   argc = node.params.size();
   if (argc > REGS.size()) {
     argc -= REGS.size();
-    p.push_back(asm_instruction(
-        asm_operation::ADD,
-        {asm_register::RSP,
-         asm_operand(asm_operand_type::CONSTANT, std::to_string(argc * 8))}));
+    p.push_back(asm_instruction(asm_operation::ADD,
+                                std::vector<ni::codegen::assembly::asm_operand>{
+                                    asm_operand(asm_register::RSP),
+                                    asm_operand(asm_operand_type::CONSTANT,
+                                                std::to_string(argc * 8))}));
   }
 
   return_operand = asm_operand(asm_register::EAX);
@@ -173,15 +200,17 @@ void ni::codegen::assembly::asm_codegen::visit(
     ni::ast::visitor::visit(*node.value);
     auto addr = this->return_operand;
     if (addr != asm_register::EAX) {
-      p.push_back(
-          asm_instruction(asm_operation::MOV, {asm_register::EAX, addr}));
+      p.push_back(asm_instruction(
+          asm_operation::MOV, std::vector<ni::codegen::assembly::asm_operand>{
+                                  asm_operand(asm_register::EAX), addr}));
     }
   }
 
   p.push_back(asm_instruction(
       asm_operation::JMP,
-      {asm_operand(asm_operand_type::LABEL,
-                   this->current_function_name + "_epilogue")}));
+      std::vector<ni::codegen::assembly::asm_operand>{
+          asm_operand(asm_operand_type::LABEL,
+                      this->current_function_name + "_epilogue")}));
 
   return_operand = asm_operand(asm_register::EAX);
 }
@@ -194,8 +223,9 @@ void ni::codegen::assembly::asm_codegen::generate_exit_call() {
 
   p.push_back(asm_instruction(
       asm_operation::MOV,
-      {asm_register::EAX,
-       asm_operand(asm_operand_type::CONSTANT, std::to_string(exitCode))}));
+      std::vector<ni::codegen::assembly::asm_operand>{
+          asm_operand(asm_register::EAX),
+          asm_operand(asm_operand_type::CONSTANT, std::to_string(exitCode))}));
 
   p.push_back(asm_instruction(asm_operation::SYSCALL));
 }
@@ -207,15 +237,20 @@ void ni::codegen::assembly::asm_codegen::visit(const ni::ast::program &node) {
 }
 
 void ni::codegen::assembly::asm_codegen::generate_start_function() {
-  p.push_back(asm_instruction(asm_operation::GLOBAL,
-                              {asm_operand(asm_operand_type::LABEL, "start")}));
-
-  p.push_back(asm_instruction("start", asm_operation::CALL,
-                              {asm_operand(asm_operand_type::LABEL, "main")}));
+  p.push_back(
+      asm_instruction(asm_operation::GLOBAL,
+                      std::vector<ni::codegen::assembly::asm_operand>{
+                          asm_operand(asm_operand_type::LABEL, "start")}));
 
   p.push_back(
-      asm_instruction(asm_operation::MOV, {asm_operand(asm_register::EDI),
-                                           asm_operand(asm_register::EAX)}));
+      asm_instruction("start", asm_operation::CALL,
+                      std::vector<ni::codegen::assembly::asm_operand>{
+                          asm_operand(asm_operand_type::LABEL, "main")}));
+
+  p.push_back(asm_instruction(
+      asm_operation::MOV,
+      std::vector<ni::codegen::assembly::asm_operand>{
+          asm_operand(asm_register::EDI), asm_operand(asm_register::EAX)}));
   this->generate_exit_call();
 }
 

@@ -17,9 +17,9 @@ public:
   const asm_program p;
 
   void print(std::ostream &os) const;
+
 private:
-  std::string print_operand(
-      const asm_operand &operand) const;
+  std::string print_operand(const asm_operand &operand) const;
 };
 } // namespace assembly
 } // namespace codegen

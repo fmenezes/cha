@@ -106,13 +106,14 @@ public:
         size(register_size(reg)){};
   asm_operand(asm_register reg, int offset)
       : node_type(asm_operand_type::OFFSET_REGISTER), reg(std::move(reg)),
-        size(register_size(reg)), offset(offset){};
+        offset(offset){};
   asm_operand(asm_operand_type node_type, std::string identifier)
-      : node_type(node_type), identifier(std::move(identifier)){
-        if (node_type == asm_operand_type::LABEL) {
-          size = 0;
-        }
-      };
+      : node_type(node_type), identifier(std::move(identifier)) {
+    if (node_type == asm_operand_type::LABEL ||
+        node_type == asm_operand_type::CONSTANT) {
+      size = 0;
+    }
+  };
   asm_operand(asm_operand_type node_type, std::string identifier, int size)
       : node_type(node_type), identifier(std::move(identifier)), size(size){};
 
