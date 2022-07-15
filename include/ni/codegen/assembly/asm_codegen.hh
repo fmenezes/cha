@@ -8,32 +8,18 @@
 
 #include "ni/ast/ast.hh"
 #include "ni/ast/visitor.hh"
+#include "ni/codegen/assembly/asm_common.hh"
 #include "ni/codegen/assembly/att_printer.hh"
 #include "ni/codegen/codegen.hh"
 
 namespace ni {
 namespace codegen {
 namespace assembly {
-
-const std::vector<ni::codegen::assembly::operand>
-    REGS({(ni::codegen::assembly::operand)
-              ni::codegen::assembly::register_32bits::EDI,
-          (ni::codegen::assembly::operand)
-              ni::codegen::assembly::register_32bits::ESI,
-          (ni::codegen::assembly::operand)
-              ni::codegen::assembly::register_32bits::EDX,
-          (ni::codegen::assembly::operand)
-              ni::codegen::assembly::register_32bits::ECX,
-          (ni::codegen::assembly::operand)
-              ni::codegen::assembly::register_32bits::R8D,
-          (ni::codegen::assembly::operand)
-              ni::codegen::assembly::register_32bits::R9D});
-
 class asm_codegen : public ni::ast::visitor, public codegen {
 public:
   asm_codegen(const ni::ast::program &p) : codegen(p){};
   asm_codegen(const ni::ast::program &p, const context &ctx)
-      : codegen(p, ctx), printer(ctx){};
+      : codegen(p, ctx){};
   void generate(const std::string &output) override;
 
 protected:
@@ -48,13 +34,13 @@ protected:
   void visit(const ni::ast::constant_integer &node) override;
 
 private:
-  att_printer printer;
-  std::map<std::string, operand> vars;
+  std::map<std::string, asm_operand> vars;
   std::string current_function_name;
   int current_stack_position;
   void generate_exit_call();
   void generate_start_function();
-  operand return_operand;
+  asm_operand return_operand = asm_operand(asm_operand_type::CONSTANT, "0");
+  asm_program p;
 };
 } // namespace assembly
 } // namespace codegen

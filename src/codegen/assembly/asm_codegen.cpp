@@ -8,33 +8,46 @@
 
 void ni::codegen::assembly::asm_codegen::visit(
     const ni::ast::constant_integer &node) {
-  this->return_operand = ni::codegen::assembly::operand(std::stoi(node.value));
+  return_operand = ni::codegen::assembly::asm_operand(
+      ni::codegen::assembly::asm_operand_type::CONSTANT, node.value);
 }
 
 void ni::codegen::assembly::asm_codegen::visit(
     const ni::ast::binary_operation &node) {
   ni::ast::visitor::visit(*node.left);
-  ni::codegen::assembly::operand laddr = this->return_operand;
-  if (laddr == register_32bits::EAX) {
-    this->printer.mov(register_32bits::ECX, laddr);
-    laddr = (ni::codegen::assembly::operand)register_32bits::ECX;
+  ni::codegen::assembly::asm_operand laddr = this->return_operand;
+  if (laddr == asm_register::EAX) {
+    p.push_back(asm_instruction(
+        asm_operation::MOV,
+        std::vector<ni::codegen::assembly::asm_operand>{
+            ni::codegen::assembly::asm_operand(asm_register::ECX), laddr}));
+    laddr = (ni::codegen::assembly::asm_operand)asm_register::ECX;
   }
 
   ni::ast::visitor::visit(*node.right);
-  ni::codegen::assembly::operand raddr = this->return_operand;
-  if (raddr != register_32bits::EAX) {
-    this->printer.mov(register_32bits::EAX, raddr);
-    raddr = (ni::codegen::assembly::operand)register_32bits::EAX;
+  ni::codegen::assembly::asm_operand raddr = this->return_operand;
+  if (raddr != asm_register::EAX) {
+    p.push_back(asm_instruction(
+        asm_operation::MOV,
+        std::vector<ni::codegen::assembly::asm_operand>{
+            ni::codegen::assembly::asm_operand(asm_register::EAX), raddr}));
+    raddr = (ni::codegen::assembly::asm_operand)asm_register::EAX;
   }
 
   this->return_operand = raddr;
 
   if (node.op.compare("+") == 0) {
-    this->printer.add(raddr, laddr);
+    p.push_back(asm_instruction(
+        asm_operation::ADD,
+        std::vector<ni::codegen::assembly::asm_operand>{raddr, laddr}));
   } else if (node.op.compare("-") == 0) {
-    this->printer.sub(raddr, laddr);
+    p.push_back(asm_instruction(
+        asm_operation::SUB,
+        std::vector<ni::codegen::assembly::asm_operand>{raddr, laddr}));
   } else if (node.op.compare("*") == 0) {
-    this->printer.imul(raddr, laddr);
+    p.push_back(asm_instruction(
+        asm_operation::IMUL,
+        std::vector<ni::codegen::assembly::asm_operand>{raddr, laddr}));
   } else {
     throw std::runtime_error("invalid operation " + node.op);
   }
@@ -56,7 +69,11 @@ void ni::codegen::assembly::asm_codegen::visit(
     throw std::runtime_error(node.identifier + " not found.");
   }
   ni::ast::visitor::visit(*node.value);
-  this->printer.mov(s->second, this->return_operand);
+
+  p.push_back(asm_instruction(asm_operation::MOV,
+                              std::vector<ni::codegen::assembly::asm_operand>{
+                                  s->second, return_operand}));
+
   this->return_operand = s->second;
 }
 
@@ -69,7 +86,7 @@ void ni::codegen::assembly::asm_codegen::visit(
 
   this->current_stack_position -= 4;
   this->return_operand =
-      operand(register_64bits::RBP, this->current_stack_position);
+      asm_operand(asm_register::RBP, this->current_stack_position);
   this->vars.insert({node.identifier, this->return_operand});
 }
 
@@ -77,13 +94,24 @@ void ni::codegen::assembly::asm_codegen::visit(
     const ni::ast::function_declaration &node) {
   this->current_function_name = node.identifier;
 
-  this->printer.global(this->current_function_name);
-  this->printer.label(this->current_function_name);
+  p.push_back(asm_instruction(
+      asm_operation::GLOBAL,
+      std::vector<ni::codegen::assembly::asm_operand>{
+          asm_operand(asm_operand_type::LABEL, this->current_function_name)}));
 
   int memorySize = memory_calculator::calculare(node);
-  this->printer.push(register_64bits::RBP);
-  this->printer.mov(register_64bits::RBP, register_64bits::RSP);
-  this->printer.sub(register_64bits::RSP, memorySize);
+  p.push_back(asm_instruction(this->current_function_name, asm_operation::PUSH,
+                              std::vector<ni::codegen::assembly::asm_operand>{
+                                  asm_operand(asm_register::RBP)}));
+  p.push_back(asm_instruction(
+      asm_operation::MOV,
+      std::vector<ni::codegen::assembly::asm_operand>{
+          asm_operand(asm_register::RBP), asm_operand(asm_register::RSP)}));
+  p.push_back(asm_instruction(asm_operation::SUB,
+                              std::vector<ni::codegen::assembly::asm_operand>{
+                                  asm_operand(asm_register::RSP),
+                                  asm_operand(asm_operand_type::CONSTANT,
+                                              std::to_string(memorySize))}));
   this->current_stack_position = 0;
   this->vars.clear();
 
@@ -95,9 +123,11 @@ void ni::codegen::assembly::asm_codegen::visit(
     auto &arg = *node.args[a];
     this->current_stack_position -= 4;
 
-    auto addr = operand(register_64bits::RBP, this->current_stack_position);
+    auto addr = asm_operand(asm_register::RBP, this->current_stack_position);
     this->vars.insert({arg.identifier, addr});
-    this->printer.mov(addr, REGS[a]);
+    p.push_back(asm_instruction(
+        asm_operation::MOV,
+        std::vector<ni::codegen::assembly::asm_operand>{addr, REGS[a]}));
   }
 
   if (node.args.size() > 6) {
@@ -105,17 +135,23 @@ void ni::codegen::assembly::asm_codegen::visit(
     for (int a = 6; a < node.args.size(); a++) {
       auto &arg = *node.args[a];
       this->vars.insert(
-          {arg.identifier, operand(register_64bits::RBP, offset)});
+          {arg.identifier, asm_operand(asm_register::RBP, offset)});
       offset += 8;
     }
   }
 
   ni::ast::visitor::visit(*node.body);
 
-  this->printer.label(this->current_function_name + "_epilogue");
-  this->printer.add(register_64bits::RSP, memorySize);
-  this->printer.pop(register_64bits::RBP);
-  this->printer.ret();
+  p.push_back(asm_instruction(this->current_function_name + "_epilogue",
+                              asm_operation::ADD,
+                              std::vector<ni::codegen::assembly::asm_operand>{
+                                  asm_operand(asm_register::RSP),
+                                  asm_operand(asm_operand_type::CONSTANT,
+                                              std::to_string(memorySize))}));
+  p.push_back(asm_instruction(asm_operation::POP,
+                              std::vector<ni::codegen::assembly::asm_operand>{
+                                  asm_operand(asm_register::RBP)}));
+  p.push_back(asm_instruction(asm_operation::RET));
 }
 
 void ni::codegen::assembly::asm_codegen::visit(
@@ -128,23 +164,34 @@ void ni::codegen::assembly::asm_codegen::visit(
     auto &param = *node.params[i];
     auto reg = REGS[i];
     ni::ast::visitor::visit(param);
-    this->printer.mov(REGS[i], this->return_operand);
+    p.push_back(asm_instruction(asm_operation::MOV,
+                                std::vector<ni::codegen::assembly::asm_operand>{
+                                    REGS[i], return_operand}));
   }
   for (int i = (node.params.size() - 1); i >= 6; i--) {
     auto &param = *node.params[i];
     ni::ast::visitor::visit(param);
-    this->printer.push(this->return_operand);
+    p.push_back(asm_instruction(
+        asm_operation::PUSH,
+        std::vector<ni::codegen::assembly::asm_operand>{return_operand}));
   }
 
-  this->printer.call(node.identifier);
+  p.push_back(asm_instruction(
+      asm_operation::CALL,
+      std::vector<ni::codegen::assembly::asm_operand>{
+          asm_operand(asm_operand_type::LABEL, node.identifier)}));
 
   argc = node.params.size();
   if (argc > REGS.size()) {
     argc -= REGS.size();
-    this->printer.add(register_64bits::RSP, (argc * 8));
+    p.push_back(asm_instruction(asm_operation::ADD,
+                                std::vector<ni::codegen::assembly::asm_operand>{
+                                    asm_operand(asm_register::RSP),
+                                    asm_operand(asm_operand_type::CONSTANT,
+                                                std::to_string(argc * 8))}));
   }
 
-  this->return_operand = register_32bits::EAX;
+  return_operand = asm_operand(asm_register::EAX);
 }
 
 void ni::codegen::assembly::asm_codegen::visit(
@@ -152,12 +199,20 @@ void ni::codegen::assembly::asm_codegen::visit(
   if (node.value.get() != nullptr) {
     ni::ast::visitor::visit(*node.value);
     auto addr = this->return_operand;
-    if (addr != register_32bits::EAX) {
-      this->printer.mov(register_32bits::EAX, addr);
+    if (addr != asm_register::EAX) {
+      p.push_back(asm_instruction(
+          asm_operation::MOV, std::vector<ni::codegen::assembly::asm_operand>{
+                                  asm_operand(asm_register::EAX), addr}));
     }
   }
-  this->printer.jmp(this->current_function_name + "_epilogue");
-  this->return_operand = register_32bits::EAX;
+
+  p.push_back(asm_instruction(
+      asm_operation::JMP,
+      std::vector<ni::codegen::assembly::asm_operand>{
+          asm_operand(asm_operand_type::LABEL,
+                      this->current_function_name + "_epilogue")}));
+
+  return_operand = asm_operand(asm_register::EAX);
 }
 
 void ni::codegen::assembly::asm_codegen::generate_exit_call() {
@@ -166,25 +221,44 @@ void ni::codegen::assembly::asm_codegen::generate_exit_call() {
     exitCode = 0x2000001;
   }
 
-  this->printer.mov(register_32bits::EAX, exitCode);
-  this->printer.syscall();
+  p.push_back(asm_instruction(
+      asm_operation::MOV,
+      std::vector<ni::codegen::assembly::asm_operand>{
+          asm_operand(asm_register::EAX),
+          asm_operand(asm_operand_type::CONSTANT, std::to_string(exitCode))}));
+
+  p.push_back(asm_instruction(asm_operation::SYSCALL));
 }
 
 void ni::codegen::assembly::asm_codegen::visit(const ni::ast::program &node) {
-  this->printer.text_header();
+  p.push_back(asm_instruction(asm_operation::TEXT_SECTION));
   this->generate_start_function();
   ni::ast::visitor::visit(node);
 }
 
 void ni::codegen::assembly::asm_codegen::generate_start_function() {
-  this->printer.label_start();
-  this->printer.call("main");
-  this->printer.mov(register_32bits::EDI, register_32bits::EAX);
+  p.push_back(
+      asm_instruction(asm_operation::GLOBAL,
+                      std::vector<ni::codegen::assembly::asm_operand>{
+                          asm_operand(asm_operand_type::LABEL, "start")}));
+
+  p.push_back(
+      asm_instruction("start", asm_operation::CALL,
+                      std::vector<ni::codegen::assembly::asm_operand>{
+                          asm_operand(asm_operand_type::LABEL, "main")}));
+
+  p.push_back(asm_instruction(
+      asm_operation::MOV,
+      std::vector<ni::codegen::assembly::asm_operand>{
+          asm_operand(asm_register::EDI), asm_operand(asm_register::EAX)}));
   this->generate_exit_call();
 }
 
 void ni::codegen::assembly::asm_codegen::generate(const std::string &output) {
-  this->printer.open_file(output);
   this->visit(this->program);
-  this->printer.close_file();
+
+  std::ofstream output_file;
+  output_file.open(output, std::ios::trunc);
+  output_file << ni::codegen::assembly::att_printer(ctx, p);
+  output_file.close();
 }
