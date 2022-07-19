@@ -1,6 +1,6 @@
-	GLOBAL	start
+	.GLOBAL	start
 start:	CALL	%tmp1,	test
-	GLOBAL	test
+	.GLOBAL	test
 test:	MOV	%tmp1,	$10
 	MOV	%tmp2,	$20
 	MOV	%tmp3,	$30

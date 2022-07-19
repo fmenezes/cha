@@ -18,19 +18,6 @@ public:
   std::string get_identifier() const { return _identifier; }
   ir_operand_type get_operand_type() const { return _operand_type; }
 
-  std::string str() const {
-    switch (_operand_type) {
-    case ir_operand_type::CONSTANT:
-      return "$" + _identifier;
-    case ir_operand_type::TEMPORARY:
-      return "%" + _identifier;
-    case ir_operand_type::MEMORY:
-      return "&" + _identifier;
-    default:
-      return _identifier;
-    }
-  }
-
 private:
   std::string _identifier;
   ir_operand_type _operand_type;
