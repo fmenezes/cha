@@ -70,7 +70,7 @@ void ni::codegen::ir::ir_codegen::visit(
 
   return_operand = ir_operand(ir_operand_type::MEMORY, node.identifier);
   append_instruction(ir_instruction(
-      generate_label(), ir_operation::ALLOC,
+      ir_operation::ALLOC,
       std::vector<ir_operand>{return_operand,
                               ir_operand(ir_operand_type::CONSTANT, "4")}));
   vars.insert({node.identifier, return_operand});
@@ -87,15 +87,24 @@ void ni::codegen::ir::ir_codegen::visit(
   current_temprary_id = 0;
   vars.clear();
 
+  first_instruction = true;
   for (int a = 0; a < node.args.size(); a++) {
     auto &arg = *node.args[a];
 
-    auto addr =
-        ir_operand(ir_operand_type::TEMPORARY, "ARG" + std::to_string(a));
+    auto addr = ir_operand(ir_operand_type::MEMORY, arg.identifier);
+
+    append_instruction(
+        ir_instruction(ir_operation::ALLOC,
+                       std::vector<ir_operand>{
+                           addr, ir_operand(ir_operand_type::CONSTANT, "4")}));
+
+    append_instruction(ir_instruction(
+        ir_operation::MOV,
+        std::vector<ir_operand>{addr, ir_operand(ir_operand_type::TEMPORARY,
+                                                 "ARG" + std::to_string(a))}));
+
     vars.insert({arg.identifier, addr});
   }
-
-  first_instruction = true;
   ni::ast::visitor::visit(*node.body);
   first_instruction = false; // if body empty
 
@@ -104,12 +113,12 @@ void ni::codegen::ir::ir_codegen::visit(
                                     std::vector<ir_operand>{return_operand}));
 }
 
-std::string ni::codegen::ir::ir_codegen::generate_label() {
+void ni::codegen::ir::ir_codegen::generate_label(
+    ni::codegen::ir::ir_instruction &instruction) {
   if (first_instruction) {
     first_instruction = false;
-    return current_function_name;
+    instruction.label = current_function_name;
   }
-  return "";
 }
 
 void ni::codegen::ir::ir_codegen::visit(const ni::ast::function_call &node) {
@@ -126,7 +135,7 @@ void ni::codegen::ir::ir_codegen::visit(const ni::ast::function_call &node) {
                               "TMP" + std::to_string(current_temprary_id++));
 
   append_instruction(ir_instruction(
-      generate_label(), ir_operation::CALL,
+      ir_operation::CALL,
       std::vector<ir_operand>{return_operand, ir_operand(ir_operand_type::LABEL,
                                                          node.identifier)}));
 }
@@ -138,7 +147,7 @@ void ni::codegen::ir::ir_codegen::visit(const ni::ast::function_return &node) {
     return_operand = ir_operand(ir_operand_type::CONSTANT, "0");
   }
   append_instruction(ir_instruction(
-      generate_label(), ir_operation::JMP,
+      ir_operation::JMP,
       std::vector<ir_operand>{
           return_operand, ir_operand(ir_operand_type::LABEL,
                                      current_function_name + "_epilogue")}));
@@ -176,6 +185,6 @@ void ni::codegen::ir::ir_codegen::generate(const std::string &output) {
 
 void ni::codegen::ir::ir_codegen::append_instruction(
     ni::codegen::ir::ir_instruction instruction) {
-  instruction.label = generate_label();
-  append_instruction(std::move(instruction));
+  generate_label(instruction);
+  instructions.push_back(std::move(instruction));
 }

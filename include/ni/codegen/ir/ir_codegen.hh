@@ -38,7 +38,7 @@ private:
   bool first_instruction = false;
   void generate_exit_call();
   void generate_start_function();
-  std::string generate_label();
+  void generate_label(ir_instruction &instruction);
   void append_instruction(ir_instruction instruction);
   ir_program instructions;
 };

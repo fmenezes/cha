@@ -4,8 +4,21 @@
 #include "ni/codegen/ir/ir_printer.hh"
 
 static const std::string ir_operation_str[] = {
-    "GLOBAL", "ALLOC", "MOV",  "ADD", "SUB", "MUL",
-    "JMP",    "CALL",  "PUSH", "POP", "RET", "EXIT"};
+    ".GLOBAL", "ALLOC", "MOV",  "ADD", "SUB", "MUL",
+    "JMP",     "CALL",  "PUSH", "POP", "RET", "EXIT"};
+
+std::string ir_operand_to_str(const ni::codegen::ir::ir_operand &op) {
+  switch (op.get_operand_type()) {
+  case ni::codegen::ir::ir_operand_type::CONSTANT:
+    return "$" + op.get_identifier();
+  case ni::codegen::ir::ir_operand_type::TEMPORARY:
+    return "%" + op.get_identifier();
+  case ni::codegen::ir::ir_operand_type::MEMORY:
+    return "&" + op.get_identifier();
+  default:
+    return op.get_identifier();
+  }
+}
 
 void ni::codegen::ir::ir_printer::print(std::ostream &out) const {
   for (auto &inst : program) {
@@ -20,7 +33,7 @@ void ni::codegen::ir::ir_printer::print(std::ostream &out) const {
       } else {
         out << ",\t";
       }
-      out << it->str();
+      out << ir_operand_to_str(*it);
     }
     out << std::endl;
   }
