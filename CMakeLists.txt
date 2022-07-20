@@ -4,6 +4,8 @@ project(ni VERSION 0.0.1 LANGUAGES CXX)
 find_package(FLEX REQUIRED)
 find_package(BISON REQUIRED)
 
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 set(GENERATED_DIR "${CMAKE_CURRENT_BINARY_DIR}/generated")
 
 file(MAKE_DIRECTORY ${GENERATED_DIR})
@@ -131,3 +133,11 @@ ENDFOREACH(test)
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})
 set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})
 include(CPack)
+
+add_custom_target(
+    copy-compile-commands ALL
+    ${CMAKE_COMMAND} -E copy_if_different
+    ${CMAKE_CURRENT_BINARY_DIR}/compile_commands.json
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/compile_commands.json
+)
