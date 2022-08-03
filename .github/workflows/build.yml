@@ -12,7 +12,7 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install build-essential flex bison cmake -y
+          sudo apt-get install build-essential flex bison cmake llvm -y
       - name: Build
         run: |
           mkdir build
@@ -35,7 +35,8 @@ jobs:
       - name: Install dependencies
         run: |
           brew update
-          brew install bison flex
+          brew install bison flex llvm
+          echo "/usr/local/opt/llvm/bin" >> $GITHUB_PATH
           echo "/usr/local/opt/flex/bin" >> $GITHUB_PATH
           echo "/usr/local/opt/bison/bin" >> $GITHUB_PATH
       - name: Build

@@ -12,6 +12,7 @@ This is a new ahead of time compiled programing language from the ground up.
 * [CMake](https://cmake.org/)
 * [Bison](https://www.gnu.org/software/bison/)
 * [Flex](https://ftp.gnu.org/old-gnu/Manuals/flex-2.5.4/)
+* [LLVM](https://https://llvm.org/)
 
 ### Build
 
