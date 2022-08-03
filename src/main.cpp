@@ -6,6 +6,7 @@
 #include "ni/codegen/assembly/asm_codegen.hh"
 #include "ni/codegen/codegen.hh"
 #include "ni/codegen/ir/ir_codegen.hh"
+#include "ni/codegen/llvmir/llvmir_codegen.hh"
 #include "ni/parse/syntax_parser.hh"
 
 void printUsage(const std::string &app) {
@@ -25,15 +26,17 @@ int main(int argc, char *argv[]) {
   auto output = std::string(argv[3]);
 
   ni::parse::syntax_parser parser;
-  ni::codegen::codegen *c = nullptr;
+  std::unique_ptr<ni::codegen::codegen> c = nullptr;
   try {
     parser.parse(input);
     ni::ast::validator::validate(*parser.prg);
 
     if (format.compare("-asm") == 0) {
-      c = new ni::codegen::assembly::asm_codegen(*parser.prg);
+      c = std::make_unique<ni::codegen::assembly::asm_codegen>(*parser.prg);
     } else if (format.compare("-ir") == 0) {
-      c = new ni::codegen::ir::ir_codegen(*parser.prg);
+      c = std::make_unique<ni::codegen::ir::ir_codegen>(*parser.prg);
+    } else if (format.compare("-ll") == 0) {
+      c = std::make_unique<ni::codegen::llvmir::llvmir_codegen>(*parser.prg);
     } else {
       std::cerr << "Error: invalid format" << std::endl << std::endl;
       printUsage(argv[0]);
@@ -44,9 +47,6 @@ int main(int argc, char *argv[]) {
     std::cerr << e.loc.str() << ": error occurred: " << e.what() << std::endl;
   } catch (const std::exception &e) {
     std::cerr << "error occurred: " << e.what() << std::endl;
-  }
-  if (c != nullptr) {
-    delete c;
   }
   return 0;
 }

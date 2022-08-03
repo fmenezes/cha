@@ -1,8 +1,12 @@
-cmake_minimum_required(VERSION 3.0.2)
-project(ni VERSION 0.0.1 LANGUAGES CXX)
+cmake_minimum_required(VERSION 3.2.0)
+project(ni VERSION 0.0.1 LANGUAGES CXX C)
 
 find_package(FLEX REQUIRED)
 find_package(BISON REQUIRED)
+find_package(LLVM REQUIRED CONFIG)
+
+message(STATUS "Found LLVM ${LLVM_PACKAGE_VERSION}")
+message(STATUS "Using LLVMConfig.cmake in: ${LLVM_DIR}")
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
@@ -32,13 +36,17 @@ flex_target(parser src/parse/parser.l "${GENERATED_DIR}/parser.yy.c")
 
 bison_target(parser src/parse/parser.yy "${GENERATED_DIR}/parser.tab.cc")
 
-include_directories(include src/include ${CMAKE_CURRENT_BINARY_DIR})
+include_directories(include src/include ${CMAKE_CURRENT_BINARY_DIR} ${LLVM_INCLUDE_DIRS})
+add_definitions(${LLVM_DEFINITIONS})
+llvm_map_components_to_libnames(LLVM_LIBS support core codegen native)
 
 set_source_files_properties(${FLEX_parser_OUTPUTS} PROPERTIES LANGUAGE CXX)
 
 add_executable(ni ${SRC} ${BISON_parser_OUTPUTS} ${FLEX_parser_OUTPUTS})
 
 set_property(TARGET ni PROPERTY CXX_STANDARD 14)
+
+target_link_libraries(ni ${LLVM_LIBS})
 
 FIND_PROGRAM(CLANG_FORMAT_EXECUTABLE clang-format DOC "path to the clang-format executable")
 
@@ -141,3 +149,4 @@ add_custom_target(
     ${CMAKE_CURRENT_SOURCE_DIR}
     DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/compile_commands.json
 )
+target_link_libraries(ni_unit_test ${LLVM_LIBS})
