@@ -6,9 +6,9 @@ tmp="$(mktemp -d)"
 trap 'rm -rf "$tmp"' exit
 build/ni -c "$tmp/output.o" examples/test.ni
 if [[ $OSTYPE == 'darwin'* ]]; then
-    cc "$tmp/output.o" -o "$tmp/a.out" -nostdlib -lSystem
+    cc "$tmp/output.o" -o "$tmp/a.out" -lSystem
 else
-    cc "$tmp/output.o" -o "$tmp/a.out" -nostdlib
+    cc "$tmp/output.o" -o "$tmp/a.out"
 fi
 set -e
 "$tmp/a.out" || result=$?
