@@ -4,11 +4,11 @@ result=0
 expected=209
 tmp="$(mktemp -d)"
 trap 'rm -rf "$tmp"' exit
-build/ni -asm examples/test.ni "$tmp/output.s"
+build/ni -c "$tmp/output.o" examples/test.ni
 if [[ $OSTYPE == 'darwin'* ]]; then
-    cc "$tmp/output.s" -o "$tmp/a.out" -nostdlib -lSystem
+    cc "$tmp/output.o" -o "$tmp/a.out" -nostdlib -lSystem
 else
-    cc "$tmp/output.s" -o "$tmp/a.out" -nostdlib
+    cc "$tmp/output.o" -o "$tmp/a.out" -nostdlib
 fi
 set -e
 "$tmp/a.out" || result=$?
