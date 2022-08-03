@@ -8,7 +8,7 @@ This is a new ahead of time compiled programing language from the ground up.
 
 ### Requirements
 
-* Modern C++ compiler ([Clang 13](https://clang.llvm.org/) recommended)
+* Modern C++ compiler ([Clang](https://clang.llvm.org/) recommended)
 * [CMake](https://cmake.org/)
 * [Bison](https://www.gnu.org/software/bison/)
 * [Flex](https://ftp.gnu.org/old-gnu/Manuals/flex-2.5.4/)
@@ -28,14 +28,14 @@ cmake --build .
 
 To compile ni programs you can simply run:
 
-* To generate Intermediate Representation Code
-```
-ni -ir examples/test.ni output.ir
-```
-
 * To generate Assembly Code
 ```
-ni -asm examples/test.ni output.s
+ni -s examples/test.ni output.s
+```
+
+* To generate Object File
+```
+ni -c examples/test.ni output.o
 ```
 
 * To generate LLVM Intermediate Representation Code
