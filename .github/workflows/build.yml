@@ -12,7 +12,11 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install build-essential flex bison cmake llvm -y
+          sudo apt-get install build-essential flex bison cmake -y
+          sudo wget https://apt.llvm.org/llvm.sh
+          sudo chmod +x llvm.sh
+          sudo ./llvm.sh 14 all
+          sudo rm llvm.sh
       - name: Build
         run: |
           mkdir build
