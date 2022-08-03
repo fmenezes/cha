@@ -1,7 +1,6 @@
 #!/bin/bash
 
 result=0
-expected=209
 tmp="$(mktemp -d)"
 trap 'rm -rf "$tmp"' exit
 build/ni -c "$tmp/output.o" examples/test.ni
@@ -13,7 +12,7 @@ fi
 set -e
 "$tmp/a.out" || result=$?
 set +e
-if [ $result -ne $expected ]; then
-    >&2 echo "error: expected $expected got $result"
+if [ $result -ne 0 ]; then
+    >&2 echo "error: expected 0 got $result"
     exit 1
 fi
