@@ -37,3 +37,8 @@ ni -ir examples/test.ni output.ir
 ```
 ni -asm examples/test.ni output.s
 ```
+
+* To generate LLVM Intermediate Representation Code
+```
+ni -ll examples/test.ni output.ll
+```
