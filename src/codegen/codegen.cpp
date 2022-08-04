@@ -168,7 +168,6 @@ void ni::codegen::codegen::generate(const std::string &output, format f) {
   ctx = new llvm::LLVMContext();
   mod = new llvm::Module("ni", *ctx);
   builder = new llvm::IRBuilder<>(*ctx);
-  builder = new llvm::IRBuilder<>(*ctx);
 
   llvm::TargetOptions opt;
   auto RM = llvm::Optional<llvm::Reloc::Model>();
