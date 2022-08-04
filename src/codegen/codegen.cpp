@@ -24,7 +24,7 @@
 void ni::codegen::codegen::visit(const ni::ast::constant_integer &node) {
   auto v = std::stol(node.value);
   return_operand =
-      llvm::ConstantInt::getSigned(llvm::IntegerType::get(*llvm_ctx, 32), v);
+      llvm::ConstantInt::getSigned(llvm::IntegerType::get(*ctx, 32), v);
 }
 
 void ni::codegen::codegen::visit(const ni::ast::binary_operation &node) {
@@ -61,11 +61,11 @@ void ni::codegen::codegen::visit(const ni::ast::variable_assignment &node) {
 }
 
 void ni::codegen::codegen::visit(const ni::ast::variable_declaration &node) {
-  vars.insert({node.identifier,
-               std::make_tuple<llvm::Type *, llvm::AllocaInst *>(
-                   llvm::Type::getInt32Ty(*llvm_ctx),
-                   builder->CreateAlloca(llvm::Type::getInt32Ty(*llvm_ctx), 0,
-                                         node.identifier))});
+  vars.insert(
+      {node.identifier, std::make_tuple<llvm::Type *, llvm::AllocaInst *>(
+                            llvm::Type::getInt32Ty(*ctx),
+                            builder->CreateAlloca(llvm::Type::getInt32Ty(*ctx),
+                                                  0, node.identifier))});
 }
 
 void ni::codegen::codegen::visit(const ni::ast::function_declaration &node) {
@@ -74,14 +74,14 @@ void ni::codegen::codegen::visit(const ni::ast::function_declaration &node) {
 
   llvm::Type *function_return_type = nullptr;
   if (node.return_type == nullptr) {
-    function_return_type = llvm::Type::getVoidTy(*llvm_ctx);
+    function_return_type = llvm::Type::getVoidTy(*ctx);
   } else {
-    function_return_type = llvm::Type::getInt32Ty(*llvm_ctx);
+    function_return_type = llvm::Type::getInt32Ty(*ctx);
   }
 
   std::vector<llvm::Type *> function_arg_types;
   for (auto &arg : node.args) {
-    function_arg_types.push_back(llvm::Type::getInt32Ty(*llvm_ctx));
+    function_arg_types.push_back(llvm::Type::getInt32Ty(*ctx));
   }
 
   llvm::FunctionType *func_type =
@@ -93,11 +93,11 @@ void ni::codegen::codegen::visit(const ni::ast::function_declaration &node) {
   for (auto &arg : F->args()) {
     arg.setName(node.args[i++]->identifier);
   }
-  llvm::BasicBlock *BB = llvm::BasicBlock::Create(*llvm_ctx, "entry", F);
+  llvm::BasicBlock *BB = llvm::BasicBlock::Create(*ctx, "entry", F);
   builder->SetInsertPoint(BB);
 
   for (auto &arg : F->args()) {
-    llvm::Type *varType = llvm::Type::getInt32Ty(*llvm_ctx);
+    llvm::Type *varType = llvm::Type::getInt32Ty(*ctx);
     llvm::AllocaInst *varPtr = builder->CreateAlloca(varType, 0, arg.getName());
     builder->CreateStore(&arg, varPtr);
     vars.insert({(std::string)arg.getName(),
@@ -143,14 +143,14 @@ void ni::codegen::codegen::visit(const ni::ast::program &node) {
 ni::codegen::codegen::~codegen() {
   delete builder;
   delete mod;
-  delete llvm_ctx;
+  delete ctx;
 }
 
 void ni::codegen::codegen::generate(const std::string &output, format f) {
-  llvm::InitializeNativeTarget();
-  llvm::InitializeNativeTargetAsmParser();
-  llvm::InitializeNativeTargetAsmPrinter();
-  llvm::InitializeNativeTargetDisassembler();
+  llvm::InitializeAllTargetInfos();
+  llvm::InitializeAllTargets();
+  llvm::InitializeAllAsmPrinters();
+  llvm::InitializeAllTargetMCs();
 
   std::error_code ec;
   llvm::raw_fd_ostream file(output, ec, llvm::sys::fs::OpenFlags::OF_None);
@@ -160,17 +160,16 @@ void ni::codegen::codegen::generate(const std::string &output, format f) {
     throw std::runtime_error(ss.str());
   }
 
-  llvm_ctx = new llvm::LLVMContext();
-  mod = new llvm::Module("ni", *llvm_ctx);
-  builder = new llvm::IRBuilder<>(*llvm_ctx);
-  builder = new llvm::IRBuilder<>(*llvm_ctx);
+  ctx = new llvm::LLVMContext();
+  mod = new llvm::Module("ni", *ctx);
+  builder = new llvm::IRBuilder<>(*ctx);
+  builder = new llvm::IRBuilder<>(*ctx);
 
   llvm::TargetOptions opt;
   auto RM = llvm::Optional<llvm::Reloc::Model>();
 
   auto CPU = "generic";
   auto Features = "";
-  auto target_triple = llvm::sys::getDefaultTargetTriple();
   std::string Error;
   auto *target = llvm::TargetRegistry::lookupTarget(target_triple, Error);
   if (!target) {

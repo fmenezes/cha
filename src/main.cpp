@@ -7,8 +7,10 @@
 #include "ni/parse/syntax_parser.hh"
 
 void printUsage(const std::string &app) {
-  std::cerr << "Usage: " << app << " <format> <srcfile> <destfile>" << std::endl
-            << "format: -s for Assembly" << std::endl
+  std::cerr << "Usage: " << app << " <format> <outputfile> <inputfile>"
+            << std::endl
+            << "format: -s for Assembly Code" << std::endl
+            << "format: -c for Object File" << std::endl
             << "format: -ll for LLVM IR" << std::endl;
 }
 
