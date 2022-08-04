@@ -146,11 +146,16 @@ ni::codegen::codegen::~codegen() {
   delete ctx;
 }
 
+#define LLVM_INITIALIZE_TARGET(TargetName)                                     \
+  LLVMInitialize##TargetName##TargetInfo();                                    \
+  LLVMInitialize##TargetName##Target();                                        \
+  LLVMInitialize##TargetName##AsmPrinter();                                    \
+  LLVMInitialize##TargetName##TargetMC();
+
 void ni::codegen::codegen::generate(const std::string &output, format f) {
-  llvm::InitializeAllTargetInfos();
-  llvm::InitializeAllTargets();
-  llvm::InitializeAllAsmPrinters();
-  llvm::InitializeAllTargetMCs();
+  LLVM_INITIALIZE_TARGET(AArch64)
+  LLVM_INITIALIZE_TARGET(ARM)
+  LLVM_INITIALIZE_TARGET(X86)
 
   std::error_code ec;
   llvm::raw_fd_ostream file(output, ec, llvm::sys::fs::OpenFlags::OF_None);

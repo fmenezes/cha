@@ -46,9 +46,9 @@ llvm_map_components_to_libnames(LLVM_LIBS
     # coverage
     # lineeditor
     # xcoredisassembler
-    xcorecodegen
+    # xcorecodegen
     # xcoredesc
-    xcoreinfo
+    # xcoreinfo
     # x86targetmca
     # x86disassembler
     # x86asmparser
@@ -57,68 +57,68 @@ llvm_map_components_to_libnames(LLVM_LIBS
     x86info
     # webassemblydisassembler
     # webassemblyasmparser
-    webassemblycodegen
+    # webassemblycodegen
     # webassemblydesc
     # webassemblyutils
-    webassemblyinfo
+    # webassemblyinfo
     # vedisassembler
     # veasmparser
-    vecodegen
+    # vecodegen
     # vedesc
-    veinfo
+    # veinfo
     # systemzdisassembler
     # systemzasmparser
-    systemzcodegen
+    # systemzcodegen
     # systemzdesc
-    systemzinfo
+    # systemzinfo
     # sparcdisassembler
     # sparcasmparser
-    sparccodegen
+    # sparccodegen
     # sparcdesc
-    sparcinfo
+    # sparcinfo
     # riscvdisassembler
     # riscvasmparser
-    riscvcodegen
+    # riscvcodegen
     # riscvdesc
-    riscvinfo
+    # riscvinfo
     # powerpcdisassembler
     # powerpcasmparser
-    powerpccodegen
+    # powerpccodegen
     # powerpcdesc
-    powerpcinfo
-    nvptxcodegen
+    # powerpcinfo
+    # nvptxcodegen
     # nvptxdesc
-    nvptxinfo
+    # nvptxinfo
     # msp430disassembler
     # msp430asmparser
-    msp430codegen
+    # msp430codegen
     # msp430desc
-    msp430info
+    # msp430info
     # mipsdisassembler
     # mipsasmparser
-    mipscodegen
+    # mipscodegen
     # mipsdesc
-    mipsinfo
+    # mipsinfo
     # lanaidisassembler
-    lanaicodegen
+    # lanaicodegen
     # lanaiasmparser
     # lanaidesc
-    lanaiinfo
+    # lanaiinfo
     # hexagondisassembler
-    hexagoncodegen
+    # hexagoncodegen
     # hexagonasmparser
     # hexagondesc
-    hexagoninfo
+    # hexagoninfo
     # bpfdisassembler
     # bpfasmparser
-    bpfcodegen
+    # bpfcodegen
     # bpfdesc
-    bpfinfo
+    # bpfinfo
     # avrdisassembler
     # avrasmparser
-    avrcodegen
+    # avrcodegen
     # avrdesc
-    avrinfo
+    # avrinfo
     # armdisassembler
     # armasmparser
     armcodegen
@@ -128,10 +128,10 @@ llvm_map_components_to_libnames(LLVM_LIBS
     # amdgputargetmca
     # amdgpudisassembler
     # amdgpuasmparser
-    amdgpucodegen
+    # amdgpucodegen
     # amdgpudesc
     # amdgpuutils
-    amdgpuinfo
+    # amdgpuinfo
     # aarch64disassembler
     # aarch64asmparser
     aarch64codegen
