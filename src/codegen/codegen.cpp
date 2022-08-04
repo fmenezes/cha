@@ -1,3 +1,6 @@
+#include <stdio.h>
+#include <stdlib.h>
+
 #include <map>
 #include <tuple>
 
@@ -158,7 +161,14 @@ void ni::codegen::codegen::generate(const std::string &output, format f) {
   LLVM_INITIALIZE_TARGET(X86)
 
   std::error_code ec;
-  llvm::raw_fd_ostream file(output, ec, llvm::sys::fs::OpenFlags::OF_None);
+
+  auto out = output;
+
+  if (f == ni::codegen::format::BINARY_FILE) {
+    out += ".o";
+  }
+
+  llvm::raw_fd_ostream file(out, ec, llvm::sys::fs::OpenFlags::OF_None);
   if (ec) {
     std::stringstream ss;
     ss << "could not open file '" << output << "': " << ec.message();
@@ -212,4 +222,17 @@ void ni::codegen::codegen::generate(const std::string &output, format f) {
 
   pass_manager.run(*mod);
   file.flush();
+
+  if (f != ni::codegen::format::BINARY_FILE) {
+    return;
+  }
+
+  std::stringstream cmd;
+  cmd << "cc -o " << output << " " << out;
+
+  if (system(cmd.str().c_str()) != 0) {
+    throw std::runtime_error("error linking");
+  }
+
+  remove(out.c_str());
 }

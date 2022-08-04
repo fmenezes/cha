@@ -11,7 +11,8 @@ void printUsage(const std::string &app) {
             << std::endl
             << "format: -s for Assembly Code" << std::endl
             << "format: -c for Object File" << std::endl
-            << "format: -ll for LLVM IR" << std::endl;
+            << "format: -ll for LLVM IR" << std::endl
+            << "format: -o for Binary" << std::endl;
 }
 
 int main(int argc, char *argv[]) {
@@ -31,6 +32,8 @@ int main(int argc, char *argv[]) {
     f = ni::codegen::format::LLVM_IR;
   } else if (format.compare("-c") == 0) {
     f = ni::codegen::format::OBJECT_FILE;
+  } else if (format.compare("-o") == 0) {
+    f = ni::codegen::format::BINARY_FILE;
   } else {
     std::cerr << "Error: invalid format" << std::endl << std::endl;
     printUsage(argv[0]);

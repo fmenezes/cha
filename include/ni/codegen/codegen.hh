@@ -21,7 +21,7 @@
 namespace ni {
 namespace codegen {
 
-enum format { ASSEMBLY_CODE, OBJECT_FILE, LLVM_IR };
+enum format { ASSEMBLY_CODE, OBJECT_FILE, LLVM_IR, BINARY_FILE };
 
 class codegen : public ni::ast::visitor {
 public:
