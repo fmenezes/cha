@@ -3,7 +3,7 @@
 result=0
 tmp="$(mktemp -d)"
 trap 'rm -rf "$tmp"' exit
-build/ni -o "$tmp/test" examples/test.ni
+build/ni/ni -o "$tmp/test" examples/test.ni
 set -e
 "$tmp/test" || result=$?
 set +e
