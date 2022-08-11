@@ -24,8 +24,10 @@ if [ $result -ne 0 ]; then
     echo "Something went wrong with code build"
     exit 1
 fi
+cd ni
 ctest
 result=$?
+cd ..
 if [ $result -ne 0 ]; then
     echo "Something went wrong with unit tests"
     exit 1
