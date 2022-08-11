@@ -1,27 +1,51 @@
-#include <stdlib.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include "nic/ast.h"
+#include "nic/codegen.h"
 
 int main(int argc, char *argv[]) {
-    if (argc != 2) {
-        fprintf(stderr, "Usage: %s <file>\n", argv[0]);
-        return 1;
-    }
+  if (argc != 4) {
+    fprintf(stderr, "Usage: %s <format> <outputfile> <inputfile>\n", argv[0]);
+    fprintf(stderr, "format: -s for Assembly Code\n");
+    fprintf(stderr, "format: -c for Object File\n");
+    fprintf(stderr, "format: -ll for LLVM IR\n");
+    return 1;
+  }
 
-    FILE* file = fopen(argv[1], "r");
-    if (file == NULL) {
-        fprintf(stderr, "Could not open file %s\n", argv[1]);
-        return 1;
-    }
+  char *format = argv[1];
+  char *outputfile = argv[2];
+  char *inputfile = argv[3];
 
-    ni_ast_node_list *ast = ni_ast_parse(file);
-    fclose(file);
-    if (ast == NULL) {
-      return 1;
-    }
+  ni_ast_codegen_format codegen_format;
+  if (strcmp(format, "-s") == 0) {
+    codegen_format = ASSEMBLY;
+  } else if (strcmp(format, "-c") == 0) {
+    codegen_format = OBJECT_FILE;
+  } else if (strcmp(format, "-ll") == 0) {
+    codegen_format = LLVM_IR;
+  } else {
+    fprintf(stderr, "Invalid format: %s\n", format);
+    return 1;
+  }
 
-    ni_ast_dump(ast);
+  FILE *file = fopen(inputfile, "r");
+  if (file == NULL) {
+    fprintf(stderr, "Could not open file %s\n", inputfile);
+    return 1;
+  }
 
-    return 0;
+  ni_ast_node_list *ast = ni_ast_parse(file);
+  fclose(file);
+  if (ast == NULL) {
+    fprintf(stderr, "Could not parse file %s\n", inputfile);
+    return 1;
+  }
+
+  ni_ast_codegen(ast, codegen_format, outputfile);
+
+  free_ni_ast_node_list(ast);
+
+  return 0;
 }

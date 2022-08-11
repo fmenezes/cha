@@ -178,17 +178,23 @@ ni_ast_node_list_entry *make_ni_ast_node_list_entry(ni_ast_node *node) {
 
 ni_ast_node_list *make_ni_ast_node_list(ni_ast_node *head){
   ni_ast_node_list *ret = malloc(sizeof(ni_ast_node_list));
+  ret->count = 1;
   ret->head = make_ni_ast_node_list_entry(head);
   ret->tail = ret->head;
   return ret;
 }
 
 void ni_ast_node_list_append(ni_ast_node_list *list, ni_ast_node *next) {
+  list->count++;
   list->tail->next = make_ni_ast_node_list_entry(next);
   list->tail = list->tail->next;
 }
 
 void free_ni_ast_node_list(ni_ast_node_list *list) {
+  if (list == NULL) {
+    return;
+  }
+
   ni_ast_node_list *cur = list;
   while (cur->head != NULL) {
     ni_ast_node_list_entry *next = cur->head->next;
