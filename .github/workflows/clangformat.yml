@@ -2,37 +2,12 @@ name: clang-format
 on: push
 
 jobs:
-  format:
-    name: check format
+  formatting-check:
+    name: Formatting Check
     runs-on: ubuntu-latest
-    env:
-      LLVM_VERSION: 14
     steps:
-      - uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
-      - name: Install dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install build-essential flex bison -y
-          cd /tmp
-          wget https://apt.llvm.org/llvm.sh
-          chmod +x llvm.sh
-          sudo ./llvm.sh $LLVM_VERSION clang
-          rm llvm.sh
-          sudo apt-get install -y clang-format-$LLVM_VERSION
-          sudo update-alternatives \
-            --install /usr/bin/clang             clang            /usr/bin/clang-${LLVM_VERSION} 1 \
-            --slave   /usr/bin/clang-cpp         clang-cpp        /usr/bin/clang-cpp-${LLVM_VERSION}
-          sudo update-alternatives \
-            --install /usr/bin/clang++           clang++          /usr/bin/clang++-${LLVM_VERSION} 1
-          sudo update-alternatives \
-            --install /usr/bin/clang-format      clang-format     /usr/bin/clang-format-${LLVM_VERSION} 1
-          sudo update-alternatives --set clang-format /usr/bin/clang-format-${LLVM_VERSION}
-      - name: CMake
-        run: |
-          mkdir build
-          cd build
-          cmake ..
-      - name: Check
-        run: cmake --build build --target check-format
+    - uses: actions/checkout@v2
+    - name: Run clang-format style check for C/C++/Protobuf programs.
+      uses: jidicula/clang-format-action@v4.8.0
+      with:
+        clang-format-version: '14'
