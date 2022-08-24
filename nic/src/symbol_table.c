@@ -23,7 +23,7 @@ symbol_table *make_symbol_table(int size) {
   return table;
 }
 
-void insert_symbol_table(symbol_table *table, char *key, symbol_value* value) {
+void insert_symbol_table(symbol_table *table, char *key, symbol_value *value) {
   int index = hash_function(key) % table->size;
   symbol_entry *entry = malloc(sizeof(symbol_entry));
   entry->key = key;
@@ -38,7 +38,7 @@ void insert_symbol_table(symbol_table *table, char *key, symbol_value* value) {
   }
 }
 
-symbol_value* get_symbol_table(symbol_table *table, char *key) {
+symbol_value *get_symbol_table(symbol_table *table, char *key) {
   int index = hash_function(key) % table->size;
   symbol_entry *entry = table->entries[index].head;
   while (entry != NULL) {

@@ -7,8 +7,7 @@
 extern ni_ast_node_list *parsed_ast;
 extern FILE *yyin;
 
-ni_ast_node *make_ni_ast_node_int_const(ni_ast_location loc,
-                                        char *value) {
+ni_ast_node *make_ni_ast_node_int_const(ni_ast_location loc, char *value) {
   ni_ast_node *node = malloc(sizeof(ni_ast_node));
   node->type = NI_AST_TYPE_INT_CONSTANT;
   node->location = loc;
@@ -24,8 +23,7 @@ ni_ast_node *make_ni_ast_node_int_type(ni_ast_location loc) {
 }
 
 ni_ast_node *make_ni_ast_node_bin_op(ni_ast_location loc, char *op,
-                                     ni_ast_node *left,
-                                     ni_ast_node *right) {
+                                     ni_ast_node *left, ni_ast_node *right) {
   ni_ast_node *node = malloc(sizeof(ni_ast_node));
   node->type = NI_AST_TYPE_BIN_OP;
   node->location = loc;
@@ -66,8 +64,7 @@ ni_ast_node *make_ni_ast_node_variable_lookup(ni_ast_location loc,
   return node;
 }
 
-ni_ast_node *make_ni_ast_node_argument(ni_ast_location loc,
-                                       char *identifier,
+ni_ast_node *make_ni_ast_node_argument(ni_ast_location loc, char *identifier,
                                        ni_ast_node *type) {
   ni_ast_node *node = malloc(sizeof(ni_ast_node));
   node->type = NI_AST_TYPE_ARGUMENT;
@@ -87,9 +84,8 @@ ni_ast_node *make_ni_ast_node_block(ni_ast_location loc,
 }
 
 ni_ast_node *make_ni_ast_node_function_declaration(
-    ni_ast_location loc, char *identifier,
-    ni_ast_node *return_type, ni_ast_node_list *argument_list,
-    ni_ast_node_list *block) {
+    ni_ast_location loc, char *identifier, ni_ast_node *return_type,
+    ni_ast_node_list *argument_list, ni_ast_node_list *block) {
   ni_ast_node *node = malloc(sizeof(ni_ast_node));
   node->type = NI_AST_TYPE_FUNCTION_DECLARATION;
   node->location = loc;
@@ -100,10 +96,9 @@ ni_ast_node *make_ni_ast_node_function_declaration(
   return node;
 }
 
-ni_ast_node *
-make_ni_ast_node_function_call(ni_ast_location loc,
-                               char *identifier,
-                               ni_ast_node_list *argument_list) {
+ni_ast_node *make_ni_ast_node_function_call(ni_ast_location loc,
+                                            char *identifier,
+                                            ni_ast_node_list *argument_list) {
   ni_ast_node *node = malloc(sizeof(ni_ast_node));
   node->type = NI_AST_TYPE_FUNCTION_CALL;
   node->location = loc;
@@ -176,7 +171,7 @@ ni_ast_node_list_entry *make_ni_ast_node_list_entry(ni_ast_node *node) {
   return entry;
 }
 
-ni_ast_node_list *make_ni_ast_node_list(ni_ast_node *head){
+ni_ast_node_list *make_ni_ast_node_list(ni_ast_node *head) {
   ni_ast_node_list *ret = malloc(sizeof(ni_ast_node_list));
   ret->count = 1;
   ret->head = make_ni_ast_node_list_entry(head);
@@ -213,4 +208,3 @@ ni_ast_node_list *ni_ast_parse(FILE *file) {
   }
   return parsed_ast;
 }
-

@@ -92,12 +92,10 @@ struct ni_ast_node_list {
   ni_ast_node_list_entry *tail;
 };
 
-ni_ast_node *make_ni_ast_node_int_const(ni_ast_location loc,
-                                        char *value);
+ni_ast_node *make_ni_ast_node_int_const(ni_ast_location loc, char *value);
 ni_ast_node *make_ni_ast_node_int_type(ni_ast_location loc);
 ni_ast_node *make_ni_ast_node_bin_op(ni_ast_location loc, char *op,
-                                     ni_ast_node *left,
-                                     ni_ast_node *right);
+                                     ni_ast_node *left, ni_ast_node *right);
 ni_ast_node *make_ni_ast_node_variable_declaration(ni_ast_location loc,
                                                    char *identifier,
                                                    ni_ast_node *type);
@@ -106,31 +104,25 @@ ni_ast_node *make_ni_ast_node_variable_assignment(ni_ast_location loc,
                                                   ni_ast_node *value);
 ni_ast_node *make_ni_ast_node_variable_lookup(ni_ast_location loc,
                                               char *identifier);
-ni_ast_node *make_ni_ast_node_argument(ni_ast_location loc,
-                                       char *identifier,
+ni_ast_node *make_ni_ast_node_argument(ni_ast_location loc, char *identifier,
                                        ni_ast_node *type);
 ni_ast_node *make_ni_ast_node_block(ni_ast_location loc,
                                     ni_ast_node_list *block);
 ni_ast_node *make_ni_ast_node_function_declaration(
-    ni_ast_location loc, char *identifier,
-    ni_ast_node *return_type, ni_ast_node_list *argument_list,
-    ni_ast_node_list *block);
-ni_ast_node *
-make_ni_ast_node_function_call(ni_ast_location loc,
-                               char *identifier,
-                               ni_ast_node_list *argument_list);
+    ni_ast_location loc, char *identifier, ni_ast_node *return_type,
+    ni_ast_node_list *argument_list, ni_ast_node_list *block);
+ni_ast_node *make_ni_ast_node_function_call(ni_ast_location loc,
+                                            char *identifier,
+                                            ni_ast_node_list *argument_list);
 ni_ast_node *make_ni_ast_node_function_return(ni_ast_location loc,
                                               ni_ast_node *value);
 ni_ast_node_list *make_ni_ast_node_list(ni_ast_node *head);
-void ni_ast_node_list_append(ni_ast_node_list *list,
-                             ni_ast_node *next);
+void ni_ast_node_list_append(ni_ast_node_list *list, ni_ast_node *next);
 
 void free_ni_ast_node(ni_ast_node *node);
 void free_ni_ast_node_list(ni_ast_node_list *list);
 
 ni_ast_node_list *ni_ast_parse(FILE *file);
-
-void ni_ast_dump(ni_ast_node_list *ast);
 
 #ifdef __cplusplus
 }

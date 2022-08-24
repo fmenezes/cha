@@ -5,18 +5,19 @@
 extern "C" {
 #endif
 
-#include <stdio.h>
 #include "nic/ast.h"
+#include <stdio.h>
 
 enum ni_ast_codegen_format {
-    LLVM_IR,
-    ASSEMBLY,
-    OBJECT_FILE,
+  LLVM_IR,
+  ASSEMBLY,
+  OBJECT_FILE,
 };
 
 typedef enum ni_ast_codegen_format ni_ast_codegen_format;
 
-void ni_ast_codegen(ni_ast_node_list *ast, ni_ast_codegen_format format, char *filePath);
+void ni_ast_codegen(ni_ast_node_list *ast, ni_ast_codegen_format format,
+                    char *filePath);
 
 #ifdef __cplusplus
 }
