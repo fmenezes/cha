@@ -1,7 +1,7 @@
 #include <unistd.h>
 
-#include "test/test.hh"
 #include "ni/parse/syntax_parser.hh"
+#include "test/test.hh"
 
 std::unique_ptr<ni::ast::program> parse(const std::string &filename) {
   ni::parse::syntax_parser p;
