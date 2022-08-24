@@ -87,6 +87,7 @@ struct ni_ast_node_list_entry {
 };
 
 struct ni_ast_node_list {
+  unsigned int count;
   ni_ast_node_list_entry *head;
   ni_ast_node_list_entry *tail;
 };
