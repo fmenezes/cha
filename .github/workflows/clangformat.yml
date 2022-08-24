@@ -2,7 +2,7 @@ name: clang-format
 on: push
 
 jobs:
-  formatting-check:
+  format:
     name: check format
     runs-on: ubuntu-latest
     steps:
