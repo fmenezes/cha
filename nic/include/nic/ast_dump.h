@@ -5,9 +5,11 @@
 extern "C" {
 #endif
 
+#include <stdio.h>
+
 #include "ast.h"
 
-void ni_ast_dump(ni_ast_node_list *ast);
+void ni_ast_dump(FILE *out, const ni_ast_node_list *ast);
 
 #ifdef __cplusplus
 }

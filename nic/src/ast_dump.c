@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -5,88 +6,88 @@
 #include "nic/ast_dump.h"
 #include "parser.tab.h"
 
-void ni_ast_dump_node(ni_ast_node *node) {
+void ni_ast_dump_node(FILE *out, const ni_ast_node *node) {
   if (node == NULL) {
-    printf("null");
+    fprintf(out, "null");
     return;
   }
 
   switch (node->type) {
   case NI_AST_TYPE_INT_CONSTANT:
-    printf("{\"const_int\":%s}", node->int_const.value);
+    fprintf(out, "{\"const_int\":%s}", node->int_const.value);
     break;
   case NI_AST_TYPE_BIN_OP:
-    printf("{\"bin_op\":{\"op\":\"%s\",\"left\":", node->bin_op.op);
-    ni_ast_dump_node(node->bin_op.left);
-    printf(",\"right\":");
-    ni_ast_dump_node(node->bin_op.right);
-    printf("}}");
+    fprintf(out, "{\"bin_op\":{\"op\":\"%s\",\"left\":", node->bin_op.op);
+    ni_ast_dump_node(out, node->bin_op.left);
+    fprintf(out, ",\"right\":");
+    ni_ast_dump_node(out, node->bin_op.right);
+    fprintf(out, "}}");
     break;
   case NI_AST_TYPE_VARIABLE_DECLARATION:
-    printf("{\"var_decl\":{\"identifier\":\"%s\",\"type\":",
-           node->variable_declaration.identifier);
-    ni_ast_dump_node(node->variable_declaration.type);
-    printf("}}");
+    fprintf(out, "{\"var_decl\":{\"identifier\":\"%s\",\"type\":",
+            node->variable_declaration.identifier);
+    ni_ast_dump_node(out, node->variable_declaration.type);
+    fprintf(out, "}}");
     break;
   case NI_AST_TYPE_VARIABLE_ASSIGNMENT:
-    printf("{\"var_assign\":{\"identifier\":\"%s\",\"value\":",
-           node->variable_assignment.identifier);
-    ni_ast_dump_node(node->variable_assignment.value);
-    printf("}}");
+    fprintf(out, "{\"var_assign\":{\"identifier\":\"%s\",\"value\":",
+            node->variable_assignment.identifier);
+    ni_ast_dump_node(out, node->variable_assignment.value);
+    fprintf(out, "}}");
     break;
   case NI_AST_TYPE_VARIABLE_LOOKUP:
-    printf("{\"var_lookup\":{\"identifier\":\"%s\"}}",
-           node->variable_lookup.identifier);
+    fprintf(out, "{\"var_lookup\":{\"identifier\":\"%s\"}}",
+            node->variable_lookup.identifier);
     break;
   case NI_AST_TYPE_ARGUMENT:
-    printf("{\"arg\":{\"identifier\":\"%s\",\"type\":",
-           node->argument.identifier);
-    ni_ast_dump_node(node->argument.type);
-    printf("}}");
+    fprintf(out, "{\"arg\":{\"identifier\":\"%s\",\"type\":",
+            node->argument.identifier);
+    ni_ast_dump_node(out, node->argument.type);
+    fprintf(out, "}}");
     break;
   case NI_AST_TYPE_BLOCK:
-    ni_ast_dump(node->block);
+    ni_ast_dump(out, node->block);
     break;
   case NI_AST_TYPE_INT_TYPE:
-    printf("\"int\"");
+    fprintf(out, "\"int\"");
     break;
   case NI_AST_TYPE_FUNCTION_CALL:
-    printf("{\"call\":{\"identifier\":\"%s\",\"params\":",
-           node->function_call.identifier);
-    ni_ast_dump(node->function_call.argument_list);
-    printf("}}");
+    fprintf(out, "{\"call\":{\"identifier\":\"%s\",\"params\":",
+            node->function_call.identifier);
+    ni_ast_dump(out, node->function_call.argument_list);
+    fprintf(out, "}}");
     break;
   case NI_AST_TYPE_FUNCTION_RETURN:
-    printf("{\"return\":");
-    ni_ast_dump_node(node->function_return.value);
-    printf("}");
+    fprintf(out, "{\"return\":");
+    ni_ast_dump_node(out, node->function_return.value);
+    fprintf(out, "}");
     break;
   case NI_AST_TYPE_FUNCTION_DECLARATION:
-    printf("{\"fun\":{\"identifier\":\"%s\",\"ret_type\":",
-           node->function_declaration.identifier);
-    ni_ast_dump_node(node->function_declaration.return_type);
-    printf(",\"args\":");
-    ni_ast_dump(node->function_declaration.argument_list);
-    printf(",\"block\":");
-    ni_ast_dump(node->function_declaration.block);
-    printf("}}");
+    fprintf(out, "{\"fun\":{\"identifier\":\"%s\",\"ret_type\":",
+            node->function_declaration.identifier);
+    ni_ast_dump_node(out, node->function_declaration.return_type);
+    fprintf(out, ",\"args\":");
+    ni_ast_dump(out, node->function_declaration.argument_list);
+    fprintf(out, ",\"block\":");
+    ni_ast_dump(out, node->function_declaration.block);
+    fprintf(out, "}}");
     break;
   }
 }
 
-void ni_ast_dump(ni_ast_node_list *ast) {
+void ni_ast_dump(FILE *out, const ni_ast_node_list *ast) {
   if (ast == NULL) {
-    printf("null");
+    fprintf(out, "null");
     return;
   }
   ni_ast_node_list_entry *cur = ast->head;
   char separator[2] = "[";
   while (cur != NULL) {
-    printf("%s", separator);
-    ni_ast_dump_node(cur->node);
+    fprintf(out, "%s", separator);
+    ni_ast_dump_node(out, cur->node);
 
     cur = cur->next;
     separator[0] = ',';
   }
-  printf("]");
+  fprintf(out, "]");
 }
