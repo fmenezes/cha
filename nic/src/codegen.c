@@ -5,7 +5,7 @@
 
 #include "nic/ast.h"
 #include "nic/codegen.h"
-#include "nic/symbol_table.h"
+#include "symbol_table.h"
 
 void ni_ast_codegen_toplevel(ni_ast_node_list *ast);
 void ni_ast_codegen_node(ni_ast_node *ast_node);

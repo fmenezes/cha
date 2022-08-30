@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "nic/symbol_table.h"
+#include "symbol_table.h"
 
 int hash_function(char *str) {
   int hash = 5381;
