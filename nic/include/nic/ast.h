@@ -29,6 +29,12 @@ typedef enum ni_ast_type {
   NI_AST_TYPE_FUNCTION_RETURN,
 } ni_ast_type;
 
+typedef enum ni_ast_operator {
+  NI_AST_OPERATOR_PLUS,
+  NI_AST_OPERATOR_MINUS,
+  NI_AST_OPERATOR_MULTIPLY,
+} ni_ast_operator;
+
 struct ni_ast_node_list;
 struct ni_ast_node;
 struct ni_ast_node_list_entry;
@@ -45,7 +51,7 @@ struct ni_ast_node {
       char *value;
     } int_const;
     struct {
-      char *op;
+      ni_ast_operator op;
       ni_ast_node *left;
       ni_ast_node *right;
     } bin_op;
@@ -94,7 +100,7 @@ struct ni_ast_node_list {
 
 ni_ast_node *make_ni_ast_node_int_const(ni_ast_location loc, char *value);
 ni_ast_node *make_ni_ast_node_int_type(ni_ast_location loc);
-ni_ast_node *make_ni_ast_node_bin_op(ni_ast_location loc, char *op,
+ni_ast_node *make_ni_ast_node_bin_op(ni_ast_location loc, ni_ast_operator op,
                                      ni_ast_node *left, ni_ast_node *right);
 ni_ast_node *make_ni_ast_node_variable_declaration(ni_ast_location loc,
                                                    char *identifier,

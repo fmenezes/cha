@@ -17,7 +17,19 @@ void ni_ast_dump_node(FILE *out, const ni_ast_node *node) {
     fprintf(out, "{\"const_int\":%s}", node->int_const.value);
     break;
   case NI_AST_TYPE_BIN_OP:
-    fprintf(out, "{\"bin_op\":{\"op\":\"%s\",\"left\":", node->bin_op.op);
+    fprintf(out, "{\"bin_op\":{\"op\":\"");
+    switch (node->bin_op.op) {
+    case NI_AST_OPERATOR_PLUS:
+      fprintf(out, "+");
+      break;
+    case NI_AST_OPERATOR_MINUS:
+      fprintf(out, "-");
+      break;
+    case NI_AST_OPERATOR_MULTIPLY:
+      fprintf(out, "*");
+      break;
+    }
+    fprintf(out, "\",\"left\":");
     ni_ast_dump_node(out, node->bin_op.left);
     fprintf(out, ",\"right\":");
     ni_ast_dump_node(out, node->bin_op.right);
