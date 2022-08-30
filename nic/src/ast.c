@@ -22,12 +22,12 @@ ni_ast_node *make_ni_ast_node_int_type(ni_ast_location loc) {
   return node;
 }
 
-ni_ast_node *make_ni_ast_node_bin_op(ni_ast_location loc, char *op,
+ni_ast_node *make_ni_ast_node_bin_op(ni_ast_location loc, ni_ast_operator op,
                                      ni_ast_node *left, ni_ast_node *right) {
   ni_ast_node *node = malloc(sizeof(ni_ast_node));
   node->type = NI_AST_TYPE_BIN_OP;
   node->location = loc;
-  node->bin_op.op = strdup(op);
+  node->bin_op.op = op;
   node->bin_op.left = left;
   node->bin_op.right = right;
   return node;
@@ -124,7 +124,6 @@ void free_ni_ast_node(ni_ast_node *node) {
   case NI_AST_TYPE_BIN_OP:
     free_ni_ast_node(node->bin_op.left);
     free_ni_ast_node(node->bin_op.right);
-    free(node->bin_op.op);
     break;
   case NI_AST_TYPE_VARIABLE_DECLARATION:
     free_ni_ast_node(node->variable_declaration.type);

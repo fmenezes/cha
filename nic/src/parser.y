@@ -88,9 +88,9 @@ expr :
 	| IDENTIFIER																	{ $$ = make_ni_ast_node_variable_lookup((ni_ast_location){}, $1); }
 	| IDENTIFIER OPENPAR CLOSEPAR													{ $$ = make_ni_ast_node_function_call((ni_ast_location){}, $1, NULL); }
 	| IDENTIFIER OPENPAR call_args CLOSEPAR											{ $$ = make_ni_ast_node_function_call((ni_ast_location){}, $1, $3); }
-	| expr PLUS expr																{ $$ = make_ni_ast_node_bin_op((ni_ast_location){}, "+", $1, $3); }
-	| expr MINUS expr																{ $$ = make_ni_ast_node_bin_op((ni_ast_location){}, "-", $1, $3); }
-	| expr MULTIPLY expr															{ $$ = make_ni_ast_node_bin_op((ni_ast_location){}, "*", $1, $3); }
+	| expr PLUS expr																{ $$ = make_ni_ast_node_bin_op((ni_ast_location){}, NI_AST_OPERATOR_PLUS, $1, $3); }
+	| expr MINUS expr																{ $$ = make_ni_ast_node_bin_op((ni_ast_location){}, NI_AST_OPERATOR_MINUS, $1, $3); }
+	| expr MULTIPLY expr															{ $$ = make_ni_ast_node_bin_op((ni_ast_location){}, NI_AST_OPERATOR_MULTIPLY, $1, $3); }
 	| OPENPAR expr CLOSEPAR															{ $$ = $2; }
 	;
 

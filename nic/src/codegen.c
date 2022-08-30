@@ -94,12 +94,16 @@ void ni_ast_codegen_node_bin_op(ni_ast_node *ast_node) {
   ni_ast_codegen_node(ast_node->bin_op.right);
   LLVMValueRef right_operand = return_operand;
 
-  if (strcmp(ast_node->bin_op.op, "+") == 0) {
+  switch (ast_node->bin_op.op) {
+  case NI_AST_OPERATOR_PLUS:
     return_operand = LLVMBuildAdd(builder, left_operand, right_operand, "add");
-  } else if (strcmp(ast_node->bin_op.op, "-") == 0) {
+    break;
+  case NI_AST_OPERATOR_MINUS:
     return_operand = LLVMBuildSub(builder, left_operand, right_operand, "sub");
-  } else if (strcmp(ast_node->bin_op.op, "*") == 0) {
+    break;
+  case NI_AST_OPERATOR_MULTIPLY:
     return_operand = LLVMBuildMul(builder, left_operand, right_operand, "mul");
+    break;
   }
 }
 
