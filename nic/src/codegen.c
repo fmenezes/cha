@@ -1,3 +1,4 @@
+#include <stdarg.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -7,17 +8,20 @@
 #include "nic/codegen.h"
 #include "symbol_table.h"
 
-void ni_ast_codegen_toplevel(ni_ast_node_list *ast);
-void ni_ast_codegen_node(ni_ast_node *ast_node);
-void ni_ast_codegen_node_constant_int(ni_ast_node *ast_node);
-void ni_ast_codegen_node_bin_op(ni_ast_node *ast_node);
-void ni_ast_codegen_node_var(ni_ast_node *ast_node);
-void ni_ast_codegen_node_var_assign(ni_ast_node *ast_node);
-void ni_ast_codegen_node_var_lookup(ni_ast_node *ast_node);
-void ni_ast_codegen_node_ret(ni_ast_node *ast_node);
-void ni_ast_codegen_node_call(ni_ast_node *ast_node);
-void ni_ast_codegen_node_fun(ni_ast_node *ast_node);
-void ni_ast_codegen_block(ni_ast_node_list *block);
+void initialize_modules();
+void free_modules();
+void log_error(const char *format, ...);
+int ni_ast_codegen_toplevel(ni_ast_node_list *ast);
+int ni_ast_codegen_node(ni_ast_node *ast_node);
+int ni_ast_codegen_node_constant_int(ni_ast_node *ast_node);
+int ni_ast_codegen_node_bin_op(ni_ast_node *ast_node);
+int ni_ast_codegen_node_var(ni_ast_node *ast_node);
+int ni_ast_codegen_node_var_assign(ni_ast_node *ast_node);
+int ni_ast_codegen_node_var_lookup(ni_ast_node *ast_node);
+int ni_ast_codegen_node_ret(ni_ast_node *ast_node);
+int ni_ast_codegen_node_call(ni_ast_node *ast_node);
+int ni_ast_codegen_node_fun(ni_ast_node *ast_node);
+int ni_ast_codegen_block(ni_ast_node_list *block);
 LLVMTypeRef make_fun_signature(ni_ast_node *ast_node);
 
 LLVMContextRef context = NULL;
@@ -27,71 +31,79 @@ LLVMValueRef return_operand = NULL;
 symbol_table *var_table = NULL;
 symbol_table *fn_table = NULL;
 
-void ni_ast_codegen_node(ni_ast_node *ast_node) {
+int ni_ast_codegen_node(ni_ast_node *ast_node) {
   return_operand = NULL;
   if (ast_node == NULL) {
-    return;
+    return 0;
   }
   switch (ast_node->type) {
   case NI_AST_TYPE_INT_CONSTANT:
-    ni_ast_codegen_node_constant_int(ast_node);
-    break;
+    return ni_ast_codegen_node_constant_int(ast_node);
   case NI_AST_TYPE_BIN_OP:
-    ni_ast_codegen_node_bin_op(ast_node);
-    break;
+    return ni_ast_codegen_node_bin_op(ast_node);
   case NI_AST_TYPE_VARIABLE_DECLARATION:
-    ni_ast_codegen_node_var(ast_node);
-    break;
+    return ni_ast_codegen_node_var(ast_node);
   case NI_AST_TYPE_VARIABLE_ASSIGNMENT:
-    ni_ast_codegen_node_var_assign(ast_node);
-    break;
+    return ni_ast_codegen_node_var_assign(ast_node);
   case NI_AST_TYPE_VARIABLE_LOOKUP:
-    ni_ast_codegen_node_var_lookup(ast_node);
-    break;
+    return ni_ast_codegen_node_var_lookup(ast_node);
   case NI_AST_TYPE_FUNCTION_CALL:
-    ni_ast_codegen_node_call(ast_node);
-    break;
+    return ni_ast_codegen_node_call(ast_node);
   case NI_AST_TYPE_FUNCTION_RETURN:
-    ni_ast_codegen_node_ret(ast_node);
-    break;
+    return ni_ast_codegen_node_ret(ast_node);
   case NI_AST_TYPE_FUNCTION_DECLARATION:
-    ni_ast_codegen_node_fun(ast_node);
-    break;
+    return ni_ast_codegen_node_fun(ast_node);
   case NI_AST_TYPE_BLOCK:
-    ni_ast_codegen_block(ast_node->block);
-    break;
+    return ni_ast_codegen_block(ast_node->block);
   case NI_AST_TYPE_INT_TYPE:
   case NI_AST_TYPE_ARGUMENT:
     // DO NOTHING
     break;
   }
+
+  return 0;
 }
 
-void ni_ast_codegen_block(ni_ast_node_list *block) {
+int ni_ast_codegen_block(ni_ast_node_list *block) {
   ni_ast_node_list_entry *cur = block->head;
   while (cur != NULL) {
-    ni_ast_codegen_node(cur->node);
+    int ret = ni_ast_codegen_node(cur->node);
+    if (ret != 0) {
+      return ret;
+    }
     cur = cur->next;
   }
+  return 0;
 }
 
-void ni_ast_codegen_toplevel(ni_ast_node_list *ast) {
+int ni_ast_codegen_toplevel(ni_ast_node_list *ast) {
   ni_ast_node_list_entry *cur = ast->head;
   while (cur != NULL) {
-    ni_ast_codegen_node(cur->node);
+    int ret = ni_ast_codegen_node(cur->node);
+    if (ret != 0) {
+      return ret;
+    }
     cur = cur->next;
   }
+  return 0;
 }
 
-void ni_ast_codegen_node_constant_int(ni_ast_node *ast_node) {
+int ni_ast_codegen_node_constant_int(ni_ast_node *ast_node) {
   long long value = strtoll(ast_node->int_const.value, NULL, 10);
   return_operand = LLVMConstInt(LLVMInt32Type(), value, 1);
+  return 0;
 }
 
-void ni_ast_codegen_node_bin_op(ni_ast_node *ast_node) {
-  ni_ast_codegen_node(ast_node->bin_op.left);
+int ni_ast_codegen_node_bin_op(ni_ast_node *ast_node) {
+  int ret = ni_ast_codegen_node(ast_node->bin_op.left);
+  if (ret != 0) {
+    return ret;
+  }
   LLVMValueRef left_operand = return_operand;
-  ni_ast_codegen_node(ast_node->bin_op.right);
+  ret = ni_ast_codegen_node(ast_node->bin_op.right);
+  if (ret != 0) {
+    return ret;
+  }
   LLVMValueRef right_operand = return_operand;
 
   switch (ast_node->bin_op.op) {
@@ -105,9 +117,11 @@ void ni_ast_codegen_node_bin_op(ni_ast_node *ast_node) {
     return_operand = LLVMBuildMul(builder, left_operand, right_operand, "mul");
     break;
   }
+
+  return 0;
 }
 
-void ni_ast_codegen_node_var(ni_ast_node *ast_node) {
+int ni_ast_codegen_node_var(ni_ast_node *ast_node) {
   LLVMTypeRef type = LLVMInt32Type();
 
   LLVMValueRef addr =
@@ -120,23 +134,39 @@ void ni_ast_codegen_node_var(ni_ast_node *ast_node) {
 
   insert_symbol_table(var_table, ast_node->variable_declaration.identifier,
                       value);
+  return 0;
 }
 
-void ni_ast_codegen_node_var_assign(ni_ast_node *ast_node) {
+int ni_ast_codegen_node_var_assign(ni_ast_node *ast_node) {
   symbol_value *value =
       get_symbol_table(var_table, ast_node->variable_lookup.identifier);
-  ni_ast_codegen_node(ast_node->variable_assignment.value);
+  if (value == NULL) {
+    log_error("variable '%s' not found", ast_node->variable_lookup.identifier);
+    return 1;
+  }
+
+  int ret = ni_ast_codegen_node(ast_node->variable_assignment.value);
+  if (ret != 0) {
+    return ret;
+  }
   LLVMBuildStore(builder, return_operand, value->ref);
+  return 0;
 }
 
-void ni_ast_codegen_node_var_lookup(ni_ast_node *ast_node) {
+int ni_ast_codegen_node_var_lookup(ni_ast_node *ast_node) {
   symbol_value *value =
       get_symbol_table(var_table, ast_node->variable_lookup.identifier);
+  if (value == NULL) {
+    log_error("variable '%s' not found", ast_node->variable_lookup.identifier);
+    return 1;
+  }
+
   return_operand = LLVMBuildLoad2(builder, value->type, value->ref,
                                   ast_node->variable_lookup.identifier);
+  return 0;
 }
 
-void ni_ast_codegen_node_call(ni_ast_node *ast_node) {
+int ni_ast_codegen_node_call(ni_ast_node *ast_node) {
   LLVMValueRef *args = NULL;
   int arg_count = 0;
   if (ast_node->function_call.argument_list != NULL) {
@@ -147,7 +177,11 @@ void ni_ast_codegen_node_call(ni_ast_node *ast_node) {
         ast_node->function_call.argument_list->head;
     int i = 0;
     while (current != NULL) {
-      ni_ast_codegen_node(current->node);
+      int ret = ni_ast_codegen_node(current->node);
+      if (ret != 0) {
+        free(args);
+        return ret;
+      }
       args[i] = return_operand;
       current = current->next;
       i++;
@@ -156,17 +190,27 @@ void ni_ast_codegen_node_call(ni_ast_node *ast_node) {
 
   symbol_value *function =
       get_symbol_table(fn_table, ast_node->function_call.identifier);
+  if (function == NULL) {
+    free(args);
+    log_error("function '%s' not found", ast_node->function_call.identifier);
+    return 1;
+  }
 
   return_operand =
       LLVMBuildCall2(builder, function->type, function->ref, args, arg_count,
                      ast_node->function_call.identifier);
 
   free(args);
+
+  return 0;
 }
 
-void ni_ast_codegen_node_ret(ni_ast_node *ast_node) {}
+int ni_ast_codegen_node_ret(ni_ast_node *ast_node) {
+  log_error("return not implemented");
+  return 1;
+}
 
-void ni_ast_codegen_node_fun(ni_ast_node *ast_node) {
+int ni_ast_codegen_node_fun(ni_ast_node *ast_node) {
   var_table = make_symbol_table(101);
 
   LLVMTypeRef fn_type = make_fun_signature(ast_node);
@@ -210,33 +254,32 @@ void ni_ast_codegen_node_fun(ni_ast_node *ast_node) {
   LLVMBasicBlockRef entry_block = LLVMAppendBasicBlock(function, "entry");
   LLVMPositionBuilderAtEnd(builder, entry_block);
 
-  ni_ast_codegen_block(ast_node->function_declaration.block);
-
+  int ret = ni_ast_codegen_block(ast_node->function_declaration.block);
   free_symbol_table(var_table);
+
+  return ret;
 }
 
-void ni_ast_codegen(ni_ast_node_list *ast, enum ni_ast_codegen_format format,
-                    char *file) {
-  fn_table = make_symbol_table(101);
-  context = LLVMContextCreate();
-  module = LLVMModuleCreateWithNameInContext("nic", context);
-  builder = LLVMCreateBuilderInContext(context);
+int ni_ast_codegen(ni_ast_node_list *ast, enum ni_ast_codegen_format format,
+                   char *file) {
+  initialize_modules();
 
-  ni_ast_codegen_toplevel(ast);
+  int ret = ni_ast_codegen_toplevel(ast);
+  if (ret != 0) {
+    free_modules();
+    return ret;
+  }
 
   char *errors = NULL;
   if (LLVMPrintModuleToFile(module, file, &errors) == 1) {
-    printf("error: %s\n", errors);
+    log_error("codegen error: %s\n", errors);
     LLVMDisposeMessage(errors);
+    free_modules();
+    return 1;
   }
 
-  free_symbol_table(fn_table);
-  LLVMDisposeBuilder(builder);
-  builder = NULL;
-  LLVMDisposeModule(module);
-  module = NULL;
-  LLVMContextDispose(context);
-  context = NULL;
+  free_modules();
+  return 0;
 }
 
 LLVMTypeRef make_fun_signature(ni_ast_node *ast_node) {
@@ -263,4 +306,29 @@ LLVMTypeRef make_fun_signature(ni_ast_node *ast_node) {
   }
 
   return LLVMFunctionType(return_type, arg_types, arg_count, 0);
+}
+
+void initialize_modules() {
+  fn_table = make_symbol_table(101);
+  context = LLVMContextCreate();
+  module = LLVMModuleCreateWithNameInContext("nic", context);
+  builder = LLVMCreateBuilderInContext(context);
+}
+
+void free_modules() {
+  free_symbol_table(fn_table);
+  LLVMDisposeBuilder(builder);
+  LLVMDisposeModule(module);
+  LLVMContextDispose(context);
+}
+
+void log_error(const char *format, ...) {
+  fprintf(stderr, "codegen error: ");
+
+  va_list args;
+  va_start(args, format);
+  vfprintf(stderr, format, args);
+  va_end(args);
+
+  fprintf(stderr, "\n");
 }

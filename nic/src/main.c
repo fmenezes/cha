@@ -43,9 +43,9 @@ int main(int argc, char *argv[]) {
     return 1;
   }
 
-  ni_ast_codegen(ast, codegen_format, outputfile);
+  int ret = ni_ast_codegen(ast, codegen_format, outputfile);
 
   free_ni_ast_node_list(ast);
 
-  return 0;
+  return ret;
 }
