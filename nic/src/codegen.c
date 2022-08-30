@@ -205,7 +205,7 @@ int ni_ast_codegen_node_call(ni_ast_node *ast_node) {
   return 0;
 }
 
-int ni_ast_codegen_node_ret(ni_ast_node *ast_node) { 
+int ni_ast_codegen_node_ret(ni_ast_node *ast_node) {
   log_error("return not implemented");
   return 1;
 }
