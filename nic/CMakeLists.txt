@@ -1,6 +1,3 @@
-cmake_minimum_required(VERSION 3.2.0)
-project(nic VERSION 0.0.1 LANGUAGES C CXX)
-
 find_package(FLEX REQUIRED)
 find_package(BISON REQUIRED)
 find_package(LLVM 14 REQUIRED CONFIG)
@@ -24,7 +21,7 @@ flex_target(scanner src/scanner.l "${CMAKE_CURRENT_BINARY_DIR}/scanner.c")
 bison_target(parser src/parser.y "${CMAKE_CURRENT_BINARY_DIR}/parser.tab.c")
 add_flex_bison_dependency(scanner parser)
 
-include_directories(include src/include ${CMAKE_CURRENT_BINARY_DIR} ${LLVM_INCLUDE_DIRS})
+include_directories(include src ${CMAKE_CURRENT_BINARY_DIR} ${LLVM_INCLUDE_DIRS})
 add_definitions(${LLVM_DEFINITIONS})
 llvm_map_components_to_libnames(LLVM_LIBS
 
