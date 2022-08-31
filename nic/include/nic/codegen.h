@@ -1,5 +1,5 @@
-#ifndef __NI_CODEGEN_H__
-#define __NI_CODEGEN_H__
+#ifndef __NIC_CODEGEN_H__
+#define __NIC_CODEGEN_H__
 
 #ifdef __cplusplus
 extern "C" {
@@ -23,4 +23,4 @@ int ni_ast_codegen(ni_ast_node_list *ast, ni_ast_codegen_format format,
 }
 #endif
 
-#endif // __NI_CODEGEN_H__
+#endif // __NIC_CODEGEN_H__
