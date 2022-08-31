@@ -3,10 +3,10 @@
 
 #include <llvm-c/Core.h>
 
+#include "log.h"
 #include "nic/ast.h"
 #include "nic/codegen.h"
 #include "symbol_table.h"
-#include "log.h"
 
 void initialize_modules();
 void free_modules();

@@ -11,4 +11,4 @@ void log_error(const char *format, ...);
 }
 #endif
 
-#endif  // LOG_H_
+#endif // LOG_H_

@@ -2,10 +2,10 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "log.h"
 #include "nic/ast.h"
 #include "nic/codegen.h"
 #include "nic/validate.h"
-#include "log.h"
 
 int main(int argc, char *argv[]) {
   if (argc != 4) {
