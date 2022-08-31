@@ -23,12 +23,16 @@ symbol_table *make_symbol_table(int size) {
   return table;
 }
 
-void insert_symbol_table(symbol_table *table, char *key, symbol_value *value) {
+void insert_symbol_table(symbol_table *table, char *key, ni_ast_node *node,
+                         LLVMValueRef ref, LLVMTypeRef type) {
   int index = hash_function(key) % table->size;
   symbol_entry *entry = malloc(sizeof(symbol_entry));
   entry->key = key;
-  entry->value = value;
   entry->next = NULL;
+  entry->value = malloc(sizeof(symbol_value));
+  entry->value->node = node;
+  entry->value->ref = ref;
+  entry->value->type = type;
   if (table->entries[index].head == NULL) {
     table->entries[index].head = entry;
     table->entries[index].tail = entry;
