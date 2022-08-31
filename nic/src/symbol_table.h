@@ -9,6 +9,8 @@ extern "C" {
 
 #include "nic/ast.h"
 
+#define SYMBOL_TABLE_SIZE 101
+
 struct symbol_entry_list;
 struct symbol_entry;
 struct symbol_table;
