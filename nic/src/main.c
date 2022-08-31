@@ -5,13 +5,14 @@
 #include "nic/ast.h"
 #include "nic/codegen.h"
 #include "nic/validate.h"
+#include "log.h"
 
 int main(int argc, char *argv[]) {
   if (argc != 4) {
-    fprintf(stderr, "Usage: %s <format> <outputfile> <inputfile>\n", argv[0]);
-    fprintf(stderr, "format: -s for Assembly Code\n");
-    fprintf(stderr, "format: -c for Object File\n");
-    fprintf(stderr, "format: -ll for LLVM IR\n");
+    log_error("Usage: %s <format> <outputfile> <inputfile>\n", argv[0]);
+    log_error("format: -s for Assembly Code\n");
+    log_error("format: -c for Object File\n");
+    log_error("format: -ll for LLVM IR\n");
     return 1;
   }
 
@@ -27,13 +28,13 @@ int main(int argc, char *argv[]) {
   } else if (strcmp(format, "-ll") == 0) {
     codegen_format = LLVM_IR;
   } else {
-    fprintf(stderr, "Invalid format: %s\n", format);
+    log_error("Invalid format: %s\n", format);
     return 1;
   }
 
   FILE *file = fopen(inputfile, "r");
   if (file == NULL) {
-    fprintf(stderr, "Could not open file %s\n", inputfile);
+    log_error("Could not open file %s\n", inputfile);
     return 1;
   }
 
@@ -41,7 +42,7 @@ int main(int argc, char *argv[]) {
   int ret = ni_ast_parse(file, &ast);
   fclose(file);
   if (ret != 0) {
-    fprintf(stderr, "Could not parse file %s\n", inputfile);
+    log_error("Could not parse file %s\n", inputfile);
     return ret;
   }
 
