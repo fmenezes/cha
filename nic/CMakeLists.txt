@@ -205,9 +205,6 @@ add_executable(nic ${SRC} ${BISON_parser_OUTPUTS} ${FLEX_scanner_OUTPUTS})
 
 target_link_libraries(nic ${LLVM_LIBS})
 
-include(CTest)
-enable_testing()
-
 file(GLOB_RECURSE TEST_SRC
     CONFIGURE_DEPENDS
     "test/*.ni"
@@ -222,9 +219,5 @@ add_executable(
 FOREACH(test ${TEST_SRC})
     GET_FILENAME_COMPONENT(TName ${test} NAME_WE)
     GET_FILENAME_COMPONENT(TPath ${test} DIRECTORY)
-    ADD_TEST(NAME ${TName} COMMAND nic_test "$<TARGET_FILE:nic>" "${TPath}/${TName}.ni" WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/test")
+    ADD_TEST(NAME ${TName} COMMAND nic_test "$<TARGET_FILE:nic>" "${TPath}/${TName}.ni")
 ENDFOREACH(test)
-
-set(CPACK_PROJECT_NAME ${PROJECT_NAME})
-set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})
-include(CPack)
