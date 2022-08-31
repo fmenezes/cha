@@ -4,6 +4,7 @@
 
 #include "nic/ast.h"
 #include "nic/codegen.h"
+#include "nic/validate.h"
 
 int main(int argc, char *argv[]) {
   if (argc != 4) {
@@ -36,14 +37,20 @@ int main(int argc, char *argv[]) {
     return 1;
   }
 
-  ni_ast_node_list *ast = ni_ast_parse(file);
+  ni_ast_node_list *ast;
+  int ret = ni_ast_parse(file, &ast);
   fclose(file);
-  if (ast == NULL) {
+  if (ret != 0) {
     fprintf(stderr, "Could not parse file %s\n", inputfile);
-    return 1;
+    return ret;
   }
 
-  int ret = ni_ast_codegen(ast, codegen_format, outputfile);
+  ret = ni_ast_validate(ast);
+  if (ret != 0) {
+    return ret;
+  }
+
+  ret = ni_ast_codegen(ast, codegen_format, outputfile);
 
   free_ni_ast_node_list(ast);
 

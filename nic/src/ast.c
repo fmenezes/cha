@@ -200,10 +200,11 @@ void free_ni_ast_node_list(ni_ast_node_list *list) {
   free(list);
 }
 
-ni_ast_node_list *ni_ast_parse(FILE *file) {
+int ni_ast_parse(FILE *file, ni_ast_node_list **out) {
   yyin = file;
   if (yyparse() != 0) {
-    return NULL;
+    return 1;
   }
-  return parsed_ast;
+  *out = parsed_ast;
+  return 0;
 }

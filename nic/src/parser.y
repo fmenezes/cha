@@ -4,11 +4,12 @@
 #include <string.h>
 
 #include "nic/ast.h"
+#include "log.h"
 
 ni_ast_node_list *parsed_ast;
 
 extern int yylex();
-void yyerror(const char *msg);
+int yyerror(const char *msg);
 %}
 
 %code{
@@ -104,7 +105,7 @@ const :
 
 %%
 
-void yyerror(const char *msg) {
-  fprintf(stderr, "error: %s\n", msg);
-  exit(1);
+int yyerror(const char *msg) {
+  log_error(msg);
+  return 1;
 }

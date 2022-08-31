@@ -17,7 +17,7 @@ enum ni_ast_codegen_format {
 typedef enum ni_ast_codegen_format ni_ast_codegen_format;
 
 int ni_ast_codegen(ni_ast_node_list *ast, ni_ast_codegen_format format,
-                   char *filePath);
+                   char *file_path);
 
 #ifdef __cplusplus
 }

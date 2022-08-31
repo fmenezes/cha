@@ -1,4 +1,3 @@
-#include <stdarg.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -7,10 +6,10 @@
 #include "nic/ast.h"
 #include "nic/codegen.h"
 #include "symbol_table.h"
+#include "log.h"
 
 void initialize_modules();
 void free_modules();
-void log_error(const char *format, ...);
 int ni_ast_codegen_toplevel(ni_ast_node_list *ast);
 int ni_ast_codegen_node(ni_ast_node *ast_node);
 int ni_ast_codegen_node_constant_int(ni_ast_node *ast_node);
@@ -255,7 +254,7 @@ int ni_ast_codegen_node_fun(ni_ast_node *ast_node) {
 }
 
 int ni_ast_codegen(ni_ast_node_list *ast, enum ni_ast_codegen_format format,
-                   char *file) {
+                   char *file_path) {
   initialize_modules();
 
   int ret = ni_ast_codegen_toplevel(ast);
@@ -265,8 +264,8 @@ int ni_ast_codegen(ni_ast_node_list *ast, enum ni_ast_codegen_format format,
   }
 
   char *errors = NULL;
-  if (LLVMPrintModuleToFile(module, file, &errors) == 1) {
-    log_error("codegen error: %s\n", errors);
+  if (LLVMPrintModuleToFile(module, file_path, &errors) == 1) {
+    log_error(errors);
     LLVMDisposeMessage(errors);
     free_modules();
     return 1;
@@ -314,15 +313,4 @@ void free_modules() {
   LLVMDisposeBuilder(builder);
   LLVMDisposeModule(module);
   LLVMContextDispose(context);
-}
-
-void log_error(const char *format, ...) {
-  fprintf(stderr, "codegen error: ");
-
-  va_list args;
-  va_start(args, format);
-  vfprintf(stderr, format, args);
-  va_end(args);
-
-  fprintf(stderr, "\n");
 }
