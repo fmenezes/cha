@@ -1,5 +1,5 @@
-#ifndef __NI_AST_DUMP_H__
-#define __NI_AST_DUMP_H__
+#ifndef __NIC_AST_DUMP_H__
+#define __NIC_AST_DUMP_H__
 
 #ifdef __cplusplus
 extern "C" {
@@ -15,4 +15,4 @@ void ni_ast_dump(FILE *out, const ni_ast_node_list *ast);
 }
 #endif
 
-#endif // __NI_AST_DUMP_H__
+#endif // __NIC_AST_DUMP_H__

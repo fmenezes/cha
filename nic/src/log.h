@@ -1,5 +1,5 @@
-#ifndef LOG_H_
-#define LOG_H_
+#ifndef __LOG_H__
+#define __LOG_H__
 
 #ifdef __cplusplus
 extern "C" {
@@ -11,4 +11,4 @@ void log_error(const char *format, ...);
 }
 #endif
 
-#endif // LOG_H_
+#endif // __LOG_H__

@@ -1,5 +1,5 @@
-#ifndef SYMBOL_TABLE_H_
-#define SYMBOL_TABLE_H_
+#ifndef __SYMBOL_TABLE_H__
+#define __SYMBOL_TABLE_H__
 
 #ifdef __cplusplus
 extern "C" {
@@ -51,4 +51,4 @@ struct symbol_value {
 }
 #endif
 
-#endif // SYMBOL_TABLE_H_
+#endif // __SYMBOL_TABLE_H__
