@@ -204,3 +204,20 @@ llvm_map_components_to_libnames(LLVM_LIBS
 add_executable(nic ${SRC} ${BISON_parser_OUTPUTS} ${FLEX_scanner_OUTPUTS})
 
 target_link_libraries(nic ${LLVM_LIBS})
+
+file(GLOB_RECURSE TEST_SRC
+    CONFIGURE_DEPENDS
+    "test/*.ni"
+    "test/**/*.ni"
+)
+
+add_executable(
+    nic_test
+    test/test.c
+)
+
+FOREACH(test ${TEST_SRC})
+    GET_FILENAME_COMPONENT(TName ${test} NAME_WE)
+    GET_FILENAME_COMPONENT(TPath ${test} DIRECTORY)
+    ADD_TEST(NAME ${TName} COMMAND nic_test "$<TARGET_FILE:nic>" "${TPath}/${TName}.ni")
+ENDFOREACH(test)

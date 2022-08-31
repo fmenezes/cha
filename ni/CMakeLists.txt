@@ -245,9 +245,6 @@ list(REMOVE_ITEM TEST_SRC ${TEST_LIB_SRC})
 set(SRC_WITHOUT_MAIN ${SRC} ${BISON_parser_OUTPUTS} ${FLEX_parser_OUTPUTS})
 list(FILTER SRC_WITHOUT_MAIN EXCLUDE REGEX "main.cpp")
 
-include(CTest)
-enable_testing()
-
 CREATE_TEST_SOURCELIST(ni_tests
     ni_unit_test_main.cpp
     ${TEST_SRC}
@@ -270,7 +267,3 @@ FOREACH(test ${TEST_SRC})
     GET_FILENAME_COMPONENT(TPath ${test} DIRECTORY)
     ADD_TEST(NAME ${TName} COMMAND ni_unit_test "${TPath}/${TName}" WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/test")
 ENDFOREACH(test)
-
-set(CPACK_PROJECT_NAME ${PROJECT_NAME})
-set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})
-include(CPack)

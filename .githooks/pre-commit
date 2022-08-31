@@ -17,12 +17,10 @@ if [ $result -ne 0 ]; then
     echo "Something went wrong with code build"
     exit 1
 fi
-cd ni
-ctest
+ctest --output-on-failure
 result=$?
-cd ..
 if [ $result -ne 0 ]; then
-    echo "Something went wrong with unit tests"
+    echo "Something went wrong with tests"
     exit 1
 fi
 cd ..
