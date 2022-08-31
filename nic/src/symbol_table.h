@@ -1,6 +1,10 @@
 #ifndef SYMBOL_TABLE_H_
 #define SYMBOL_TABLE_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <llvm-c/Core.h>
 
 #include "nic/ast.h"
@@ -16,7 +20,8 @@ typedef struct symbol_entry symbol_entry;
 typedef struct symbol_value symbol_value;
 
 symbol_table *make_symbol_table(int size);
-void insert_symbol_table(symbol_table *table, char *key, symbol_value *value);
+void insert_symbol_table(symbol_table *table, char *key, ni_ast_node *node,
+                         LLVMValueRef ref, LLVMTypeRef type);
 symbol_value *get_symbol_table(symbol_table *table, char *key);
 void free_symbol_table(symbol_table *table);
 
@@ -41,5 +46,9 @@ struct symbol_value {
   LLVMValueRef ref;
   LLVMTypeRef type;
 };
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // SYMBOL_TABLE_H_

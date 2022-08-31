@@ -127,13 +127,8 @@ int ni_ast_codegen_node_var(ni_ast_node *ast_node) {
   LLVMValueRef addr =
       LLVMBuildAlloca(builder, type, ast_node->variable_declaration.identifier);
 
-  symbol_value *value = malloc(sizeof(symbol_value));
-  value->type = type;
-  value->ref = addr;
-  value->node = ast_node;
-
   insert_symbol_table(var_table, ast_node->variable_declaration.identifier,
-                      value);
+                      ast_node, addr, type);
   return 0;
 }
 
@@ -218,13 +213,8 @@ int ni_ast_codegen_node_fun(ni_ast_node *ast_node) {
   LLVMValueRef function = LLVMAddFunction(
       module, ast_node->function_declaration.identifier, fn_type);
 
-  symbol_value *entry = malloc(sizeof(symbol_value));
-  entry->node = ast_node;
-  entry->ref = function;
-  entry->type = fn_type;
-
   insert_symbol_table(fn_table, ast_node->function_declaration.identifier,
-                      entry);
+                      ast_node, function, fn_type);
 
   if (ast_node->function_declaration.argument_list != NULL) {
     LLVMBasicBlockRef args_block = LLVMAppendBasicBlock(function, "args");
@@ -239,12 +229,8 @@ int ni_ast_codegen_node_fun(ni_ast_node *ast_node) {
           LLVMBuildAlloca(builder, type, current->node->argument.identifier);
       LLVMBuildStore(builder, LLVMGetParam(function, i), addr);
 
-      symbol_value *value = malloc(sizeof(symbol_value));
-      value->type = type;
-      value->ref = addr;
-      value->node = current->node;
-
-      insert_symbol_table(var_table, current->node->argument.identifier, value);
+      insert_symbol_table(var_table, current->node->argument.identifier,
+                          current->node, addr, type);
 
       current = current->next;
       i++;
