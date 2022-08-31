@@ -206,8 +206,16 @@ int ni_ast_codegen_node_call(ni_ast_node *ast_node) {
 }
 
 int ni_ast_codegen_node_ret(ni_ast_node *ast_node) {
-  log_error("return not implemented");
-  return 1;
+  if (ast_node->function_return.value != NULL) {
+    int ret = ni_ast_codegen_node(ast_node->function_return.value);
+    if (ret != 0) {
+      return ret;
+    }
+    LLVMBuildRet(builder, return_operand);
+  } else {
+    LLVMBuildRetVoid(builder);
+  }
+  return 0;
 }
 
 int ni_ast_codegen_node_fun(ni_ast_node *ast_node) {
