@@ -213,7 +213,7 @@ int ni_ast_codegen_node_ret(ni_ast_node *ast_node) {
 }
 
 int ni_ast_codegen_node_fun(ni_ast_node *ast_node) {
-  var_table = make_symbol_table(101);
+  var_table = make_symbol_table(SYMBOL_TABLE_SIZE);
 
   LLVMTypeRef fn_type = make_fun_signature(ast_node);
 
@@ -302,7 +302,7 @@ LLVMTypeRef make_fun_signature(ni_ast_node *ast_node) {
 }
 
 void initialize_modules() {
-  fn_table = make_symbol_table(101);
+  fn_table = make_symbol_table(SYMBOL_TABLE_SIZE);
   context = LLVMContextCreate();
   module = LLVMModuleCreateWithNameInContext("nic", context);
   builder = LLVMCreateBuilderInContext(context);
