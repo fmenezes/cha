@@ -128,7 +128,7 @@ void ni_ast_node_list_append(ni_ast_node_list *list, ni_ast_node *next);
 void free_ni_ast_node(ni_ast_node *node);
 void free_ni_ast_node_list(ni_ast_node_list *list);
 
-ni_ast_node_list *ni_ast_parse(FILE *file);
+int ni_ast_parse(FILE *file, ni_ast_node_list **out);
 
 #ifdef __cplusplus
 }
