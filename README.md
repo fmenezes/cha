@@ -30,15 +30,20 @@ To compile ni programs you can simply run:
 
 * To generate Assembly Code
 ```
-ni -s examples/test.ni output.s
+ni -s output.s examples/test.ni
 ```
 
 * To generate Object File
 ```
-ni -c examples/test.ni output.o
+ni -c output.o examples/test.ni
 ```
 
 * To generate LLVM Intermediate Representation Code
 ```
-ni -ll examples/test.ni output.ll
+ni -ll output.ll examples/test.ni
+```
+
+* To generate Binary File
+```
+ni -o output examples/test.ni
 ```

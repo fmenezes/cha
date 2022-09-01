@@ -13,6 +13,7 @@ int main(int argc, char *argv[]) {
     log_error("format: -s for Assembly Code\n");
     log_error("format: -c for Object File\n");
     log_error("format: -ll for LLVM IR\n");
+    log_error("format: -o for Binary File\n");
     return 1;
   }
 
@@ -27,6 +28,8 @@ int main(int argc, char *argv[]) {
     codegen_format = OBJECT_FILE;
   } else if (strcmp(format, "-ll") == 0) {
     codegen_format = LLVM_IR;
+  } else if (strcmp(format, "-o") == 0) {
+    codegen_format = BINARY_FILE;
   } else {
     log_error("Invalid format: %s\n", format);
     return 1;
