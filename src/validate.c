@@ -41,6 +41,14 @@ int ni_ast_validate_function_list(ni_ast_node_list *ast) {
       log_validation_error(ast_current_node->node->location,
                            "expected function declaration");
       ret = 1;
+    } else if (get_symbol_table(
+                   fn_validate_table,
+                   ast_current_node->node->function_declaration.identifier) !=
+               NULL) {
+      log_validation_error(
+          ast_current_node->node->location, "function '%s' already defined",
+          ast_current_node->node->function_declaration.identifier);
+      ret = 1;
     } else {
       insert_symbol_table(
           fn_validate_table,
