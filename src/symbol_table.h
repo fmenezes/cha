@@ -7,7 +7,7 @@ extern "C" {
 
 #include <llvm-c/Core.h>
 
-#include "nic/ast.h"
+#include "ni/ast.h"
 
 #define SYMBOL_TABLE_SIZE 101
 

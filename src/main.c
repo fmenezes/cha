@@ -3,9 +3,9 @@
 #include <string.h>
 
 #include "log.h"
-#include "nic/ast.h"
-#include "nic/codegen.h"
-#include "nic/validate.h"
+#include "ni/ast.h"
+#include "ni/codegen.h"
+#include "ni/validate.h"
 
 int main(int argc, char *argv[]) {
   if (argc != 4) {
