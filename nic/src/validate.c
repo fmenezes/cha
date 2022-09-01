@@ -188,19 +188,22 @@ int ni_ast_validate_node_call(ni_ast_node *ast_node) {
        ast_node->function_call.argument_list->count == 0) &&
       fun->function_declaration.argument_list != NULL &&
       fun->function_declaration.argument_list->count > 0) {
-    log_validation_error(ast_node->location,
-                         "function '%s' expects arguments",
+    log_validation_error(ast_node->location, "function '%s' expects arguments",
                          ast_node->function_call.identifier);
   } else if (ast_node->function_call.argument_list != NULL &&
-      ast_node->function_call.argument_list->count > 0) {
+             ast_node->function_call.argument_list->count > 0) {
     if (fun->function_declaration.argument_list == NULL) {
-      log_validation_error(ast_node->location, "function '%s' expects no arguments",
+      log_validation_error(ast_node->location,
+                           "function '%s' expects no arguments",
                            ast_node->function_call.identifier);
       ret = 1;
     } else {
-      if (ast_node->function_call.argument_list->count != fun->function_declaration.argument_list->count) {
-        log_validation_error(ast_node->location, "function '%s' expects %d arguments",
-                             ast_node->function_call.identifier, fun->function_declaration.argument_list->count);
+      if (ast_node->function_call.argument_list->count !=
+          fun->function_declaration.argument_list->count) {
+        log_validation_error(ast_node->location,
+                             "function '%s' expects %d arguments",
+                             ast_node->function_call.identifier,
+                             fun->function_declaration.argument_list->count);
         ret = 1;
       } else {
         ni_ast_node_list_entry *arg =
