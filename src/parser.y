@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "nic/ast.h"
+#include "ni/ast.h"
 #include "log.h"
 
 ni_ast_node_list *parsed_ast;
@@ -13,7 +13,7 @@ int yyerror(const char *msg);
 %}
 
 %code{
-# include "nic/ast.h"
+# include "ni/ast.h"
 }
 
 %union {

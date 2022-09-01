@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-void cleanup() { system("rm -f out.ll"); } // POSIX ONLY
+void cleanup() { remove("out.ll"); }
 
 int check_for_failure(const char *filePath) {
   char suffix[] = "_passes.ni";

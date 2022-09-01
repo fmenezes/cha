@@ -5,7 +5,7 @@
 extern "C" {
 #endif
 
-#include "nic/ast.h"
+#include "ni/ast.h"
 #include <stdio.h>
 
 enum ni_ast_codegen_format {

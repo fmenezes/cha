@@ -1,6 +1,6 @@
-#include "nic/validate.h"
+#include "ni/validate.h"
 #include "log.h"
-#include "nic/ast.h"
+#include "ni/ast.h"
 #include "symbol_table.h"
 
 int ni_ast_validate_function_list(ni_ast_node_list *ast);

@@ -2,7 +2,7 @@
 #include <stdio.h>
 
 #include "log.h"
-#include "nic/ast.h"
+#include "ni/ast.h"
 
 void log_validation_error(ni_ast_location loc, const char *format, ...) {
   fprintf(stderr, "[error] %s:%d:%d", loc.file, loc.line_begin,

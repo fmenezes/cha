@@ -6,8 +6,8 @@
 #include <llvm-c/TargetMachine.h>
 
 #include "log.h"
-#include "nic/ast.h"
-#include "nic/codegen.h"
+#include "ni/ast.h"
+#include "ni/codegen.h"
 #include "symbol_table.h"
 
 int initialize_modules(const char *module_id);
@@ -311,8 +311,10 @@ int ni_ast_codegen(ni_ast_node_list *ast, enum ni_ast_codegen_format format,
       free_modules();
       char cmd[5000];
       sprintf(cmd, "cc -o %s %s", file_path, obj_file_path);
+      ret = system(cmd);
+      remove(obj_file_path);
       free(obj_file_path);
-      return system(cmd);
+      return ret;
     }
   }
 
