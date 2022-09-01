@@ -1,14 +1,16 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <llvm-c/Analysis.h>
 #include <llvm-c/Core.h>
+#include <llvm-c/TargetMachine.h>
 
 #include "log.h"
 #include "nic/ast.h"
 #include "nic/codegen.h"
 #include "symbol_table.h"
 
-void initialize_modules();
+int initialize_modules(const char *module_id);
 void free_modules();
 int ni_ast_codegen_toplevel(ni_ast_node_list *ast);
 int ni_ast_codegen_node(ni_ast_node *ast_node);
@@ -27,6 +29,8 @@ LLVMContextRef context = NULL;
 LLVMModuleRef module = NULL;
 LLVMBuilderRef builder = NULL;
 LLVMValueRef return_operand = NULL;
+LLVMTargetMachineRef target_machine = NULL;
+LLVMTargetDataRef target_data_layout = NULL;
 symbol_table *var_table = NULL;
 symbol_table *fn_table = NULL;
 
@@ -89,7 +93,7 @@ int ni_ast_codegen_toplevel(ni_ast_node_list *ast) {
 
 int ni_ast_codegen_node_constant_int(ni_ast_node *ast_node) {
   long long value = strtoll(ast_node->int_const.value, NULL, 10);
-  return_operand = LLVMConstInt(LLVMInt32Type(), value, 1);
+  return_operand = LLVMConstInt(LLVMInt32TypeInContext(context), value, 1);
   return 0;
 }
 
@@ -121,7 +125,7 @@ int ni_ast_codegen_node_bin_op(ni_ast_node *ast_node) {
 }
 
 int ni_ast_codegen_node_var(ni_ast_node *ast_node) {
-  LLVMTypeRef type = LLVMInt32Type();
+  LLVMTypeRef type = LLVMInt32TypeInContext(context);
 
   LLVMValueRef addr =
       LLVMBuildAlloca(builder, type, ast_node->variable_declaration.identifier);
@@ -223,15 +227,15 @@ int ni_ast_codegen_node_fun(ni_ast_node *ast_node) {
   insert_symbol_table(fn_table, ast_node->function_declaration.identifier,
                       ast_node, function, fn_type);
 
-  if (ast_node->function_declaration.argument_list != NULL) {
-    LLVMBasicBlockRef args_block = LLVMAppendBasicBlock(function, "args");
-    LLVMPositionBuilderAtEnd(builder, args_block);
+  LLVMBasicBlockRef entry_block = LLVMAppendBasicBlock(function, "entry");
+  LLVMPositionBuilderAtEnd(builder, entry_block);
 
+  if (ast_node->function_declaration.argument_list != NULL) {
     ni_ast_node_list_entry *current =
         ast_node->function_declaration.argument_list->head;
     int i = 0;
     while (current != NULL) {
-      LLVMTypeRef type = LLVMInt32Type();
+      LLVMTypeRef type = LLVMInt32TypeInContext(context);
       LLVMValueRef addr =
           LLVMBuildAlloca(builder, type, current->node->argument.identifier);
       LLVMBuildStore(builder, LLVMGetParam(function, i), addr);
@@ -244,31 +248,56 @@ int ni_ast_codegen_node_fun(ni_ast_node *ast_node) {
     }
   }
 
-  LLVMBasicBlockRef entry_block = LLVMAppendBasicBlock(function, "entry");
-  LLVMPositionBuilderAtEnd(builder, entry_block);
-
   int ret = ni_ast_codegen_block(ast_node->function_declaration.block);
   free_symbol_table(var_table);
+
+  if (LLVMVerifyFunction(function, LLVMPrintMessageAction) != 0) {
+    ret = 1;
+  }
 
   return ret;
 }
 
 int ni_ast_codegen(ni_ast_node_list *ast, enum ni_ast_codegen_format format,
                    char *file_path) {
-  initialize_modules();
+  int ret = initialize_modules("nic");
+  if (ret != 0) {
+    return ret;
+  }
 
-  int ret = ni_ast_codegen_toplevel(ast);
+  ret = ni_ast_codegen_toplevel(ast);
   if (ret != 0) {
     free_modules();
     return ret;
   }
 
   char *errors = NULL;
-  if (LLVMPrintModuleToFile(module, file_path, &errors) == 1) {
+  if (LLVMVerifyModule(module, LLVMReturnStatusAction, &errors) != 0) {
     log_error(errors);
     LLVMDisposeMessage(errors);
     free_modules();
     return 1;
+  }
+
+  if (format == LLVM_IR) {
+    if (LLVMPrintModuleToFile(module, file_path, &errors) != 0) {
+      log_error(errors);
+      LLVMDisposeMessage(errors);
+      free_modules();
+      return 1;
+    }
+  } else {
+    LLVMCodeGenFileType gen_type = LLVMAssemblyFile;
+    if (format == OBJECT_FILE) {
+      gen_type = LLVMObjectFile;
+    }
+    if (LLVMTargetMachineEmitToFile(target_machine, module, file_path, gen_type,
+                                    &errors) != 0) {
+      log_error(errors);
+      LLVMDisposeMessage(errors);
+      free_modules();
+      return 1;
+    }
   }
 
   free_modules();
@@ -287,7 +316,7 @@ LLVMTypeRef make_fun_signature(ni_ast_node *ast_node) {
         ast_node->function_declaration.argument_list->head;
     int i = 0;
     while (current != NULL) {
-      arg_types[i] = LLVMInt32Type();
+      arg_types[i] = LLVMInt32TypeInContext(context);
       current = current->next;
       i++;
     }
@@ -295,22 +324,61 @@ LLVMTypeRef make_fun_signature(ni_ast_node *ast_node) {
 
   LLVMTypeRef return_type = LLVMVoidType();
   if (ast_node->function_declaration.return_type != NULL) {
-    return_type = LLVMInt32Type();
+    return_type = LLVMInt32TypeInContext(context);
   }
 
   return LLVMFunctionType(return_type, arg_types, arg_count, 0);
 }
 
-void initialize_modules() {
-  fn_table = make_symbol_table(SYMBOL_TABLE_SIZE);
+int initialize_modules(const char *module_id) {
+  LLVMInitializeAArch64TargetInfo();
+  LLVMInitializeAArch64Target();
+  LLVMInitializeAArch64TargetMC();
+  LLVMInitializeAArch64AsmPrinter();
+
+  LLVMInitializeX86TargetInfo();
+  LLVMInitializeX86Target();
+  LLVMInitializeX86TargetMC();
+  LLVMInitializeX86AsmPrinter();
+
+  LLVMInitializeARMTargetInfo();
+  LLVMInitializeARMTarget();
+  LLVMInitializeARMTargetMC();
+  LLVMInitializeARMAsmPrinter();
+
+  char *target_triple = LLVMGetDefaultTargetTriple();
+  char cpu[] = "generic";
+  char features[] = "";
+
+  char *error = NULL;
+
+  LLVMTargetRef target;
+  if (LLVMGetTargetFromTriple(target_triple, &target, &error) != 0) {
+    log_error(error);
+    LLVMDisposeMessage(error);
+    return 1;
+  }
+
   context = LLVMContextCreate();
-  module = LLVMModuleCreateWithNameInContext("nic", context);
+  module = LLVMModuleCreateWithNameInContext(module_id, context);
   builder = LLVMCreateBuilderInContext(context);
+
+  LLVMSetTarget(module, target_triple);
+  target_machine = LLVMCreateTargetMachine(
+      target, target_triple, cpu, features, LLVMCodeGenLevelDefault,
+      LLVMRelocDefault, LLVMCodeModelDefault);
+  target_data_layout = LLVMCreateTargetDataLayout(target_machine);
+  LLVMSetModuleDataLayout(module, target_data_layout);
+  fn_table = make_symbol_table(SYMBOL_TABLE_SIZE);
+
+  return 0;
 }
 
 void free_modules() {
-  free_symbol_table(fn_table);
+  LLVMDisposeTargetData(target_data_layout);
+  LLVMDisposeTargetMachine(target_machine);
   LLVMDisposeBuilder(builder);
   LLVMDisposeModule(module);
   LLVMContextDispose(context);
+  free_symbol_table(fn_table);
 }
