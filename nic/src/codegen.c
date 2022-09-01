@@ -287,16 +287,32 @@ int ni_ast_codegen(ni_ast_node_list *ast, enum ni_ast_codegen_format format,
       return 1;
     }
   } else {
-    LLVMCodeGenFileType gen_type = LLVMAssemblyFile;
-    if (format == OBJECT_FILE) {
-      gen_type = LLVMObjectFile;
+    LLVMCodeGenFileType gen_type = LLVMObjectFile;
+    if (format == ASSEMBLY) {
+      gen_type = LLVMAssemblyFile;
     }
-    if (LLVMTargetMachineEmitToFile(target_machine, module, file_path, gen_type,
-                                    &errors) != 0) {
+    char *obj_file_path = file_path;
+    if (format == BINARY_FILE) {
+      obj_file_path = malloc(strlen(file_path) + 3);
+      sprintf(obj_file_path, "%s.o", file_path);
+    }
+    if (LLVMTargetMachineEmitToFile(target_machine, module,
+                                    obj_file_path, gen_type, &errors) != 0) {
+      if (format == BINARY_FILE) {
+        free(obj_file_path);
+      }
       log_error(errors);
       LLVMDisposeMessage(errors);
       free_modules();
       return 1;
+    }
+
+    if (format == BINARY_FILE) {
+      free_modules();
+      char cmd[5000];
+      sprintf(cmd, "cc -o %s %s", file_path, obj_file_path);
+      free(obj_file_path);
+      return system(cmd);
     }
   }
 

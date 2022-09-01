@@ -12,6 +12,7 @@ enum ni_ast_codegen_format {
   LLVM_IR,
   ASSEMBLY,
   OBJECT_FILE,
+  BINARY_FILE,
 };
 
 typedef enum ni_ast_codegen_format ni_ast_codegen_format;
