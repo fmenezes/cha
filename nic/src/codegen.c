@@ -4,7 +4,6 @@
 #include <llvm-c/Analysis.h>
 #include <llvm-c/Core.h>
 #include <llvm-c/TargetMachine.h>
-#include <llvm-c/Transforms/Utils.h>
 
 #include "log.h"
 #include "nic/ast.h"
