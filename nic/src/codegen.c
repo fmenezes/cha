@@ -296,8 +296,8 @@ int ni_ast_codegen(ni_ast_node_list *ast, enum ni_ast_codegen_format format,
       obj_file_path = malloc(strlen(file_path) + 3);
       sprintf(obj_file_path, "%s.o", file_path);
     }
-    if (LLVMTargetMachineEmitToFile(target_machine, module,
-                                    obj_file_path, gen_type, &errors) != 0) {
+    if (LLVMTargetMachineEmitToFile(target_machine, module, obj_file_path,
+                                    gen_type, &errors) != 0) {
       if (format == BINARY_FILE) {
         free(obj_file_path);
       }
