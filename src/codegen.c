@@ -31,6 +31,7 @@ LLVMBuilderRef builder = NULL;
 LLVMValueRef return_operand = NULL;
 LLVMTargetMachineRef target_machine = NULL;
 LLVMTargetDataRef target_data_layout = NULL;
+char *target_triple = NULL;
 symbol_table *var_table = NULL;
 symbol_table *fn_table = NULL;
 
@@ -278,6 +279,8 @@ int ni_ast_codegen(ni_ast_node_list *ast, enum ni_ast_codegen_format format,
     free_modules();
     return 1;
   }
+  LLVMDisposeMessage(errors);
+  errors = NULL;
 
   if (format == LLVM_IR) {
     if (LLVMPrintModuleToFile(module, file_path, &errors) != 0) {
@@ -286,6 +289,8 @@ int ni_ast_codegen(ni_ast_node_list *ast, enum ni_ast_codegen_format format,
       free_modules();
       return 1;
     }
+    LLVMDisposeMessage(errors);
+    errors = NULL;
   } else {
     LLVMCodeGenFileType gen_type = LLVMObjectFile;
     if (format == ASSEMBLY) {
@@ -306,6 +311,8 @@ int ni_ast_codegen(ni_ast_node_list *ast, enum ni_ast_codegen_format format,
       free_modules();
       return 1;
     }
+    LLVMDisposeMessage(errors);
+    errors = NULL;
 
     if (format == BINARY_FILE) {
       free_modules();
@@ -345,7 +352,11 @@ LLVMTypeRef make_fun_signature(ni_ast_node *ast_node) {
     return_type = LLVMInt32TypeInContext(context);
   }
 
-  return LLVMFunctionType(return_type, arg_types, arg_count, 0);
+  LLVMTypeRef ret = LLVMFunctionType(return_type, arg_types, arg_count, 0);
+
+  free(arg_types);
+
+  return ret;
 }
 
 int initialize_modules(const char *module_id) {
@@ -364,7 +375,7 @@ int initialize_modules(const char *module_id) {
   LLVMInitializeARMTargetMC();
   LLVMInitializeARMAsmPrinter();
 
-  char *target_triple = LLVMGetDefaultTargetTriple();
+  target_triple = LLVMGetDefaultTargetTriple();
   char cpu[] = "generic";
   char features[] = "";
 
@@ -393,8 +404,9 @@ int initialize_modules(const char *module_id) {
 }
 
 void free_modules() {
-  LLVMDisposeTargetData(target_data_layout);
   LLVMDisposeTargetMachine(target_machine);
+  LLVMDisposeTargetData(target_data_layout);
+  LLVMDisposeMessage(target_triple);
   LLVMDisposeBuilder(builder);
   LLVMDisposeModule(module);
   LLVMContextDispose(context);

@@ -46,10 +46,10 @@ instructions :
 	;
 
 function :
-	FUN IDENTIFIER OPENPAR CLOSEPAR block											{ $$ = make_ni_ast_node_function_declaration((ni_ast_location){}, $2, NULL, NULL, $5); }
-	| FUN IDENTIFIER OPENPAR def_args CLOSEPAR block								{ $$ = make_ni_ast_node_function_declaration((ni_ast_location){}, $2, NULL, $4, $6); }
-	| FUN IDENTIFIER OPENPAR CLOSEPAR typedef block									{ $$ = make_ni_ast_node_function_declaration((ni_ast_location){}, $2, $5, NULL, $6); }
-	| FUN IDENTIFIER OPENPAR def_args CLOSEPAR typedef block						{ $$ = make_ni_ast_node_function_declaration((ni_ast_location){}, $2, $6, $4, $7); }
+	FUN IDENTIFIER OPENPAR CLOSEPAR block											{ $$ = make_ni_ast_node_function_declaration((ni_ast_location){}, $2, NULL, NULL, $5); free($2); }
+	| FUN IDENTIFIER OPENPAR def_args CLOSEPAR block								{ $$ = make_ni_ast_node_function_declaration((ni_ast_location){}, $2, NULL, $4, $6); free($2); }
+	| FUN IDENTIFIER OPENPAR CLOSEPAR typedef block									{ $$ = make_ni_ast_node_function_declaration((ni_ast_location){}, $2, $5, NULL, $6); free($2); }
+	| FUN IDENTIFIER OPENPAR def_args CLOSEPAR typedef block						{ $$ = make_ni_ast_node_function_declaration((ni_ast_location){}, $2, $6, $4, $7); free($2); }
 	;
 
 block :
@@ -58,7 +58,7 @@ block :
 	;
 
 arg :
-	IDENTIFIER typedef																{ $$ = make_ni_ast_node_argument((ni_ast_location){}, $1, $2); }
+	IDENTIFIER typedef																{ $$ = make_ni_ast_node_argument((ni_ast_location){}, $1, $2); free($1); }
 	;
 
 def_args :
@@ -77,8 +77,8 @@ statements :
 	;
 
 statement :
-	VAR IDENTIFIER typedef															{ $$ = make_ni_ast_node_variable_declaration((ni_ast_location){}, $2, $3); }
-	| IDENTIFIER EQUALS expr														{ $$ = make_ni_ast_node_variable_assignment((ni_ast_location){}, $1, $3); }
+	VAR IDENTIFIER typedef															{ $$ = make_ni_ast_node_variable_declaration((ni_ast_location){}, $2, $3); free($2); }
+	| IDENTIFIER EQUALS expr														{ $$ = make_ni_ast_node_variable_assignment((ni_ast_location){}, $1, $3); free($1); }
 	| expr																			{ $$ = $1; }
 	| RET expr																		{ $$ = make_ni_ast_node_function_return((ni_ast_location){}, $2); }
 	| RET 																			{ $$ = make_ni_ast_node_function_return((ni_ast_location){}, NULL); }
@@ -86,9 +86,9 @@ statement :
 
 expr :
 	const																			{ $$ = $1; }
-	| IDENTIFIER																	{ $$ = make_ni_ast_node_variable_lookup((ni_ast_location){}, $1); }
-	| IDENTIFIER OPENPAR CLOSEPAR													{ $$ = make_ni_ast_node_function_call((ni_ast_location){}, $1, NULL); }
-	| IDENTIFIER OPENPAR call_args CLOSEPAR											{ $$ = make_ni_ast_node_function_call((ni_ast_location){}, $1, $3); }
+	| IDENTIFIER																	{ $$ = make_ni_ast_node_variable_lookup((ni_ast_location){}, $1); free($1); }
+	| IDENTIFIER OPENPAR CLOSEPAR													{ $$ = make_ni_ast_node_function_call((ni_ast_location){}, $1, NULL); free($1); }
+	| IDENTIFIER OPENPAR call_args CLOSEPAR											{ $$ = make_ni_ast_node_function_call((ni_ast_location){}, $1, $3); free($1); }
 	| expr PLUS expr																{ $$ = make_ni_ast_node_bin_op((ni_ast_location){}, NI_AST_OPERATOR_PLUS, $1, $3); }
 	| expr MINUS expr																{ $$ = make_ni_ast_node_bin_op((ni_ast_location){}, NI_AST_OPERATOR_MINUS, $1, $3); }
 	| expr MULTIPLY expr															{ $$ = make_ni_ast_node_bin_op((ni_ast_location){}, NI_AST_OPERATOR_MULTIPLY, $1, $3); }
@@ -100,7 +100,7 @@ typedef :
 	;
 
 const :
-	NUMBER																			{ $$ = make_ni_ast_node_int_const((ni_ast_location){}, $1); }
+	NUMBER																			{ $$ = make_ni_ast_node_int_const((ni_ast_location){}, $1); free($1); }
 	;
 
 %%
