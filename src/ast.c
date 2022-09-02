@@ -5,7 +5,6 @@
 #include "parser.tab.h"
 
 extern ni_ast_node_list *parsed_ast;
-extern FILE *yyin;
 
 ni_ast_node *make_ni_ast_node_int_const(ni_ast_location loc,
                                         const char *value) {
@@ -167,6 +166,7 @@ void free_ni_ast_node(ni_ast_node *node) {
     break;
   }
 
+  free(node->location.file);
   free(node);
 }
 
@@ -205,13 +205,4 @@ void free_ni_ast_node_list(ni_ast_node_list *list) {
     cur->head = next;
   }
   free(list);
-}
-
-int ni_ast_parse(FILE *file, ni_ast_node_list **out) {
-  yyin = file;
-  if (yyparse() != 0) {
-    return 1;
-  }
-  *out = parsed_ast;
-  return 0;
 }

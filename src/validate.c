@@ -184,15 +184,15 @@ int ni_ast_validate_node_bin_op(ni_ast_node *ast_node) {
 }
 
 int ni_ast_validate_node_call(ni_ast_node *ast_node) {
-  int ret = 0;
   symbol_value *callee_fun =
       get_symbol_table(fn_validate_table, ast_node->function_call.identifier);
   if (callee_fun == NULL) {
     log_validation_error(ast_node->location, "function '%s' not found",
                          ast_node->function_call.identifier);
-    ret = 1;
+    return 1;
   }
 
+  int ret = 0;
   if ((ast_node->function_call.argument_list == NULL ||
        ast_node->function_call.argument_list->count == 0) &&
       callee_fun->node->function_declaration.argument_list != NULL &&
