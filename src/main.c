@@ -5,6 +5,7 @@
 #include "log.h"
 #include "ni/ast.h"
 #include "ni/codegen.h"
+#include "ni/parser.h"
 #include "ni/validate.h"
 
 int main(int argc, char *argv[]) {
@@ -41,15 +42,8 @@ int main(int argc, char *argv[]) {
     return 1;
   }
 
-  FILE *file = fopen(inputfile, "r");
-  if (file == NULL) {
-    log_error("Could not open file %s\n", inputfile);
-    return 1;
-  }
-
   ni_ast_node_list *ast;
-  int ret = ni_ast_parse(file, &ast);
-  fclose(file);
+  int ret = ni_ast_parse(inputfile, &ast);
   if (ret != 0) {
     log_error("Could not parse file %s\n", inputfile);
     return ret;
