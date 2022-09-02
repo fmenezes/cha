@@ -5,8 +5,8 @@
 #include "log.h"
 #include "ni/ast.h"
 #include "ni/codegen.h"
-#include "ni/validate.h"
 #include "ni/parser.h"
+#include "ni/validate.h"
 
 int main(int argc, char *argv[]) {
   if (argc == 2 && strcmp(argv[1], "--version") == 0) {
