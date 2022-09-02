@@ -18,7 +18,5 @@ RUN cd /app/build && ctest --output-on-failure && cd /app && ./scripts/test.sh
 
 FROM ubuntu
 RUN apt-get update && apt-get install build-essential -y
-WORKDIR /app
-COPY examples/test.ni test.ni
 COPY --from=builder /app/build/ni /usr/local/bin/ni
-RUN ni -c test.o test.ni && cc -o test test.o && rm test.ni test.o && ./test
+CMD ["/usr/local/bin/ni"]

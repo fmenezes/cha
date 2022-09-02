@@ -8,12 +8,18 @@
 #include "ni/validate.h"
 
 int main(int argc, char *argv[]) {
+  if (argc == 2 && strcmp(argv[1], "--version") == 0) {
+    fprintf(stderr, "%s %s\n", CMAKE_PROJECT_NAME, CMAKE_PROJECT_VERSION);
+    return 0;
+  }
+
   if (argc != 4) {
-    log_error("Usage: %s <format> <outputfile> <inputfile>\n", argv[0]);
-    log_error("format: -s for Assembly Code\n");
-    log_error("format: -c for Object File\n");
-    log_error("format: -ll for LLVM IR\n");
-    log_error("format: -o for Binary File\n");
+    fprintf(stderr, "Usage: --version | %s <format> <outputfile> <inputfile>\n",
+            argv[0]);
+    fprintf(stderr, "format: -s for Assembly Code\n");
+    fprintf(stderr, "format: -c for Object File\n");
+    fprintf(stderr, "format: -ll for LLVM IR\n");
+    fprintf(stderr, "format: -o for Binary File\n");
     return 1;
   }
 
