@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.2.0)
 project(ni VERSION 0.0.1 LANGUAGES CXX C)
 
+add_definitions(-DCMAKE_PROJECT_NAME="${CMAKE_PROJECT_NAME}" -DCMAKE_PROJECT_VERSION="${CMAKE_PROJECT_VERSION}")
+
 include(CTest)
 enable_testing()
 
