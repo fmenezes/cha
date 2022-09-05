@@ -303,7 +303,7 @@ int ni_ast_codegen(ni_ast_node_list *ast, enum ni_ast_codegen_format format,
     if (format == NI_CODEGEN_FORMAT_ASSEMBLY_FILE) {
       gen_type = LLVMAssemblyFile;
     }
-    char *obj_file_path = (char*)file_path;
+    char *obj_file_path = (char *)file_path;
     if (format == NI_CODEGEN_FORMAT_BINARY_FILE) {
       obj_file_path = malloc(strlen(file_path) + 3);
       sprintf(obj_file_path, "%s.o", file_path);

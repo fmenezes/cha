@@ -8,6 +8,7 @@ int ni_validate_node_list(ni_ast_node_list *ast);
 int ni_validate_node(ni_ast_node *ast_node);
 int ni_validate_node_fun(ni_ast_node *ast_node);
 int ni_validate_node_var(ni_ast_node *ast_node);
+int ni_validate_node_arg(ni_ast_node *ast_node);
 int ni_validate_node_var_assign(ni_ast_node *ast_node);
 int ni_validate_node_var_lookup(ni_ast_node *ast_node);
 int ni_validate_node_bin_op(ni_ast_node *ast_node);
@@ -97,9 +98,13 @@ int ni_validate_node(ni_ast_node *ast_node) {
     return ni_validate_node_call(ast_node);
   case NI_AST_TYPE_FUNCTION_RETURN:
     return ni_validate_node_ret(ast_node);
+  case NI_AST_TYPE_ARGUMENT:
+    return ni_validate_node_arg(ast_node);
+  case NI_AST_TYPE_INT_CONSTANT:
+  case NI_AST_TYPE_INT_TYPE:
+  default:
+    return 0; //no validation
   }
-
-  return 0;
 }
 
 int ni_validate_node_fun(ni_ast_node *ast_node) {
@@ -107,23 +112,7 @@ int ni_validate_node_fun(ni_ast_node *ast_node) {
 
   fun = ast_node;
 
-  int ret = 0;
-
-  if (ast_node->function_declaration.argument_list != NULL) {
-    ni_ast_node_list_entry *arg =
-        ast_node->function_declaration.argument_list->head;
-    while (arg != NULL) {
-      ret = insert_symbol_table(var_validate_table,
-                                arg->node->argument.identifier, arg->node, NULL,
-                                NULL);
-      if (ret != 0) {
-        log_validation_error(arg->node->location,
-                             "argument '%s' already defined",
-                             arg->node->argument.identifier);
-      }
-      arg = arg->next;
-    }
-  }
+  int ret = ni_validate_node_list(ast_node->function_declaration.argument_list);
 
   int ret_block = ni_validate_node_list(ast_node->function_declaration.block);
   if (ret_block != 0) {
@@ -141,6 +130,17 @@ int ni_validate_node_var(ni_ast_node *ast_node) {
   if (ret != 0) {
     log_validation_error(ast_node->location, "variable '%s' already defined",
                          ast_node->variable_declaration.identifier);
+  }
+  return ret;
+}
+
+int ni_validate_node_arg(ni_ast_node *ast_node) {
+  int ret = insert_symbol_table(var_validate_table,
+                                ast_node->argument.identifier,
+                                ast_node, NULL, NULL);
+  if (ret != 0) {
+    log_validation_error(ast_node->location, "argument '%s' already defined",
+                         ast_node->argument.identifier);
   }
   return ret;
 }
