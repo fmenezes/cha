@@ -15,7 +15,7 @@ int yycolumn = 1;
 %option noyywrap yylineno
 
 /* RegEx */
-number -?[0-9]+
+number -?[0-9]+|0[xX][0-9A-Fa-f]+
 identifier [_a-zA-Z][_a-zA-Z0-9]{0,31}
 %%
 "var" {
