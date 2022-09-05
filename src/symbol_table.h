@@ -22,9 +22,9 @@ typedef struct symbol_entry symbol_entry;
 typedef struct symbol_value symbol_value;
 
 symbol_table *make_symbol_table(int size);
-void insert_symbol_table(symbol_table *table, char *key, ni_ast_node *node,
-                         LLVMValueRef ref, LLVMTypeRef type);
-symbol_value *get_symbol_table(symbol_table *table, char *key);
+int insert_symbol_table(symbol_table *table, const char *key, ni_ast_node *node,
+                        LLVMValueRef ref, LLVMTypeRef type);
+symbol_value *get_symbol_table(symbol_table *table, const char *key);
 void free_symbol_table(symbol_table *table);
 
 struct symbol_entry_list {

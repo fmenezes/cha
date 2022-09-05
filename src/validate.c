@@ -3,37 +3,38 @@
 #include "ni/ast.h"
 #include "symbol_table.h"
 
-int ni_ast_validate_function_list(ni_ast_node_list *ast);
-int ni_ast_validate_node_list(ni_ast_node_list *ast);
-int ni_ast_validate_node(ni_ast_node *ast_node);
-int ni_ast_validate_function_declaration(ni_ast_node *ast_node);
-int ni_ast_validate_node_var(ni_ast_node *ast_node);
-int ni_ast_validate_node_var_assign(ni_ast_node *ast_node);
-int ni_ast_validate_node_var_lookup(ni_ast_node *ast_node);
-int ni_ast_validate_node_bin_op(ni_ast_node *ast_node);
-int ni_ast_validate_node_call(ni_ast_node *ast_node);
-int ni_ast_validate_node_ret(ni_ast_node *ast_node);
+int ni_validate_function_list(ni_ast_node_list *ast);
+int ni_validate_node_list(ni_ast_node_list *ast);
+int ni_validate_node(ni_ast_node *ast_node);
+int ni_validate_node_fun(ni_ast_node *ast_node);
+int ni_validate_node_var(ni_ast_node *ast_node);
+int ni_validate_node_arg(ni_ast_node *ast_node);
+int ni_validate_node_var_assign(ni_ast_node *ast_node);
+int ni_validate_node_var_lookup(ni_ast_node *ast_node);
+int ni_validate_node_bin_op(ni_ast_node *ast_node);
+int ni_validate_node_call(ni_ast_node *ast_node);
+int ni_validate_node_ret(ni_ast_node *ast_node);
 
 symbol_table *fn_validate_table = NULL;
 symbol_table *var_validate_table = NULL;
 ni_ast_node *fun = NULL;
 
-int ni_ast_validate(ni_ast_node_list *ast) {
+int ni_validate(ni_ast_node_list *ast) {
   fn_validate_table = make_symbol_table(SYMBOL_TABLE_SIZE);
 
-  int ret = ni_ast_validate_function_list(ast);
+  int ret = ni_validate_function_list(ast);
   if (ret != 0) {
     free_symbol_table(fn_validate_table);
     return ret;
   }
 
-  ret = ni_ast_validate_node_list(ast);
+  ret = ni_validate_node_list(ast);
 
   free_symbol_table(fn_validate_table);
   return ret;
 }
 
-int ni_ast_validate_function_list(ni_ast_node_list *ast) {
+int ni_validate_function_list(ni_ast_node_list *ast) {
   int ret = 0;
   ni_ast_node_list_entry *ast_current_node = ast->head;
   while (ast_current_node != NULL) {
@@ -41,26 +42,24 @@ int ni_ast_validate_function_list(ni_ast_node_list *ast) {
       log_validation_error(ast_current_node->node->location,
                            "expected function declaration");
       ret = 1;
-    } else if (get_symbol_table(
-                   fn_validate_table,
-                   ast_current_node->node->function_declaration.identifier) !=
-               NULL) {
-      log_validation_error(
-          ast_current_node->node->location, "function '%s' already defined",
-          ast_current_node->node->function_declaration.identifier);
-      ret = 1;
     } else {
-      insert_symbol_table(
+      ret = insert_symbol_table(
           fn_validate_table,
           ast_current_node->node->function_declaration.identifier,
           ast_current_node->node, NULL, NULL);
+
+      if (ret != 0) {
+        log_validation_error(
+            ast_current_node->node->location, "function '%s' already defined",
+            ast_current_node->node->function_declaration.identifier);
+      }
     }
     ast_current_node = ast_current_node->next;
   }
   return ret;
 }
 
-int ni_ast_validate_node_list(ni_ast_node_list *ast) {
+int ni_validate_node_list(ni_ast_node_list *ast) {
   if (ast == NULL) {
     return 0;
   }
@@ -68,7 +67,7 @@ int ni_ast_validate_node_list(ni_ast_node_list *ast) {
   int ret = 0;
   ni_ast_node_list_entry *ast_current_node = ast->head;
   while (ast_current_node != NULL) {
-    ret = ni_ast_validate_node(ast_current_node->node);
+    ret = ni_validate_node(ast_current_node->node);
     if (ret != 0) {
       return ret;
     }
@@ -77,60 +76,45 @@ int ni_ast_validate_node_list(ni_ast_node_list *ast) {
   return ret;
 }
 
-int ni_ast_validate_node(ni_ast_node *ast_node) {
+int ni_validate_node(ni_ast_node *ast_node) {
   if (ast_node == NULL) {
     return 0;
   }
 
   switch (ast_node->type) {
   case NI_AST_TYPE_FUNCTION_DECLARATION:
-    return ni_ast_validate_function_declaration(ast_node);
+    return ni_validate_node_fun(ast_node);
   case NI_AST_TYPE_BLOCK:
-    return ni_ast_validate_node_list(ast_node->block);
+    return ni_validate_node_list(ast_node->block);
   case NI_AST_TYPE_VARIABLE_DECLARATION:
-    return ni_ast_validate_node_var(ast_node);
+    return ni_validate_node_var(ast_node);
   case NI_AST_TYPE_BIN_OP:
-    return ni_ast_validate_node_bin_op(ast_node);
+    return ni_validate_node_bin_op(ast_node);
   case NI_AST_TYPE_VARIABLE_ASSIGNMENT:
-    return ni_ast_validate_node_var_assign(ast_node);
+    return ni_validate_node_var_assign(ast_node);
   case NI_AST_TYPE_VARIABLE_LOOKUP:
-    return ni_ast_validate_node_var_lookup(ast_node);
+    return ni_validate_node_var_lookup(ast_node);
   case NI_AST_TYPE_FUNCTION_CALL:
-    return ni_ast_validate_node_call(ast_node);
+    return ni_validate_node_call(ast_node);
   case NI_AST_TYPE_FUNCTION_RETURN:
-    return ni_ast_validate_node_ret(ast_node);
+    return ni_validate_node_ret(ast_node);
+  case NI_AST_TYPE_ARGUMENT:
+    return ni_validate_node_arg(ast_node);
+  case NI_AST_TYPE_INT_CONSTANT:
+  case NI_AST_TYPE_INT_TYPE:
+  default:
+    return 0; // no validation
   }
-
-  return 0;
 }
 
-int ni_ast_validate_function_declaration(ni_ast_node *ast_node) {
+int ni_validate_node_fun(ni_ast_node *ast_node) {
   var_validate_table = make_symbol_table(SYMBOL_TABLE_SIZE);
 
   fun = ast_node;
 
-  int ret = 0;
+  int ret = ni_validate_node_list(ast_node->function_declaration.argument_list);
 
-  if (ast_node->function_declaration.argument_list != NULL) {
-    ni_ast_node_list_entry *arg =
-        ast_node->function_declaration.argument_list->head;
-    while (arg != NULL) {
-      if (get_symbol_table(var_validate_table,
-                           arg->node->argument.identifier) != NULL) {
-        free_symbol_table(var_validate_table);
-        log_validation_error(arg->node->location, "duplicate argument '%s'",
-                             arg->node->argument.identifier);
-        ret = 1;
-      } else {
-        insert_symbol_table(var_validate_table, arg->node->argument.identifier,
-                            arg->node, NULL, NULL);
-      }
-      arg = arg->next;
-    }
-  }
-
-  int ret_block =
-      ni_ast_validate_node_list(ast_node->function_declaration.block);
+  int ret_block = ni_validate_node_list(ast_node->function_declaration.block);
   if (ret_block != 0) {
     ret = ret_block;
   }
@@ -139,21 +123,28 @@ int ni_ast_validate_function_declaration(ni_ast_node *ast_node) {
   return ret;
 }
 
-int ni_ast_validate_node_var(ni_ast_node *ast_node) {
-  if (get_symbol_table(var_validate_table,
-                       ast_node->variable_declaration.identifier) != NULL) {
-    log_validation_error(ast_node->location, "duplicate variable '%s'",
+int ni_validate_node_var(ni_ast_node *ast_node) {
+  int ret = insert_symbol_table(var_validate_table,
+                                ast_node->variable_declaration.identifier,
+                                ast_node, NULL, NULL);
+  if (ret != 0) {
+    log_validation_error(ast_node->location, "variable '%s' already defined",
                          ast_node->variable_declaration.identifier);
-    return 1;
-  } else {
-    insert_symbol_table(var_validate_table,
-                        ast_node->variable_declaration.identifier, ast_node,
-                        NULL, NULL);
   }
-  return 0;
+  return ret;
 }
 
-int ni_ast_validate_node_var_assign(ni_ast_node *ast_node) {
+int ni_validate_node_arg(ni_ast_node *ast_node) {
+  int ret = insert_symbol_table(
+      var_validate_table, ast_node->argument.identifier, ast_node, NULL, NULL);
+  if (ret != 0) {
+    log_validation_error(ast_node->location, "argument '%s' already defined",
+                         ast_node->argument.identifier);
+  }
+  return ret;
+}
+
+int ni_validate_node_var_assign(ni_ast_node *ast_node) {
   if (get_symbol_table(var_validate_table,
                        ast_node->variable_assignment.identifier) == NULL) {
     log_validation_error(ast_node->location, "variable '%s' not found",
@@ -161,10 +152,10 @@ int ni_ast_validate_node_var_assign(ni_ast_node *ast_node) {
     return 1;
   }
 
-  return ni_ast_validate_node(ast_node->variable_assignment.value);
+  return ni_validate_node(ast_node->variable_assignment.value);
 }
 
-int ni_ast_validate_node_var_lookup(ni_ast_node *ast_node) {
+int ni_validate_node_var_lookup(ni_ast_node *ast_node) {
   if (get_symbol_table(var_validate_table,
                        ast_node->variable_lookup.identifier) == NULL) {
     log_validation_error(ast_node->location, "variable '%s' not found",
@@ -174,16 +165,16 @@ int ni_ast_validate_node_var_lookup(ni_ast_node *ast_node) {
   return 0;
 }
 
-int ni_ast_validate_node_bin_op(ni_ast_node *ast_node) {
-  int ret_left = ni_ast_validate_node(ast_node->bin_op.left);
-  int ret_right = ni_ast_validate_node(ast_node->bin_op.right);
+int ni_validate_node_bin_op(ni_ast_node *ast_node) {
+  int ret_left = ni_validate_node(ast_node->bin_op.left);
+  int ret_right = ni_validate_node(ast_node->bin_op.right);
   if (ret_left != 0 || ret_right != 0) {
     return 1;
   }
   return 0;
 }
 
-int ni_ast_validate_node_call(ni_ast_node *ast_node) {
+int ni_validate_node_call(ni_ast_node *ast_node) {
   symbol_value *callee_fun =
       get_symbol_table(fn_validate_table, ast_node->function_call.identifier);
   if (callee_fun == NULL) {
@@ -218,7 +209,7 @@ int ni_ast_validate_node_call(ni_ast_node *ast_node) {
         ni_ast_node_list_entry *arg =
             ast_node->function_call.argument_list->head;
         while (arg != NULL) {
-          int ret_arg = ni_ast_validate_node(arg->node);
+          int ret_arg = ni_validate_node(arg->node);
           if (ret_arg != 0) {
             ret = ret_arg;
           }
@@ -231,8 +222,8 @@ int ni_ast_validate_node_call(ni_ast_node *ast_node) {
   return ret;
 }
 
-int ni_ast_validate_node_ret(ni_ast_node *ast_node) {
-  int ret = ni_ast_validate_node(ast_node->function_return.value);
+int ni_validate_node_ret(ni_ast_node *ast_node) {
+  int ret = ni_validate_node(ast_node->function_return.value);
 
   if (ast_node->function_return.value == NULL &&
       fun->function_declaration.return_type != NULL) {

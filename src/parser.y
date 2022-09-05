@@ -126,7 +126,7 @@ ni_ast_location convert_location(YYLTYPE start, YYLTYPE end) {
   return location;
 }
 
-int ni_ast_parse(const char *file, ni_ast_node_list **out) {
+int ni_parse(const char *file, ni_ast_node_list **out) {
   current_file = file;
   FILE *f = fopen(file, "r");
   if (f == NULL) {
