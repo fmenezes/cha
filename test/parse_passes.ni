@@ -1,3 +1,3 @@
 fun main() int {
-  ret 0
+  ret 0x0
 }
