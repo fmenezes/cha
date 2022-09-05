@@ -1,5 +1,5 @@
-#ifndef __NIC_AST_H__
-#define __NIC_AST_H__
+#ifndef __NI_AST_H__
+#define __NI_AST_H__
 
 #ifdef __cplusplus
 extern "C" {
@@ -133,4 +133,4 @@ void free_ni_ast_node_list(ni_ast_node_list *list);
 }
 #endif
 
-#endif // __NIC_AST_H__
+#endif // __NI_AST_H__

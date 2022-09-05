@@ -1,5 +1,5 @@
-#ifndef __NIC_VALIDATE_H__
-#define __NIC_VALIDATE_H__
+#ifndef __NI_VALIDATE_H__
+#define __NI_VALIDATE_H__
 
 #ifdef __cplusplus
 extern "C" {
@@ -13,4 +13,4 @@ int ni_ast_validate(ni_ast_node_list *ast);
 }
 #endif
 
-#endif // __NIC_VALIDATE_H__
+#endif // __NI_VALIDATE_H__

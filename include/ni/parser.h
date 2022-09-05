@@ -1,5 +1,5 @@
-#ifndef __NIC_AST_PARSER_H__
-#define __NIC_AST_PARSER_H__
+#ifndef __NI_AST_PARSER_H__
+#define __NI_AST_PARSER_H__
 
 #ifdef __cplusplus
 extern "C" {
@@ -15,4 +15,4 @@ int ni_ast_parse(const char *file, ni_ast_node_list **out);
 }
 #endif
 
-#endif // __NIC_AST_PARSER_H__
+#endif // __NI_AST_PARSER_H__
