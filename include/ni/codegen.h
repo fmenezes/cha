@@ -8,17 +8,15 @@ extern "C" {
 #include "ni/ast.h"
 #include <stdio.h>
 
-enum ni_ast_codegen_format {
-  LLVM_IR,
-  ASSEMBLY,
-  OBJECT_FILE,
-  BINARY_FILE,
-};
-
-typedef enum ni_ast_codegen_format ni_ast_codegen_format;
+typedef enum ni_ast_codegen_format {
+  NI_CODEGEN_FORMAT_LLVM_IR,
+  NI_CODEGEN_FORMAT_ASSEMBLY_FILE,
+  NI_CODEGEN_FORMAT_OBJECT_FILE,
+  NI_CODEGEN_FORMAT_BINARY_FILE,
+} ni_ast_codegen_format;
 
 int ni_ast_codegen(ni_ast_node_list *ast, ni_ast_codegen_format format,
-                   char *file_path);
+                   const char *file_path);
 
 #ifdef __cplusplus
 }

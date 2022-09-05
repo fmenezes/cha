@@ -3,7 +3,7 @@
 
 #include "symbol_table.h"
 
-int hash_function(char *str) {
+int hash_function(const char *str) {
   int hash = 5381;
   int c;
   while ((c = *str++)) {
@@ -23,11 +23,19 @@ symbol_table *make_symbol_table(int size) {
   return table;
 }
 
-void insert_symbol_table(symbol_table *table, char *key, ni_ast_node *node,
+int insert_symbol_table(symbol_table *table, const char *key, ni_ast_node *node,
                          LLVMValueRef ref, LLVMTypeRef type) {
   int index = hash_function(key) % table->size;
-  symbol_entry *entry = malloc(sizeof(symbol_entry));
-  entry->key = key;
+  symbol_entry *entry = table->entries[index].head;
+  while (entry != NULL) {
+    if (strcmp(entry->key, key) == 0) {
+      return 1;
+    }
+    entry = entry->next;
+  }
+
+  entry = malloc(sizeof(symbol_entry));
+  entry->key = strdup(key);
   entry->next = NULL;
   entry->value = malloc(sizeof(symbol_value));
   entry->value->node = node;
@@ -40,9 +48,10 @@ void insert_symbol_table(symbol_table *table, char *key, ni_ast_node *node,
     table->entries[index].tail->next = entry;
     table->entries[index].tail = entry;
   }
+  return 0;
 }
 
-symbol_value *get_symbol_table(symbol_table *table, char *key) {
+symbol_value *get_symbol_table(symbol_table *table, const char *key) {
   int index = hash_function(key) % table->size;
   symbol_entry *entry = table->entries[index].head;
   while (entry != NULL) {
@@ -62,6 +71,7 @@ void free_symbol_table(symbol_table *table) {
     symbol_entry *entry = table->entries[i].head;
     while (entry != NULL) {
       symbol_entry *next = entry->next;
+      free(entry->key);
       free(entry->value);
       free(entry);
       entry = next;

@@ -7,7 +7,7 @@ extern "C" {
 
 #include "ni/ast.h"
 
-int ni_ast_validate(ni_ast_node_list *ast);
+int ni_validate(ni_ast_node_list *ast);
 
 #ifdef __cplusplus
 }

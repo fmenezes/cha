@@ -30,26 +30,26 @@ int main(int argc, char *argv[]) {
 
   ni_ast_codegen_format codegen_format;
   if (strcmp(format, "-s") == 0) {
-    codegen_format = ASSEMBLY;
+    codegen_format = NI_CODEGEN_FORMAT_ASSEMBLY_FILE;
   } else if (strcmp(format, "-c") == 0) {
-    codegen_format = OBJECT_FILE;
+    codegen_format = NI_CODEGEN_FORMAT_OBJECT_FILE;
   } else if (strcmp(format, "-ll") == 0) {
-    codegen_format = LLVM_IR;
+    codegen_format = NI_CODEGEN_FORMAT_LLVM_IR;
   } else if (strcmp(format, "-o") == 0) {
-    codegen_format = BINARY_FILE;
+    codegen_format = NI_CODEGEN_FORMAT_BINARY_FILE;
   } else {
     log_error("Invalid format: %s\n", format);
     return 1;
   }
 
   ni_ast_node_list *ast;
-  int ret = ni_ast_parse(inputfile, &ast);
+  int ret = ni_parse(inputfile, &ast);
   if (ret != 0) {
     log_error("Could not parse file %s\n", inputfile);
     return ret;
   }
 
-  ret = ni_ast_validate(ast);
+  ret = ni_validate(ast);
   if (ret != 0) {
     return ret;
   }
