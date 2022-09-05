@@ -103,7 +103,7 @@ int ni_validate_node(ni_ast_node *ast_node) {
   case NI_AST_TYPE_INT_CONSTANT:
   case NI_AST_TYPE_INT_TYPE:
   default:
-    return 0; //no validation
+    return 0; // no validation
   }
 }
 
@@ -135,9 +135,8 @@ int ni_validate_node_var(ni_ast_node *ast_node) {
 }
 
 int ni_validate_node_arg(ni_ast_node *ast_node) {
-  int ret = insert_symbol_table(var_validate_table,
-                                ast_node->argument.identifier,
-                                ast_node, NULL, NULL);
+  int ret = insert_symbol_table(
+      var_validate_table, ast_node->argument.identifier, ast_node, NULL, NULL);
   if (ret != 0) {
     log_validation_error(ast_node->location, "argument '%s' already defined",
                          ast_node->argument.identifier);
