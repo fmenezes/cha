@@ -101,7 +101,16 @@ int ni_validate_node(ni_ast_node *ast_node) {
   case NI_AST_TYPE_ARGUMENT:
     return ni_validate_node_arg(ast_node);
   case NI_AST_TYPE_CONSTANT_NUMBER:
-  case NI_AST_TYPE_DEFTYPE_INT:
+  case NI_AST_TYPE_REFTYPE_BYTE:
+  case NI_AST_TYPE_REFTYPE_SBYTE:
+  case NI_AST_TYPE_REFTYPE_INT:
+  case NI_AST_TYPE_REFTYPE_UINT:
+  case NI_AST_TYPE_REFTYPE_SHORT:
+  case NI_AST_TYPE_REFTYPE_USHORT:
+  case NI_AST_TYPE_REFTYPE_LONG:
+  case NI_AST_TYPE_REFTYPE_ULONG:
+  case NI_AST_TYPE_REFTYPE_LARGE:
+  case NI_AST_TYPE_REFTYPE_ULARGE:
   default:
     return 0; // no validation
   }

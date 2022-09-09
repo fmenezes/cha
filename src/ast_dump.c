@@ -60,8 +60,35 @@ void ni_ast_dump_node(FILE *out, const ni_ast_node *node) {
   case NI_AST_TYPE_BLOCK:
     ni_ast_dump(out, node->block);
     break;
-  case NI_AST_TYPE_DEFTYPE_INT:
+  case NI_AST_TYPE_REFTYPE_BYTE:
+    fprintf(out, "\"byte\"");
+    break;
+  case NI_AST_TYPE_REFTYPE_SBYTE:
+    fprintf(out, "\"sbyte\"");
+    break;
+  case NI_AST_TYPE_REFTYPE_SHORT:
+    fprintf(out, "\"short\"");
+    break;
+  case NI_AST_TYPE_REFTYPE_USHORT:
+    fprintf(out, "\"ushort\"");
+    break;
+  case NI_AST_TYPE_REFTYPE_INT:
     fprintf(out, "\"int\"");
+    break;
+  case NI_AST_TYPE_REFTYPE_UINT:
+    fprintf(out, "\"uint\"");
+    break;
+  case NI_AST_TYPE_REFTYPE_LONG:
+    fprintf(out, "\"long\"");
+    break;
+  case NI_AST_TYPE_REFTYPE_ULONG:
+    fprintf(out, "\"ulong\"");
+    break;
+  case NI_AST_TYPE_REFTYPE_LARGE:
+    fprintf(out, "\"large\"");
+    break;
+  case NI_AST_TYPE_REFTYPE_ULARGE:
+    fprintf(out, "\"ularge\"");
     break;
   case NI_AST_TYPE_FUNCTION_CALL:
     fprintf(out, "{\"call\":{\"identifier\":\"%s\",\"params\":",
