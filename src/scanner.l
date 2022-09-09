@@ -31,7 +31,7 @@ identifier [_a-zA-Z][_a-zA-Z0-9]{0,31}
 }
 
 "int" {
-	return INT;
+	return DEFTYPE_INT;
 }
 
 {identifier} {

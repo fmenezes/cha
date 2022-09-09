@@ -47,9 +47,7 @@ struct ni_ast_node {
   ni_ast_type type;
   ni_ast_location location;
   union {
-    struct {
-      char *value;
-    } int_const;
+    char *const_value;
     struct {
       ni_ast_operator op;
       ni_ast_node *left;

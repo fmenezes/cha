@@ -14,7 +14,7 @@ int initialize_modules(const char *module_id);
 void free_modules();
 int ni_ast_codegen_toplevel(ni_ast_node_list *ast);
 int ni_ast_codegen_node(ni_ast_node *ast_node);
-int ni_ast_codegen_node_constant_int(ni_ast_node *ast_node);
+int ni_ast_codegen_node_constant_number(ni_ast_node *ast_node);
 int ni_ast_codegen_node_bin_op(ni_ast_node *ast_node);
 int ni_ast_codegen_node_var(ni_ast_node *ast_node);
 int ni_ast_codegen_node_var_assign(ni_ast_node *ast_node);
@@ -24,6 +24,7 @@ int ni_ast_codegen_node_call(ni_ast_node *ast_node);
 int ni_ast_codegen_node_fun(ni_ast_node *ast_node);
 int ni_ast_codegen_block(ni_ast_node_list *block);
 LLVMTypeRef make_fun_signature(ni_ast_node *ast_node);
+LLVMTypeRef make_type(ni_ast_node *ast_node);
 
 LLVMContextRef context = NULL;
 LLVMModuleRef module = NULL;
@@ -42,7 +43,7 @@ int ni_ast_codegen_node(ni_ast_node *ast_node) {
   }
   switch (ast_node->type) {
   case NI_AST_TYPE_CONSTANT_NUMBER:
-    return ni_ast_codegen_node_constant_int(ast_node);
+    return ni_ast_codegen_node_constant_number(ast_node);
   case NI_AST_TYPE_BIN_OP:
     return ni_ast_codegen_node_bin_op(ast_node);
   case NI_AST_TYPE_VARIABLE_DECLARATION:
@@ -92,13 +93,13 @@ int ni_ast_codegen_toplevel(ni_ast_node_list *ast) {
   return 0;
 }
 
-int ni_ast_codegen_node_constant_int(ni_ast_node *ast_node) {
+int ni_ast_codegen_node_constant_number(ni_ast_node *ast_node) {
   long long value = 0;
-  if (strncmp("0x", ast_node->int_const.value, 2) == 0 ||
-      strncmp("0X", ast_node->int_const.value, 2) == 0) {
-    value = strtoll(ast_node->int_const.value, NULL, 16);
+  if (strncmp("0x", ast_node->const_value, 2) == 0 ||
+      strncmp("0X", ast_node->const_value, 2) == 0) {
+    value = strtoll(ast_node->const_value, NULL, 16);
   } else {
-    value = strtoll(ast_node->int_const.value, NULL, 10);
+    value = strtoll(ast_node->const_value, NULL, 10);
   }
 
   return_operand = LLVMConstInt(LLVMInt32TypeInContext(context), value, 1);
@@ -133,14 +134,13 @@ int ni_ast_codegen_node_bin_op(ni_ast_node *ast_node) {
 }
 
 int ni_ast_codegen_node_var(ni_ast_node *ast_node) {
-  LLVMTypeRef type = LLVMInt32TypeInContext(context);
+  LLVMTypeRef type = make_type(ast_node->argument.type);
 
   LLVMValueRef addr =
       LLVMBuildAlloca(builder, type, ast_node->variable_declaration.identifier);
 
-  insert_symbol_table(var_table, ast_node->variable_declaration.identifier,
+  return insert_symbol_table(var_table, ast_node->variable_declaration.identifier,
                       ast_node, addr, type);
-  return 0;
 }
 
 int ni_ast_codegen_node_var_assign(ni_ast_node *ast_node) {
@@ -348,16 +348,14 @@ LLVMTypeRef make_fun_signature(ni_ast_node *ast_node) {
         ast_node->function_declaration.argument_list->head;
     int i = 0;
     while (current != NULL) {
-      arg_types[i] = LLVMInt32TypeInContext(context);
+      LLVMTypeRef arg_type = make_type(current->node->argument.type);
+      arg_types[i] = arg_type;
       current = current->next;
       i++;
     }
   }
 
-  LLVMTypeRef return_type = LLVMVoidType();
-  if (ast_node->function_declaration.return_type != NULL) {
-    return_type = LLVMInt32TypeInContext(context);
-  }
+  LLVMTypeRef return_type = make_type(ast_node->function_declaration.return_type);
 
   LLVMTypeRef ret = LLVMFunctionType(return_type, arg_types, arg_count, 0);
 
@@ -418,4 +416,12 @@ void free_modules() {
   LLVMDisposeModule(module);
   LLVMContextDispose(context);
   free_symbol_table(fn_table);
+}
+
+LLVMTypeRef make_type(ni_ast_node *ast_node) {
+  if (ast_node == NULL) {
+    return LLVMVoidTypeInContext(context);
+  }
+
+  return LLVMInt32TypeInContext(context);
 }
