@@ -13,7 +13,7 @@ void ni_ast_dump_node(FILE *out, const ni_ast_node *node) {
   }
 
   switch (node->type) {
-  case NI_AST_TYPE_INT_CONSTANT:
+  case NI_AST_TYPE_CONSTANT_NUMBER:
     fprintf(out, "{\"const_int\":%s}", node->int_const.value);
     break;
   case NI_AST_TYPE_BIN_OP:
@@ -60,7 +60,7 @@ void ni_ast_dump_node(FILE *out, const ni_ast_node *node) {
   case NI_AST_TYPE_BLOCK:
     ni_ast_dump(out, node->block);
     break;
-  case NI_AST_TYPE_INT_TYPE:
+  case NI_AST_TYPE_DEFTYPE_INT:
     fprintf(out, "\"int\"");
     break;
   case NI_AST_TYPE_FUNCTION_CALL:

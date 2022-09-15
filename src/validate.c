@@ -100,8 +100,8 @@ int ni_validate_node(ni_ast_node *ast_node) {
     return ni_validate_node_ret(ast_node);
   case NI_AST_TYPE_ARGUMENT:
     return ni_validate_node_arg(ast_node);
-  case NI_AST_TYPE_INT_CONSTANT:
-  case NI_AST_TYPE_INT_TYPE:
+  case NI_AST_TYPE_CONSTANT_NUMBER:
+  case NI_AST_TYPE_DEFTYPE_INT:
   default:
     return 0; // no validation
   }

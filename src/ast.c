@@ -6,18 +6,18 @@
 
 extern ni_ast_node_list *parsed_ast;
 
-ni_ast_node *make_ni_ast_node_int_const(ni_ast_location loc,
+ni_ast_node *make_ni_ast_node_constant_number(ni_ast_location loc,
                                         const char *value) {
   ni_ast_node *node = malloc(sizeof(ni_ast_node));
-  node->type = NI_AST_TYPE_INT_CONSTANT;
+  node->type = NI_AST_TYPE_CONSTANT_NUMBER;
   node->location = loc;
   node->int_const.value = strdup(value);
   return node;
 }
 
-ni_ast_node *make_ni_ast_node_int_type(ni_ast_location loc) {
+ni_ast_node *make_ni_ast_node_deftype_int(ni_ast_location loc) {
   ni_ast_node *node = malloc(sizeof(ni_ast_node));
-  node->type = NI_AST_TYPE_INT_TYPE;
+  node->type = NI_AST_TYPE_DEFTYPE_INT;
   node->location = loc;
   return node;
 }
@@ -123,7 +123,7 @@ void free_ni_ast_node(ni_ast_node *node) {
   }
 
   switch (node->type) {
-  case NI_AST_TYPE_INT_CONSTANT:
+  case NI_AST_TYPE_CONSTANT_NUMBER:
     free(node->int_const.value);
     break;
   case NI_AST_TYPE_BIN_OP:
@@ -161,7 +161,7 @@ void free_ni_ast_node(ni_ast_node *node) {
   case NI_AST_TYPE_FUNCTION_RETURN:
     free_ni_ast_node(node->function_return.value);
     break;
-  case NI_AST_TYPE_INT_TYPE:
+  case NI_AST_TYPE_DEFTYPE_INT:
     /* no additional fields to clear */
     break;
   }

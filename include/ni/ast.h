@@ -16,8 +16,8 @@ typedef struct ni_ast_location {
 } ni_ast_location;
 
 typedef enum ni_ast_type {
-  NI_AST_TYPE_INT_TYPE,
-  NI_AST_TYPE_INT_CONSTANT,
+  NI_AST_TYPE_DEFTYPE_INT,
+  NI_AST_TYPE_CONSTANT_NUMBER,
   NI_AST_TYPE_BIN_OP,
   NI_AST_TYPE_VARIABLE_DECLARATION,
   NI_AST_TYPE_VARIABLE_ASSIGNMENT,
@@ -98,8 +98,8 @@ struct ni_ast_node_list {
   ni_ast_node_list_entry *tail;
 };
 
-ni_ast_node *make_ni_ast_node_int_const(ni_ast_location loc, const char *value);
-ni_ast_node *make_ni_ast_node_int_type(ni_ast_location loc);
+ni_ast_node *make_ni_ast_node_constant_number(ni_ast_location loc, const char *value);
+ni_ast_node *make_ni_ast_node_deftype_int(ni_ast_location loc);
 ni_ast_node *make_ni_ast_node_bin_op(ni_ast_location loc, ni_ast_operator op,
                                      ni_ast_node *left, ni_ast_node *right);
 ni_ast_node *make_ni_ast_node_variable_declaration(ni_ast_location loc,
