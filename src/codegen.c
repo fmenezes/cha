@@ -139,8 +139,9 @@ int ni_ast_codegen_node_var(ni_ast_node *ast_node) {
   LLVMValueRef addr =
       LLVMBuildAlloca(builder, type, ast_node->variable_declaration.identifier);
 
-  return insert_symbol_table(var_table, ast_node->variable_declaration.identifier,
-                      ast_node, addr, type);
+  return insert_symbol_table(var_table,
+                             ast_node->variable_declaration.identifier,
+                             ast_node, addr, type);
 }
 
 int ni_ast_codegen_node_var_assign(ni_ast_node *ast_node) {
@@ -355,7 +356,8 @@ LLVMTypeRef make_fun_signature(ni_ast_node *ast_node) {
     }
   }
 
-  LLVMTypeRef return_type = make_type(ast_node->function_declaration.return_type);
+  LLVMTypeRef return_type =
+      make_type(ast_node->function_declaration.return_type);
 
   LLVMTypeRef ret = LLVMFunctionType(return_type, arg_types, arg_count, 0);
 
