@@ -11,7 +11,7 @@ ni_ast_node *make_ni_ast_node_constant_number(ni_ast_location loc,
   ni_ast_node *node = malloc(sizeof(ni_ast_node));
   node->type = NI_AST_TYPE_CONSTANT_NUMBER;
   node->location = loc;
-  node->int_const.value = strdup(value);
+  node->const_value = strdup(value);
   return node;
 }
 
@@ -124,7 +124,7 @@ void free_ni_ast_node(ni_ast_node *node) {
 
   switch (node->type) {
   case NI_AST_TYPE_CONSTANT_NUMBER:
-    free(node->int_const.value);
+    free(node->const_value);
     break;
   case NI_AST_TYPE_BIN_OP:
     free_ni_ast_node(node->bin_op.left);

@@ -29,7 +29,7 @@ ni_ast_location convert_location(YYLTYPE start, YYLTYPE end);
   ni_ast_node_list* list;
 }
 
-%token FUN OPENPAR CLOSEPAR OPENCUR CLOSECUR COMMA VAR EQUALS RET PLUS MINUS MULTIPLY INT
+%token FUN OPENPAR CLOSEPAR OPENCUR CLOSECUR COMMA VAR EQUALS RET PLUS MINUS MULTIPLY DEFTYPE_INT
 %token <str> IDENTIFIER NUMBER
 
 %nterm <list> instructions block def_args call_args statements
@@ -102,7 +102,7 @@ expr :
 	;
 
 typedef :
-	INT																				{ $$ = make_ni_ast_node_deftype_int(convert_location(@1, @1)); }
+	DEFTYPE_INT																		{ $$ = make_ni_ast_node_deftype_int(convert_location(@1, @1)); }
 	;
 
 const :
