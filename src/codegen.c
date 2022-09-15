@@ -41,7 +41,7 @@ int ni_ast_codegen_node(ni_ast_node *ast_node) {
     return 0;
   }
   switch (ast_node->type) {
-  case NI_AST_TYPE_INT_CONSTANT:
+  case NI_AST_TYPE_CONSTANT_NUMBER:
     return ni_ast_codegen_node_constant_int(ast_node);
   case NI_AST_TYPE_BIN_OP:
     return ni_ast_codegen_node_bin_op(ast_node);
@@ -59,7 +59,7 @@ int ni_ast_codegen_node(ni_ast_node *ast_node) {
     return ni_ast_codegen_node_fun(ast_node);
   case NI_AST_TYPE_BLOCK:
     return ni_ast_codegen_block(ast_node->block);
-  case NI_AST_TYPE_INT_TYPE:
+  case NI_AST_TYPE_DEFTYPE_INT:
   case NI_AST_TYPE_ARGUMENT:
     // DO NOTHING
     break;

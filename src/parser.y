@@ -102,11 +102,11 @@ expr :
 	;
 
 typedef :
-	INT																				{ $$ = make_ni_ast_node_int_type(convert_location(@1, @1)); }
+	INT																				{ $$ = make_ni_ast_node_deftype_int(convert_location(@1, @1)); }
 	;
 
 const :
-	NUMBER																			{ $$ = make_ni_ast_node_int_const(convert_location(@1, @1), $1); free($1); }
+	NUMBER																			{ $$ = make_ni_ast_node_constant_number(convert_location(@1, @1), $1); free($1); }
 	;
 
 %%

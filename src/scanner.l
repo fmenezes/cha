@@ -19,67 +19,67 @@ number -?[0-9]+|0[xX][0-9A-Fa-f]+
 identifier [_a-zA-Z][_a-zA-Z0-9]{0,31}
 %%
 "var" {
-		return VAR;
-	}
+	return VAR;
+}
 
 "fun" {
-		return FUN;
-	}
+	return FUN;
+}
 
 "ret" {
-		return RET;
-	}
+	return RET;
+}
 
 "int" {
-		return INT;
-	}
+	return INT;
+}
 
 {identifier} {
-		yylval = strdup(yytext);
-		return IDENTIFIER;
-	}
+	yylval = strdup(yytext);
+	return IDENTIFIER;
+}
 
 {number} {
-		yylval = strdup(yytext);
-		return NUMBER;
-	}
+	yylval = strdup(yytext);
+	return NUMBER;
+}
 
 "+" {
-		return PLUS;
-	}
+	return PLUS;
+}
 
 "-" {
-		return MINUS;
-	}
+	return MINUS;
+}
 
 
 "*" {
-		return MULTIPLY;
-	}
+	return MULTIPLY;
+}
 
 "=" {
-		return EQUALS;
-	}
+	return EQUALS;
+}
 
 "(" {
-		return OPENPAR;
-	}
+	return OPENPAR;
+}
 
 ")" {
-		return CLOSEPAR;
-	}
+	return CLOSEPAR;
+}
 
 "{" {
-		return OPENCUR;
-	}
+	return OPENCUR;
+}
 
 "}" {
-		return CLOSECUR;
-	}
+	return CLOSECUR;
+}
 
 "," {
-		return COMMA;
-	}
+	return COMMA;
+}
 
 [ \t\r]+ { /* ignore whitespace */ }
 
