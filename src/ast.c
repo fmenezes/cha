@@ -7,7 +7,7 @@
 extern ni_ast_node_list *parsed_ast;
 
 ni_ast_node *make_ni_ast_node_constant_number(ni_ast_location loc,
-                                        const char *value) {
+                                              const char *value) {
   ni_ast_node *node = malloc(sizeof(ni_ast_node));
   node->type = NI_AST_TYPE_CONSTANT_NUMBER;
   node->location = loc;

@@ -98,7 +98,8 @@ struct ni_ast_node_list {
   ni_ast_node_list_entry *tail;
 };
 
-ni_ast_node *make_ni_ast_node_constant_number(ni_ast_location loc, const char *value);
+ni_ast_node *make_ni_ast_node_constant_number(ni_ast_location loc,
+                                              const char *value);
 ni_ast_node *make_ni_ast_node_deftype_int(ni_ast_location loc);
 ni_ast_node *make_ni_ast_node_bin_op(ni_ast_location loc, ni_ast_operator op,
                                      ni_ast_node *left, ni_ast_node *right);
