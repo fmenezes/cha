@@ -30,8 +30,44 @@ identifier [_a-zA-Z][_a-zA-Z0-9]{0,31}
 	return RET;
 }
 
+"byte" {
+	return REFTYPE_BYTE;
+}
+
+"sbyte" {
+	return REFTYPE_SBYTE;
+}
+
+"short" {
+	return REFTYPE_SHORT;
+}
+
+"ushort" {
+	return REFTYPE_USHORT;
+}
+
 "int" {
-	return DEFTYPE_INT;
+	return REFTYPE_INT;
+}
+
+"uint" {
+	return REFTYPE_UINT;
+}
+
+"long" {
+	return REFTYPE_LONG;
+}
+
+"ulong" {
+	return REFTYPE_ULONG;
+}
+
+"large" {
+	return REFTYPE_LARGE;
+}
+
+"ularge" {
+	return REFTYPE_ULARGE;
 }
 
 {identifier} {
@@ -51,7 +87,6 @@ identifier [_a-zA-Z][_a-zA-Z0-9]{0,31}
 "-" {
 	return MINUS;
 }
-
 
 "*" {
 	return MULTIPLY;

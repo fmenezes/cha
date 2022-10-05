@@ -29,11 +29,11 @@ ni_ast_location convert_location(YYLTYPE start, YYLTYPE end);
   ni_ast_node_list* list;
 }
 
-%token FUN OPENPAR CLOSEPAR OPENCUR CLOSECUR COMMA VAR EQUALS RET PLUS MINUS MULTIPLY DEFTYPE_INT
+%token FUN OPENPAR CLOSEPAR OPENCUR CLOSECUR COMMA VAR EQUALS RET PLUS MINUS MULTIPLY REFTYPE_BYTE REFTYPE_SBYTE REFTYPE_SHORT REFTYPE_USHORT REFTYPE_INT REFTYPE_UINT REFTYPE_LONG REFTYPE_ULONG REFTYPE_LARGE REFTYPE_ULARGE
 %token <str> IDENTIFIER NUMBER
 
 %nterm <list> instructions block def_args call_args statements
-%nterm <node> function statement arg expr typedef const
+%nterm <node> function statement arg expr reftype const
 
 %left PLUS MINUS
 %left MULTIPLY
@@ -54,8 +54,8 @@ instructions :
 function :
 	FUN IDENTIFIER OPENPAR CLOSEPAR block											{ $$ = make_ni_ast_node_function_declaration(convert_location(@1, @5), $2, NULL, NULL, $5); free($2); }
 	| FUN IDENTIFIER OPENPAR def_args CLOSEPAR block								{ $$ = make_ni_ast_node_function_declaration(convert_location(@1, @6), $2, NULL, $4, $6); free($2); }
-	| FUN IDENTIFIER OPENPAR CLOSEPAR typedef block									{ $$ = make_ni_ast_node_function_declaration(convert_location(@1, @6), $2, $5, NULL, $6); free($2); }
-	| FUN IDENTIFIER OPENPAR def_args CLOSEPAR typedef block						{ $$ = make_ni_ast_node_function_declaration(convert_location(@1, @7), $2, $6, $4, $7); free($2); }
+	| FUN IDENTIFIER OPENPAR CLOSEPAR reftype block									{ $$ = make_ni_ast_node_function_declaration(convert_location(@1, @6), $2, $5, NULL, $6); free($2); }
+	| FUN IDENTIFIER OPENPAR def_args CLOSEPAR reftype block						{ $$ = make_ni_ast_node_function_declaration(convert_location(@1, @7), $2, $6, $4, $7); free($2); }
 	;
 
 block :
@@ -64,7 +64,7 @@ block :
 	;
 
 arg :
-	IDENTIFIER typedef																{ $$ = make_ni_ast_node_argument(convert_location(@1, @2), $1, $2); free($1); }
+	IDENTIFIER reftype																{ $$ = make_ni_ast_node_argument(convert_location(@1, @2), $1, $2); free($1); }
 	;
 
 def_args :
@@ -83,7 +83,7 @@ statements :
 	;
 
 statement :
-	VAR IDENTIFIER typedef															{ $$ = make_ni_ast_node_variable_declaration(convert_location(@1, @3), $2, $3); free($2); }
+	VAR IDENTIFIER reftype															{ $$ = make_ni_ast_node_variable_declaration(convert_location(@1, @3), $2, $3); free($2); }
 	| IDENTIFIER EQUALS expr														{ $$ = make_ni_ast_node_variable_assignment(convert_location(@1, @3), $1, $3); free($1); }
 	| expr																			{ $$ = $1; }
 	| RET expr																		{ $$ = make_ni_ast_node_function_return(convert_location(@1, @2), $2); }
@@ -101,8 +101,17 @@ expr :
 	| OPENPAR expr CLOSEPAR															{ $$ = $2; }
 	;
 
-typedef :
-	DEFTYPE_INT																		{ $$ = make_ni_ast_node_deftype_int(convert_location(@1, @1)); }
+reftype :
+	REFTYPE_BYTE																	{ $$ = make_ni_ast_node_reftype_byte(convert_location(@1, @1)); }
+	| REFTYPE_SBYTE																	{ $$ = make_ni_ast_node_reftype_sbyte(convert_location(@1, @1)); }
+	| REFTYPE_INT																	{ $$ = make_ni_ast_node_reftype_int(convert_location(@1, @1)); }
+	| REFTYPE_UINT																	{ $$ = make_ni_ast_node_reftype_uint(convert_location(@1, @1)); }
+	| REFTYPE_SHORT																	{ $$ = make_ni_ast_node_reftype_short(convert_location(@1, @1)); }
+	| REFTYPE_USHORT																{ $$ = make_ni_ast_node_reftype_ushort(convert_location(@1, @1)); }
+	| REFTYPE_LONG																	{ $$ = make_ni_ast_node_reftype_long(convert_location(@1, @1)); }
+	| REFTYPE_ULONG																	{ $$ = make_ni_ast_node_reftype_ulong(convert_location(@1, @1)); }
+	| REFTYPE_LARGE																	{ $$ = make_ni_ast_node_reftype_large(convert_location(@1, @1)); }
+	| REFTYPE_ULARGE																{ $$ = make_ni_ast_node_reftype_ularge(convert_location(@1, @1)); }
 	;
 
 const :

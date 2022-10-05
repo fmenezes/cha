@@ -15,9 +15,72 @@ ni_ast_node *make_ni_ast_node_constant_number(ni_ast_location loc,
   return node;
 }
 
-ni_ast_node *make_ni_ast_node_deftype_int(ni_ast_location loc) {
+ni_ast_node *make_ni_ast_node_reftype_byte(ni_ast_location loc) {
   ni_ast_node *node = malloc(sizeof(ni_ast_node));
-  node->type = NI_AST_TYPE_DEFTYPE_INT;
+  node->type = NI_AST_TYPE_REFTYPE_BYTE;
+  node->location = loc;
+  return node;
+}
+
+ni_ast_node *make_ni_ast_node_reftype_sbyte(ni_ast_location loc) {
+  ni_ast_node *node = malloc(sizeof(ni_ast_node));
+  node->type = NI_AST_TYPE_REFTYPE_SBYTE;
+  node->location = loc;
+  return node;
+}
+
+ni_ast_node *make_ni_ast_node_reftype_short(ni_ast_location loc) {
+  ni_ast_node *node = malloc(sizeof(ni_ast_node));
+  node->type = NI_AST_TYPE_REFTYPE_SHORT;
+  node->location = loc;
+  return node;
+}
+
+ni_ast_node *make_ni_ast_node_reftype_ushort(ni_ast_location loc) {
+  ni_ast_node *node = malloc(sizeof(ni_ast_node));
+  node->type = NI_AST_TYPE_REFTYPE_USHORT;
+  node->location = loc;
+  return node;
+}
+
+ni_ast_node *make_ni_ast_node_reftype_int(ni_ast_location loc) {
+  ni_ast_node *node = malloc(sizeof(ni_ast_node));
+  node->type = NI_AST_TYPE_REFTYPE_INT;
+  node->location = loc;
+  return node;
+}
+
+ni_ast_node *make_ni_ast_node_reftype_uint(ni_ast_location loc) {
+  ni_ast_node *node = malloc(sizeof(ni_ast_node));
+  node->type = NI_AST_TYPE_REFTYPE_UINT;
+  node->location = loc;
+  return node;
+}
+
+ni_ast_node *make_ni_ast_node_reftype_long(ni_ast_location loc) {
+  ni_ast_node *node = malloc(sizeof(ni_ast_node));
+  node->type = NI_AST_TYPE_REFTYPE_LONG;
+  node->location = loc;
+  return node;
+}
+
+ni_ast_node *make_ni_ast_node_reftype_ulong(ni_ast_location loc) {
+  ni_ast_node *node = malloc(sizeof(ni_ast_node));
+  node->type = NI_AST_TYPE_REFTYPE_ULONG;
+  node->location = loc;
+  return node;
+}
+
+ni_ast_node *make_ni_ast_node_reftype_large(ni_ast_location loc) {
+  ni_ast_node *node = malloc(sizeof(ni_ast_node));
+  node->type = NI_AST_TYPE_REFTYPE_LARGE;
+  node->location = loc;
+  return node;
+}
+
+ni_ast_node *make_ni_ast_node_reftype_ularge(ni_ast_location loc) {
+  ni_ast_node *node = malloc(sizeof(ni_ast_node));
+  node->type = NI_AST_TYPE_REFTYPE_ULARGE;
   node->location = loc;
   return node;
 }
@@ -161,7 +224,16 @@ void free_ni_ast_node(ni_ast_node *node) {
   case NI_AST_TYPE_FUNCTION_RETURN:
     free_ni_ast_node(node->function_return.value);
     break;
-  case NI_AST_TYPE_DEFTYPE_INT:
+  case NI_AST_TYPE_REFTYPE_BYTE:
+  case NI_AST_TYPE_REFTYPE_SBYTE:
+  case NI_AST_TYPE_REFTYPE_SHORT:
+  case NI_AST_TYPE_REFTYPE_USHORT:
+  case NI_AST_TYPE_REFTYPE_INT:
+  case NI_AST_TYPE_REFTYPE_UINT:
+  case NI_AST_TYPE_REFTYPE_LONG:
+  case NI_AST_TYPE_REFTYPE_ULONG:
+  case NI_AST_TYPE_REFTYPE_LARGE:
+  case NI_AST_TYPE_REFTYPE_ULARGE:
     /* no additional fields to clear */
     break;
   }

@@ -25,6 +25,7 @@ int ni_ast_codegen_node_fun(ni_ast_node *ast_node);
 int ni_ast_codegen_block(ni_ast_node_list *block);
 LLVMTypeRef make_fun_signature(ni_ast_node *ast_node);
 LLVMTypeRef make_type(ni_ast_node *ast_node);
+LLVMBool signed_type(ni_ast_node *ast_node);
 
 LLVMContextRef context = NULL;
 LLVMModuleRef module = NULL;
@@ -60,8 +61,17 @@ int ni_ast_codegen_node(ni_ast_node *ast_node) {
     return ni_ast_codegen_node_fun(ast_node);
   case NI_AST_TYPE_BLOCK:
     return ni_ast_codegen_block(ast_node->block);
-  case NI_AST_TYPE_DEFTYPE_INT:
   case NI_AST_TYPE_ARGUMENT:
+  case NI_AST_TYPE_REFTYPE_BYTE:
+  case NI_AST_TYPE_REFTYPE_SBYTE:
+  case NI_AST_TYPE_REFTYPE_INT:
+  case NI_AST_TYPE_REFTYPE_UINT:
+  case NI_AST_TYPE_REFTYPE_SHORT:
+  case NI_AST_TYPE_REFTYPE_USHORT:
+  case NI_AST_TYPE_REFTYPE_LONG:
+  case NI_AST_TYPE_REFTYPE_ULONG:
+  case NI_AST_TYPE_REFTYPE_LARGE:
+  case NI_AST_TYPE_REFTYPE_ULARGE:
     // DO NOTHING
     break;
   }
@@ -420,10 +430,44 @@ void free_modules() {
   free_symbol_table(fn_table);
 }
 
+LLVMBool signed_type(ni_ast_node *ast_node) {
+  if (ast_node == NULL) {
+    return 0;
+  }
+
+  switch (ast_node->type) {
+  case NI_AST_TYPE_REFTYPE_BYTE:
+  case NI_AST_TYPE_REFTYPE_USHORT:
+  case NI_AST_TYPE_REFTYPE_ULONG:
+  case NI_AST_TYPE_REFTYPE_ULARGE:
+  case NI_AST_TYPE_REFTYPE_UINT:
+    return 0;
+  }
+
+  return 1;
+}
+
 LLVMTypeRef make_type(ni_ast_node *ast_node) {
   if (ast_node == NULL) {
     return LLVMVoidTypeInContext(context);
   }
 
-  return LLVMInt32TypeInContext(context);
+  switch (ast_node->type) {
+  case NI_AST_TYPE_REFTYPE_BYTE:
+  case NI_AST_TYPE_REFTYPE_SBYTE:
+    return LLVMInt8TypeInContext(context);
+  case NI_AST_TYPE_REFTYPE_SHORT:
+  case NI_AST_TYPE_REFTYPE_USHORT:
+    return LLVMInt16TypeInContext(context);
+  case NI_AST_TYPE_REFTYPE_LONG:
+  case NI_AST_TYPE_REFTYPE_ULONG:
+    return LLVMInt64TypeInContext(context);
+  case NI_AST_TYPE_REFTYPE_LARGE:
+  case NI_AST_TYPE_REFTYPE_ULARGE:
+    return LLVMInt128TypeInContext(context);
+  case NI_AST_TYPE_REFTYPE_INT:
+  case NI_AST_TYPE_REFTYPE_UINT:
+  default:
+    return LLVMInt32TypeInContext(context);
+  }
 }
