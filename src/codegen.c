@@ -464,7 +464,7 @@ LLVMTypeRef make_type(ni_ast_node *ast_node) {
     return LLVMInt64TypeInContext(context);
   case NI_AST_TYPE_REFTYPE_LARGE:
   case NI_AST_TYPE_REFTYPE_ULARGE:
-    return LLVMInt64TypeInContext(context);
+    return LLVMInt128TypeInContext(context);
   case NI_AST_TYPE_REFTYPE_INT:
   case NI_AST_TYPE_REFTYPE_UINT:
   default:
