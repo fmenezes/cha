@@ -16,6 +16,9 @@ void ni_ast_dump_node(FILE *out, const ni_ast_node *node) {
   case NI_AST_TYPE_CONSTANT_NUMBER:
     fprintf(out, "{\"const_int\":%s}", node->const_value);
     break;
+  case NI_AST_TYPE_CONSTANT_FLOAT:
+    fprintf(out, "{\"const_float\":%s}", node->const_value);
+    break;
   case NI_AST_TYPE_BIN_OP:
     fprintf(out, "{\"bin_op\":{\"op\":\"");
     switch (node->bin_op.op) {
@@ -89,6 +92,12 @@ void ni_ast_dump_node(FILE *out, const ni_ast_node *node) {
     break;
   case NI_AST_TYPE_REFTYPE_ULARGE:
     fprintf(out, "\"ularge\"");
+    break;
+  case NI_AST_TYPE_REFTYPE_FLOAT:
+    fprintf(out, "\"float\"");
+    break;
+  case NI_AST_TYPE_REFTYPE_DOUBLE:
+    fprintf(out, "\"double\"");
     break;
   case NI_AST_TYPE_FUNCTION_CALL:
     fprintf(out, "{\"call\":{\"identifier\":\"%s\",\"params\":",

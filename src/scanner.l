@@ -16,6 +16,7 @@ int yycolumn = 1;
 
 /* RegEx */
 number -?[0-9]+|0[xX][0-9A-Fa-f]+
+float -?[0-9]+\.[0-9]+
 identifier [_a-zA-Z][_a-zA-Z0-9]{0,31}
 %%
 "var" {
@@ -78,6 +79,11 @@ identifier [_a-zA-Z][_a-zA-Z0-9]{0,31}
 {number} {
 	yylval = strdup(yytext);
 	return NUMBER;
+}
+
+{float} {
+	yylval = strdup(yytext);
+	return FLOAT;
 }
 
 "+" {
