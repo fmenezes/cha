@@ -15,6 +15,7 @@ void free_modules();
 int ni_ast_codegen_toplevel(ni_ast_node_list *ast);
 int ni_ast_codegen_node(ni_ast_node *ast_node);
 int ni_ast_codegen_node_constant_number(ni_ast_node *ast_node);
+int ni_ast_codegen_node_constant_float(ni_ast_node *ast_node);
 int ni_ast_codegen_node_bin_op(ni_ast_node *ast_node);
 int ni_ast_codegen_node_var(ni_ast_node *ast_node);
 int ni_ast_codegen_node_var_assign(ni_ast_node *ast_node);
@@ -45,6 +46,8 @@ int ni_ast_codegen_node(ni_ast_node *ast_node) {
   switch (ast_node->type) {
   case NI_AST_TYPE_CONSTANT_NUMBER:
     return ni_ast_codegen_node_constant_number(ast_node);
+  case NI_AST_TYPE_CONSTANT_FLOAT:
+    return ni_ast_codegen_node_constant_float(ast_node);
   case NI_AST_TYPE_BIN_OP:
     return ni_ast_codegen_node_bin_op(ast_node);
   case NI_AST_TYPE_VARIABLE_DECLARATION:
@@ -72,6 +75,8 @@ int ni_ast_codegen_node(ni_ast_node *ast_node) {
   case NI_AST_TYPE_REFTYPE_ULONG:
   case NI_AST_TYPE_REFTYPE_LARGE:
   case NI_AST_TYPE_REFTYPE_ULARGE:
+  case NI_AST_TYPE_REFTYPE_FLOAT:
+  case NI_AST_TYPE_REFTYPE_DOUBLE:
     // DO NOTHING
     break;
   }
@@ -104,15 +109,21 @@ int ni_ast_codegen_toplevel(ni_ast_node_list *ast) {
 }
 
 int ni_ast_codegen_node_constant_number(ni_ast_node *ast_node) {
-  long long value = 0;
+  unsigned char radix;
   if (strncmp("0x", ast_node->const_value, 2) == 0 ||
       strncmp("0X", ast_node->const_value, 2) == 0) {
-    value = strtoll(ast_node->const_value, NULL, 16);
+    radix = 16;
   } else {
-    value = strtoll(ast_node->const_value, NULL, 10);
+    radix = 10;
   }
 
-  return_operand = LLVMConstInt(LLVMInt32TypeInContext(context), value, 1);
+  return_operand = LLVMConstIntOfString(LLVMInt32TypeInContext(context),
+                                        ast_node->const_value, radix);
+  return 0;
+}
+
+int ni_ast_codegen_node_constant_float(ni_ast_node *ast_node) {
+  return_operand = LLVMConstRealOfString(LLVMFloatTypeInContext(context), ast_node->const_value);
   return 0;
 }
 
@@ -456,6 +467,9 @@ LLVMTypeRef make_type(ni_ast_node *ast_node) {
   case NI_AST_TYPE_REFTYPE_BYTE:
   case NI_AST_TYPE_REFTYPE_SBYTE:
     return LLVMInt8TypeInContext(context);
+  case NI_AST_TYPE_REFTYPE_INT:
+  case NI_AST_TYPE_REFTYPE_UINT:
+    return LLVMInt32TypeInContext(context);
   case NI_AST_TYPE_REFTYPE_SHORT:
   case NI_AST_TYPE_REFTYPE_USHORT:
     return LLVMInt16TypeInContext(context);
@@ -465,9 +479,11 @@ LLVMTypeRef make_type(ni_ast_node *ast_node) {
   case NI_AST_TYPE_REFTYPE_LARGE:
   case NI_AST_TYPE_REFTYPE_ULARGE:
     return LLVMInt128TypeInContext(context);
-  case NI_AST_TYPE_REFTYPE_INT:
-  case NI_AST_TYPE_REFTYPE_UINT:
-  default:
-    return LLVMInt32TypeInContext(context);
+  case NI_AST_TYPE_REFTYPE_FLOAT:
+    return LLVMFloatTypeInContext(context);
+  case NI_AST_TYPE_REFTYPE_DOUBLE:
+    return LLVMDoubleTypeInContext(context);
   }
+
+  return LLVMVoidTypeInContext(context);
 }

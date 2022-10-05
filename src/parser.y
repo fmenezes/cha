@@ -29,8 +29,8 @@ ni_ast_location convert_location(YYLTYPE start, YYLTYPE end);
   ni_ast_node_list* list;
 }
 
-%token FUN OPENPAR CLOSEPAR OPENCUR CLOSECUR COMMA VAR EQUALS RET PLUS MINUS MULTIPLY REFTYPE_BYTE REFTYPE_SBYTE REFTYPE_SHORT REFTYPE_USHORT REFTYPE_INT REFTYPE_UINT REFTYPE_LONG REFTYPE_ULONG REFTYPE_LARGE REFTYPE_ULARGE
-%token <str> IDENTIFIER NUMBER
+%token FUN OPENPAR CLOSEPAR OPENCUR CLOSECUR COMMA VAR EQUALS RET PLUS MINUS MULTIPLY REFTYPE_BYTE REFTYPE_SBYTE REFTYPE_SHORT REFTYPE_USHORT REFTYPE_INT REFTYPE_UINT REFTYPE_LONG REFTYPE_ULONG REFTYPE_LARGE REFTYPE_ULARGE REFTYPE_FLOAT REFTYPE_DOUBLE
+%token <str> IDENTIFIER NUMBER FLOAT
 
 %nterm <list> instructions block def_args call_args statements
 %nterm <node> function statement arg expr reftype const
@@ -112,10 +112,13 @@ reftype :
 	| REFTYPE_ULONG																	{ $$ = make_ni_ast_node_reftype_ulong(convert_location(@1, @1)); }
 	| REFTYPE_LARGE																	{ $$ = make_ni_ast_node_reftype_large(convert_location(@1, @1)); }
 	| REFTYPE_ULARGE																{ $$ = make_ni_ast_node_reftype_ularge(convert_location(@1, @1)); }
+	| REFTYPE_FLOAT																	{ $$ = make_ni_ast_node_reftype_float(convert_location(@1, @1)); }
+	| REFTYPE_DOUBLE																{ $$ = make_ni_ast_node_reftype_double(convert_location(@1, @1)); }
 	;
 
 const :
 	NUMBER																			{ $$ = make_ni_ast_node_constant_number(convert_location(@1, @1), $1); free($1); }
+	| FLOAT																			{ $$ = make_ni_ast_node_constant_float(convert_location(@1, @1), $1); free($1); }
 	;
 
 %%
