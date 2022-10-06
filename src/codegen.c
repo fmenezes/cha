@@ -123,7 +123,8 @@ int ni_ast_codegen_node_constant_number(ni_ast_node *ast_node) {
 }
 
 int ni_ast_codegen_node_constant_float(ni_ast_node *ast_node) {
-  return_operand = LLVMConstRealOfString(LLVMFloatTypeInContext(context), ast_node->const_value);
+  return_operand = LLVMConstRealOfString(LLVMFloatTypeInContext(context),
+                                         ast_node->const_value);
   return 0;
 }
 
