@@ -76,6 +76,7 @@ int ni_ast_codegen_node(ni_ast_node *ast_node) {
   case NI_AST_TYPE_REFTYPE_LARGE:
   case NI_AST_TYPE_REFTYPE_ULARGE:
   case NI_AST_TYPE_REFTYPE_FLOAT:
+  case NI_AST_TYPE_REFTYPE_SFLOAT:
   case NI_AST_TYPE_REFTYPE_DOUBLE:
     // DO NOTHING
     break;
