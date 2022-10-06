@@ -71,6 +71,18 @@ identifier [_a-zA-Z][_a-zA-Z0-9]{0,31}
 	return REFTYPE_ULARGE;
 }
 
+"double" {
+	return REFTYPE_DOUBLE;
+}
+
+"float" {
+	return REFTYPE_FLOAT;
+}
+
+"sfloat" {
+	return REFTYPE_SFLOAT;
+}
+
 {identifier} {
 	yylval = strdup(yytext);
 	return IDENTIFIER;

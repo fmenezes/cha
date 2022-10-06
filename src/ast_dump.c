@@ -96,6 +96,9 @@ void ni_ast_dump_node(FILE *out, const ni_ast_node *node) {
   case NI_AST_TYPE_REFTYPE_FLOAT:
     fprintf(out, "\"float\"");
     break;
+  case NI_AST_TYPE_REFTYPE_SFLOAT:
+    fprintf(out, "\"sfloat\"");
+    break;
   case NI_AST_TYPE_REFTYPE_DOUBLE:
     fprintf(out, "\"double\"");
     break;

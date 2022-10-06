@@ -94,6 +94,13 @@ ni_ast_node *make_ni_ast_node_reftype_ularge(ni_ast_location loc) {
   return node;
 }
 
+ni_ast_node *make_ni_ast_node_reftype_sfloat(ni_ast_location loc) {
+  ni_ast_node *node = malloc(sizeof(ni_ast_node));
+  node->type = NI_AST_TYPE_REFTYPE_SFLOAT;
+  node->location = loc;
+  return node;
+}
+
 ni_ast_node *make_ni_ast_node_reftype_float(ni_ast_location loc) {
   ni_ast_node *node = malloc(sizeof(ni_ast_node));
   node->type = NI_AST_TYPE_REFTYPE_FLOAT;
@@ -259,6 +266,7 @@ void free_ni_ast_node(ni_ast_node *node) {
   case NI_AST_TYPE_REFTYPE_LARGE:
   case NI_AST_TYPE_REFTYPE_ULARGE:
   case NI_AST_TYPE_REFTYPE_FLOAT:
+  case NI_AST_TYPE_REFTYPE_SFLOAT:
   case NI_AST_TYPE_REFTYPE_DOUBLE:
     /* no additional fields to clear */
     break;

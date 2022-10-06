@@ -479,6 +479,8 @@ LLVMTypeRef make_type(ni_ast_node *ast_node) {
   case NI_AST_TYPE_REFTYPE_LARGE:
   case NI_AST_TYPE_REFTYPE_ULARGE:
     return LLVMInt128TypeInContext(context);
+  case NI_AST_TYPE_REFTYPE_SFLOAT:
+    return LLVMHalfTypeInContext(context);
   case NI_AST_TYPE_REFTYPE_FLOAT:
     return LLVMFloatTypeInContext(context);
   case NI_AST_TYPE_REFTYPE_DOUBLE:
