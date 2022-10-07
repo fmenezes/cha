@@ -38,7 +38,8 @@ int ni_validate_function_list(ni_ast_node_list *ast) {
   int ret = 0;
   ni_ast_node_list_entry *ast_current_node = ast->head;
   while (ast_current_node != NULL) {
-    if (ast_current_node->node->type != NI_AST_TYPE_FUNCTION_DECLARATION) {
+    if (ast_current_node->node->node_type !=
+        NI_AST_NODE_TYPE_FUNCTION_DECLARATION) {
       log_validation_error(ast_current_node->node->location,
                            "expected function declaration");
       ret = 1;
@@ -81,39 +82,27 @@ int ni_validate_node(ni_ast_node *ast_node) {
     return 0;
   }
 
-  switch (ast_node->type) {
-  case NI_AST_TYPE_FUNCTION_DECLARATION:
+  switch (ast_node->node_type) {
+  case NI_AST_NODE_TYPE_FUNCTION_DECLARATION:
     return ni_validate_node_fun(ast_node);
-  case NI_AST_TYPE_BLOCK:
+  case NI_AST_NODE_TYPE_BLOCK:
     return ni_validate_node_list(ast_node->block);
-  case NI_AST_TYPE_VARIABLE_DECLARATION:
+  case NI_AST_NODE_TYPE_VARIABLE_DECLARATION:
     return ni_validate_node_var(ast_node);
-  case NI_AST_TYPE_BIN_OP:
+  case NI_AST_NODE_TYPE_BIN_OP:
     return ni_validate_node_bin_op(ast_node);
-  case NI_AST_TYPE_VARIABLE_ASSIGNMENT:
+  case NI_AST_NODE_TYPE_VARIABLE_ASSIGNMENT:
     return ni_validate_node_var_assign(ast_node);
-  case NI_AST_TYPE_VARIABLE_LOOKUP:
+  case NI_AST_NODE_TYPE_VARIABLE_LOOKUP:
     return ni_validate_node_var_lookup(ast_node);
-  case NI_AST_TYPE_FUNCTION_CALL:
+  case NI_AST_NODE_TYPE_FUNCTION_CALL:
     return ni_validate_node_call(ast_node);
-  case NI_AST_TYPE_FUNCTION_RETURN:
+  case NI_AST_NODE_TYPE_FUNCTION_RETURN:
     return ni_validate_node_ret(ast_node);
-  case NI_AST_TYPE_ARGUMENT:
+  case NI_AST_NODE_TYPE_ARGUMENT:
     return ni_validate_node_arg(ast_node);
-  case NI_AST_TYPE_CONSTANT_NUMBER:
-  case NI_AST_TYPE_REFTYPE_BYTE:
-  case NI_AST_TYPE_REFTYPE_SBYTE:
-  case NI_AST_TYPE_REFTYPE_INT:
-  case NI_AST_TYPE_REFTYPE_UINT:
-  case NI_AST_TYPE_REFTYPE_SHORT:
-  case NI_AST_TYPE_REFTYPE_USHORT:
-  case NI_AST_TYPE_REFTYPE_LONG:
-  case NI_AST_TYPE_REFTYPE_ULONG:
-  case NI_AST_TYPE_REFTYPE_LARGE:
-  case NI_AST_TYPE_REFTYPE_ULARGE:
-  case NI_AST_TYPE_REFTYPE_FLOAT:
-  case NI_AST_TYPE_REFTYPE_SFLOAT:
-  case NI_AST_TYPE_REFTYPE_DOUBLE:
+  case NI_AST_NODE_TYPE_CONSTANT_NUMBER:
+  case NI_AST_NODE_TYPE_CONSTANT_FLOAT:
   default:
     return 0; // no validation
   }
