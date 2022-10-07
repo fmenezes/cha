@@ -6,20 +6,23 @@
 #include "ni/ast_dump.h"
 #include "parser.tab.h"
 
+void ni_ast_dump_node(FILE *out, const ni_ast_node *node);
+void ni_ast_dump_type(FILE *out, const ni_ast_type *type);
+
 void ni_ast_dump_node(FILE *out, const ni_ast_node *node) {
   if (node == NULL) {
     fprintf(out, "null");
     return;
   }
 
-  switch (node->type) {
-  case NI_AST_TYPE_CONSTANT_NUMBER:
+  switch (node->node_type) {
+  case NI_AST_NODE_TYPE_CONSTANT_NUMBER:
     fprintf(out, "{\"const_int\":%s}", node->const_value);
     break;
-  case NI_AST_TYPE_CONSTANT_FLOAT:
+  case NI_AST_NODE_TYPE_CONSTANT_FLOAT:
     fprintf(out, "{\"const_float\":%s}", node->const_value);
     break;
-  case NI_AST_TYPE_BIN_OP:
+  case NI_AST_NODE_TYPE_BIN_OP:
     fprintf(out, "{\"bin_op\":{\"op\":\"");
     switch (node->bin_op.op) {
     case NI_AST_OPERATOR_PLUS:
@@ -38,90 +41,100 @@ void ni_ast_dump_node(FILE *out, const ni_ast_node *node) {
     ni_ast_dump_node(out, node->bin_op.right);
     fprintf(out, "}}");
     break;
-  case NI_AST_TYPE_VARIABLE_DECLARATION:
+  case NI_AST_NODE_TYPE_VARIABLE_DECLARATION:
     fprintf(out, "{\"var_decl\":{\"identifier\":\"%s\",\"type\":",
             node->variable_declaration.identifier);
-    ni_ast_dump_node(out, node->variable_declaration.type);
+    ni_ast_dump_type(out, node->variable_declaration.type);
     fprintf(out, "}}");
     break;
-  case NI_AST_TYPE_VARIABLE_ASSIGNMENT:
+  case NI_AST_NODE_TYPE_VARIABLE_ASSIGNMENT:
     fprintf(out, "{\"var_assign\":{\"identifier\":\"%s\",\"value\":",
             node->variable_assignment.identifier);
     ni_ast_dump_node(out, node->variable_assignment.value);
     fprintf(out, "}}");
     break;
-  case NI_AST_TYPE_VARIABLE_LOOKUP:
+  case NI_AST_NODE_TYPE_VARIABLE_LOOKUP:
     fprintf(out, "{\"var_lookup\":{\"identifier\":\"%s\"}}",
             node->variable_lookup.identifier);
     break;
-  case NI_AST_TYPE_ARGUMENT:
+  case NI_AST_NODE_TYPE_ARGUMENT:
     fprintf(out, "{\"arg\":{\"identifier\":\"%s\",\"type\":",
             node->argument.identifier);
-    ni_ast_dump_node(out, node->argument.type);
+    ni_ast_dump_type(out, node->argument.type);
     fprintf(out, "}}");
     break;
-  case NI_AST_TYPE_BLOCK:
+  case NI_AST_NODE_TYPE_BLOCK:
     ni_ast_dump(out, node->block);
     break;
-  case NI_AST_TYPE_REFTYPE_BYTE:
-    fprintf(out, "\"byte\"");
-    break;
-  case NI_AST_TYPE_REFTYPE_SBYTE:
-    fprintf(out, "\"sbyte\"");
-    break;
-  case NI_AST_TYPE_REFTYPE_SHORT:
-    fprintf(out, "\"short\"");
-    break;
-  case NI_AST_TYPE_REFTYPE_USHORT:
-    fprintf(out, "\"ushort\"");
-    break;
-  case NI_AST_TYPE_REFTYPE_INT:
-    fprintf(out, "\"int\"");
-    break;
-  case NI_AST_TYPE_REFTYPE_UINT:
-    fprintf(out, "\"uint\"");
-    break;
-  case NI_AST_TYPE_REFTYPE_LONG:
-    fprintf(out, "\"long\"");
-    break;
-  case NI_AST_TYPE_REFTYPE_ULONG:
-    fprintf(out, "\"ulong\"");
-    break;
-  case NI_AST_TYPE_REFTYPE_LARGE:
-    fprintf(out, "\"large\"");
-    break;
-  case NI_AST_TYPE_REFTYPE_ULARGE:
-    fprintf(out, "\"ularge\"");
-    break;
-  case NI_AST_TYPE_REFTYPE_FLOAT:
-    fprintf(out, "\"float\"");
-    break;
-  case NI_AST_TYPE_REFTYPE_SFLOAT:
-    fprintf(out, "\"sfloat\"");
-    break;
-  case NI_AST_TYPE_REFTYPE_DOUBLE:
-    fprintf(out, "\"double\"");
-    break;
-  case NI_AST_TYPE_FUNCTION_CALL:
+  case NI_AST_NODE_TYPE_FUNCTION_CALL:
     fprintf(out, "{\"call\":{\"identifier\":\"%s\",\"params\":",
             node->function_call.identifier);
     ni_ast_dump(out, node->function_call.argument_list);
     fprintf(out, "}}");
     break;
-  case NI_AST_TYPE_FUNCTION_RETURN:
+  case NI_AST_NODE_TYPE_FUNCTION_RETURN:
     fprintf(out, "{\"return\":");
     ni_ast_dump_node(out, node->function_return.value);
     fprintf(out, "}");
     break;
-  case NI_AST_TYPE_FUNCTION_DECLARATION:
+  case NI_AST_NODE_TYPE_FUNCTION_DECLARATION:
     fprintf(out, "{\"fun\":{\"identifier\":\"%s\",\"ret_type\":",
             node->function_declaration.identifier);
-    ni_ast_dump_node(out, node->function_declaration.return_type);
+    ni_ast_dump_type(out, node->function_declaration.return_type);
     fprintf(out, ",\"args\":");
     ni_ast_dump(out, node->function_declaration.argument_list);
     fprintf(out, ",\"block\":");
     ni_ast_dump(out, node->function_declaration.block);
     fprintf(out, "}}");
+    break;
+  }
+}
+
+void ni_ast_dump_type(FILE *out, const ni_ast_type *type) {
+  if (type == NULL) {
+    fprintf(out, "null");
+    return;
+  }
+
+  switch (type->internal_type) {
+  case NI_AST_INTERNAL_TYPE_BYTE:
+    fprintf(out, "\"byte\"");
+    break;
+  case NI_AST_INTERNAL_TYPE_SBYTE:
+    fprintf(out, "\"sbyte\"");
+    break;
+  case NI_AST_INTERNAL_TYPE_SHORT:
+    fprintf(out, "\"short\"");
+    break;
+  case NI_AST_INTERNAL_TYPE_USHORT:
+    fprintf(out, "\"ushort\"");
+    break;
+  case NI_AST_INTERNAL_TYPE_INT:
+    fprintf(out, "\"int\"");
+    break;
+  case NI_AST_INTERNAL_TYPE_UINT:
+    fprintf(out, "\"uint\"");
+    break;
+  case NI_AST_INTERNAL_TYPE_LONG:
+    fprintf(out, "\"long\"");
+    break;
+  case NI_AST_INTERNAL_TYPE_ULONG:
+    fprintf(out, "\"ulong\"");
+    break;
+  case NI_AST_INTERNAL_TYPE_LARGE:
+    fprintf(out, "\"large\"");
+    break;
+  case NI_AST_INTERNAL_TYPE_ULARGE:
+    fprintf(out, "\"ularge\"");
+    break;
+  case NI_AST_INTERNAL_TYPE_FLOAT:
+    fprintf(out, "\"float\"");
+    break;
+  case NI_AST_INTERNAL_TYPE_SFLOAT:
+    fprintf(out, "\"sfloat\"");
+    break;
+  case NI_AST_INTERNAL_TYPE_DOUBLE:
+    fprintf(out, "\"double\"");
     break;
   }
 }

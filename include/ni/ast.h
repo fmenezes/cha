@@ -15,32 +15,35 @@ typedef struct ni_ast_location {
   int column_end;
 } ni_ast_location;
 
-typedef enum ni_ast_type {
-  NI_AST_TYPE_REFTYPE_LARGE,
-  NI_AST_TYPE_REFTYPE_ULARGE,
-  NI_AST_TYPE_REFTYPE_LONG,
-  NI_AST_TYPE_REFTYPE_ULONG,
-  NI_AST_TYPE_REFTYPE_SHORT,
-  NI_AST_TYPE_REFTYPE_USHORT,
-  NI_AST_TYPE_REFTYPE_INT,
-  NI_AST_TYPE_REFTYPE_UINT,
-  NI_AST_TYPE_REFTYPE_SBYTE,
-  NI_AST_TYPE_REFTYPE_BYTE,
-  NI_AST_TYPE_REFTYPE_SFLOAT,
-  NI_AST_TYPE_REFTYPE_FLOAT,
-  NI_AST_TYPE_REFTYPE_DOUBLE,
-  NI_AST_TYPE_CONSTANT_NUMBER,
-  NI_AST_TYPE_CONSTANT_FLOAT,
-  NI_AST_TYPE_BIN_OP,
-  NI_AST_TYPE_VARIABLE_DECLARATION,
-  NI_AST_TYPE_VARIABLE_ASSIGNMENT,
-  NI_AST_TYPE_VARIABLE_LOOKUP,
-  NI_AST_TYPE_ARGUMENT,
-  NI_AST_TYPE_BLOCK,
-  NI_AST_TYPE_FUNCTION_DECLARATION,
-  NI_AST_TYPE_FUNCTION_CALL,
-  NI_AST_TYPE_FUNCTION_RETURN,
-} ni_ast_type;
+typedef enum ni_ast_internal_type {
+  NI_AST_INTERNAL_TYPE_LARGE,
+  NI_AST_INTERNAL_TYPE_ULARGE,
+  NI_AST_INTERNAL_TYPE_LONG,
+  NI_AST_INTERNAL_TYPE_ULONG,
+  NI_AST_INTERNAL_TYPE_SHORT,
+  NI_AST_INTERNAL_TYPE_USHORT,
+  NI_AST_INTERNAL_TYPE_INT,
+  NI_AST_INTERNAL_TYPE_UINT,
+  NI_AST_INTERNAL_TYPE_SBYTE,
+  NI_AST_INTERNAL_TYPE_BYTE,
+  NI_AST_INTERNAL_TYPE_SFLOAT,
+  NI_AST_INTERNAL_TYPE_FLOAT,
+  NI_AST_INTERNAL_TYPE_DOUBLE,
+} ni_ast_internal_type;
+
+typedef enum ni_ast_node_type {
+  NI_AST_NODE_TYPE_CONSTANT_NUMBER,
+  NI_AST_NODE_TYPE_CONSTANT_FLOAT,
+  NI_AST_NODE_TYPE_BIN_OP,
+  NI_AST_NODE_TYPE_VARIABLE_DECLARATION,
+  NI_AST_NODE_TYPE_VARIABLE_ASSIGNMENT,
+  NI_AST_NODE_TYPE_VARIABLE_LOOKUP,
+  NI_AST_NODE_TYPE_ARGUMENT,
+  NI_AST_NODE_TYPE_BLOCK,
+  NI_AST_NODE_TYPE_FUNCTION_DECLARATION,
+  NI_AST_NODE_TYPE_FUNCTION_CALL,
+  NI_AST_NODE_TYPE_FUNCTION_RETURN,
+} ni_ast_node_type;
 
 typedef enum ni_ast_operator {
   NI_AST_OPERATOR_PLUS,
@@ -48,16 +51,13 @@ typedef enum ni_ast_operator {
   NI_AST_OPERATOR_MULTIPLY,
 } ni_ast_operator;
 
-struct ni_ast_node_list;
-struct ni_ast_node;
-struct ni_ast_node_list_entry;
-
-typedef struct ni_ast_node ni_ast_node;
 typedef struct ni_ast_node_list ni_ast_node_list;
+typedef struct ni_ast_node ni_ast_node;
 typedef struct ni_ast_node_list_entry ni_ast_node_list_entry;
+typedef struct ni_ast_type ni_ast_type;
 
 struct ni_ast_node {
-  ni_ast_type type;
+  ni_ast_node_type node_type;
   ni_ast_location location;
   union {
     char *const_value;
@@ -68,7 +68,7 @@ struct ni_ast_node {
     } bin_op;
     struct {
       char *identifier;
-      ni_ast_node *type;
+      ni_ast_type *type;
     } variable_declaration;
     struct {
       char *identifier;
@@ -79,12 +79,12 @@ struct ni_ast_node {
     } variable_lookup;
     struct {
       char *identifier;
-      ni_ast_node *type;
+      ni_ast_type *type;
     } argument;
     ni_ast_node_list *block;
     struct {
       char *identifier;
-      ni_ast_node *return_type;
+      ni_ast_type *return_type;
       ni_ast_node_list *argument_list;
       ni_ast_node_list *block;
     } function_declaration;
@@ -109,28 +109,33 @@ struct ni_ast_node_list {
   ni_ast_node_list_entry *tail;
 };
 
+struct ni_ast_type {
+  ni_ast_internal_type internal_type;
+  ni_ast_location location;
+};
+
 ni_ast_node *make_ni_ast_node_constant_number(ni_ast_location loc,
                                               const char *value);
 ni_ast_node *make_ni_ast_node_constant_float(ni_ast_location loc,
                                              const char *value);
-ni_ast_node *make_ni_ast_node_reftype_byte(ni_ast_location loc);
-ni_ast_node *make_ni_ast_node_reftype_sbyte(ni_ast_location loc);
-ni_ast_node *make_ni_ast_node_reftype_short(ni_ast_location loc);
-ni_ast_node *make_ni_ast_node_reftype_ushort(ni_ast_location loc);
-ni_ast_node *make_ni_ast_node_reftype_int(ni_ast_location loc);
-ni_ast_node *make_ni_ast_node_reftype_uint(ni_ast_location loc);
-ni_ast_node *make_ni_ast_node_reftype_long(ni_ast_location loc);
-ni_ast_node *make_ni_ast_node_reftype_ulong(ni_ast_location loc);
-ni_ast_node *make_ni_ast_node_reftype_large(ni_ast_location loc);
-ni_ast_node *make_ni_ast_node_reftype_ularge(ni_ast_location loc);
-ni_ast_node *make_ni_ast_node_reftype_sfloat(ni_ast_location loc);
-ni_ast_node *make_ni_ast_node_reftype_float(ni_ast_location loc);
-ni_ast_node *make_ni_ast_node_reftype_double(ni_ast_location loc);
+ni_ast_type *make_ni_ast_type_byte(ni_ast_location loc);
+ni_ast_type *make_ni_ast_type_sbyte(ni_ast_location loc);
+ni_ast_type *make_ni_ast_type_short(ni_ast_location loc);
+ni_ast_type *make_ni_ast_type_ushort(ni_ast_location loc);
+ni_ast_type *make_ni_ast_type_int(ni_ast_location loc);
+ni_ast_type *make_ni_ast_type_uint(ni_ast_location loc);
+ni_ast_type *make_ni_ast_type_long(ni_ast_location loc);
+ni_ast_type *make_ni_ast_type_ulong(ni_ast_location loc);
+ni_ast_type *make_ni_ast_type_large(ni_ast_location loc);
+ni_ast_type *make_ni_ast_type_ularge(ni_ast_location loc);
+ni_ast_type *make_ni_ast_type_sfloat(ni_ast_location loc);
+ni_ast_type *make_ni_ast_type_float(ni_ast_location loc);
+ni_ast_type *make_ni_ast_type_double(ni_ast_location loc);
 ni_ast_node *make_ni_ast_node_bin_op(ni_ast_location loc, ni_ast_operator op,
                                      ni_ast_node *left, ni_ast_node *right);
 ni_ast_node *make_ni_ast_node_variable_declaration(ni_ast_location loc,
                                                    const char *identifier,
-                                                   ni_ast_node *type);
+                                                   ni_ast_type *type);
 ni_ast_node *make_ni_ast_node_variable_assignment(ni_ast_location loc,
                                                   const char *identifier,
                                                   ni_ast_node *value);
@@ -138,11 +143,11 @@ ni_ast_node *make_ni_ast_node_variable_lookup(ni_ast_location loc,
                                               const char *identifier);
 ni_ast_node *make_ni_ast_node_argument(ni_ast_location loc,
                                        const char *identifier,
-                                       ni_ast_node *type);
+                                       ni_ast_type *type);
 ni_ast_node *make_ni_ast_node_block(ni_ast_location loc,
                                     ni_ast_node_list *block);
 ni_ast_node *make_ni_ast_node_function_declaration(
-    ni_ast_location loc, const char *identifier, ni_ast_node *return_type,
+    ni_ast_location loc, const char *identifier, ni_ast_type *return_type,
     ni_ast_node_list *argument_list, ni_ast_node_list *block);
 ni_ast_node *make_ni_ast_node_function_call(ni_ast_location loc,
                                             const char *identifier,
