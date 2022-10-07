@@ -102,6 +102,7 @@ int ni_validate_node(ni_ast_node *ast_node) {
   case NI_AST_NODE_TYPE_ARGUMENT:
     return ni_validate_node_arg(ast_node);
   case NI_AST_NODE_TYPE_CONSTANT_NUMBER:
+  case NI_AST_NODE_TYPE_CONSTANT_FLOAT:
   default:
     return 0; // no validation
   }
