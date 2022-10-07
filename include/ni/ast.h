@@ -26,6 +26,7 @@ typedef enum ni_ast_type {
   NI_AST_TYPE_REFTYPE_UINT,
   NI_AST_TYPE_REFTYPE_SBYTE,
   NI_AST_TYPE_REFTYPE_BYTE,
+  NI_AST_TYPE_REFTYPE_SFLOAT,
   NI_AST_TYPE_REFTYPE_FLOAT,
   NI_AST_TYPE_REFTYPE_DOUBLE,
   NI_AST_TYPE_CONSTANT_NUMBER,
@@ -111,7 +112,7 @@ struct ni_ast_node_list {
 ni_ast_node *make_ni_ast_node_constant_number(ni_ast_location loc,
                                               const char *value);
 ni_ast_node *make_ni_ast_node_constant_float(ni_ast_location loc,
-                                              const char *value);
+                                             const char *value);
 ni_ast_node *make_ni_ast_node_reftype_byte(ni_ast_location loc);
 ni_ast_node *make_ni_ast_node_reftype_sbyte(ni_ast_location loc);
 ni_ast_node *make_ni_ast_node_reftype_short(ni_ast_location loc);
@@ -122,6 +123,7 @@ ni_ast_node *make_ni_ast_node_reftype_long(ni_ast_location loc);
 ni_ast_node *make_ni_ast_node_reftype_ulong(ni_ast_location loc);
 ni_ast_node *make_ni_ast_node_reftype_large(ni_ast_location loc);
 ni_ast_node *make_ni_ast_node_reftype_ularge(ni_ast_location loc);
+ni_ast_node *make_ni_ast_node_reftype_sfloat(ni_ast_location loc);
 ni_ast_node *make_ni_ast_node_reftype_float(ni_ast_location loc);
 ni_ast_node *make_ni_ast_node_reftype_double(ni_ast_location loc);
 ni_ast_node *make_ni_ast_node_bin_op(ni_ast_location loc, ni_ast_operator op,
