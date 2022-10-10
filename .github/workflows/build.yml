@@ -27,8 +27,6 @@ jobs:
         run: |
           cd build
           ctest --output-on-failure
-      - name: Test
-        run: ./scripts/test.sh
   mac:
     name: mac
     runs-on: macos-latest
@@ -53,5 +51,3 @@ jobs:
         run: |
           cd build
           ctest --output-on-failure
-      - name: Test
-        run: ./scripts/test.sh
