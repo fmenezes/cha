@@ -334,7 +334,7 @@ int ni_validate_node_ret(ni_ast_node *ast_node) {
   }
 
   int type_ret = type_cmp(ast_node->function_return.value->_result_type,
-                 fun->function_declaration.return_type);
+                          fun->function_declaration.return_type);
   if (type_ret != 0) {
     char *expected_type = NULL;
     char *got_type = NULL;
