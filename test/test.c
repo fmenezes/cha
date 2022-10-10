@@ -4,6 +4,7 @@
 
 void cleanup();
 int run_process(char *cmd, char **output);
+void check_bin(const char *file, const char *expected_file);
 void check_success(const char *file, const char *expected_file);
 void check_failure(const char *file, const char *expected_file,
                    const char *msg);
@@ -65,7 +66,24 @@ void check_success(const char *file, const char *expected_file) {
   exit(0);
 }
 
-int main(int argc, char *argv[]) {
+void check_bin(const char *file, const char *expected_file) {
+  if (strstr(file, expected_file) == NULL) {
+    return;
+  }
+
+  char cmd[1000];
+  sprintf(cmd, "ni -o out %s 2>&1", file);
+  int ret = system(cmd);
+  if (ret != 0) {
+    fprintf(stderr, "\"%s\" returned %d expected 0\n", cmd, ret);
+    exit(1);
+  }
+  ret = system("./out");
+  remove("out");
+  exit(ret);
+}
+
+int main(int argc, char *argv[], char **envp) {
   if (argc != 2) {
     fprintf(stderr, "Usage: %s <test>\n", argv[0]);
     return 1;
@@ -73,6 +91,7 @@ int main(int argc, char *argv[]) {
 
   char *inputPath = argv[1];
 
+  check_bin(inputPath, "test_bin.ni");
   check_success(inputPath, "parse_passes.ni");
   check_failure(inputPath, "parse_failure.ni", "syntax error");
   check_success(inputPath, "validation_passes.ni");

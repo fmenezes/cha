@@ -11,23 +11,21 @@ if [ $result -ne 0 ]; then
     echo "Something went wrong with cmake"
     exit 1
 fi
+
+echo "Building"
 cmake --build .
 result=$?
 if [ $result -ne 0 ]; then
     echo "Something went wrong with code build"
     exit 1
 fi
+
+echo "Running tests"
 ctest --output-on-failure
 result=$?
 if [ $result -ne 0 ]; then
     echo "Something went wrong with tests"
     exit 1
 fi
-cd ..
-./scripts/test.sh
-result=$?
-if [ $result -ne 0 ]; then
-    echo "Something went wrong with code generation"
-    exit 1
-fi
+
 popd
