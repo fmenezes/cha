@@ -4,12 +4,18 @@
 
 void cleanup();
 int run_process(char *cmd, char **output);
-void check_success(const char* file);
-void check_failure(const char *file, const char *msg);
+void check_success(const char *file, const char *expected_file);
+void check_failure(const char *file, const char *expected_file,
+                   const char *msg);
 
 void cleanup() { remove("out.ll"); }
 
-void check_failure(const char *file, const char* msg) {
+void check_failure(const char *file, const char *expected_file,
+                   const char *msg) {
+  if (strstr(file, expected_file) == NULL) {
+    return;
+  }
+
   char cmd[1000];
   char *got_msg = NULL;
   sprintf(cmd, "ni -ll out.ll %s 2>&1", file);
@@ -43,7 +49,11 @@ int run_process(char *cmd, char **output) {
   return pclose(data);
 }
 
-void check_success(const char* file) {
+void check_success(const char *file, const char *expected_file) {
+  if (strstr(file, expected_file) == NULL) {
+    return;
+  }
+
   char cmd[1000];
   sprintf(cmd, "ni -ll out.ll %s 2>&1", file);
   int ret = run_process(cmd, NULL);
@@ -62,58 +72,28 @@ int main(int argc, char *argv[]) {
   }
 
   char *inputPath = argv[1];
-  
-  if (strstr(inputPath, "parse_passes.ni") != NULL) {
-    check_success(inputPath);
-  }
 
-  if (strstr(inputPath, "parse_failure.ni") != NULL) {
-    check_failure(inputPath, "syntax error");
-  }
-
-  if (strstr(inputPath, "validation_passes.ni") != NULL) {
-    check_success(inputPath);
-  }
-
-  if (strstr(inputPath, "validation_arg_dup.ni") != NULL) {
-    check_failure(inputPath, "argument 'i' already defined");
-  }
-
-  if (strstr(inputPath, "validation_arg_mismatch.ni") != NULL) {
-    check_failure(inputPath, "function 'test' expects no arguments");
-  }
-
-  if (strstr(inputPath, "validation_arg_mismatch2.ni") != NULL) {
-    check_failure(inputPath, "function 'test' expects arguments");
-  }
-
-  if (strstr(inputPath, "validation_arg_mismatch3.ni") != NULL) {
-    check_failure(inputPath, "type mismatch!!!");
-  }
-
-  if (strstr(inputPath, "validation_dup_function.ni") != NULL) {
-    check_failure(inputPath, "function 'test' already defined");
-  }
-
-  if (strstr(inputPath, "validation_function_not_found.ni") != NULL) {
-    check_failure(inputPath, "function 'test' not found");
-  }
-
-  if (strstr(inputPath, "validation_type_mismatch.ni") != NULL) {
-    check_failure(inputPath, "type mismatch!!!");
-  }
-
-  if (strstr(inputPath, "validation_var_not_found.ni") != NULL) {
-    check_failure(inputPath, "variable 'a' not found");
-  }
-
-  if (strstr(inputPath, "validation_var_redefined.ni") != NULL) {
-    check_failure(inputPath, "variable 'a' already defined");
-  }
-
-  if (strstr(inputPath, "validation_var_redefined2.ni") != NULL) {
-    check_failure(inputPath, "variable 'a' already defined");
-  }
+  check_success(inputPath, "parse_passes.ni");
+  check_failure(inputPath, "parse_failure.ni", "syntax error");
+  check_success(inputPath, "validation_passes.ni");
+  check_failure(inputPath, "validation_arg_dup.ni",
+                "argument 'i' already defined");
+  check_failure(inputPath, "validation_arg_mismatch.ni",
+                "function 'test' expects no arguments");
+  check_failure(inputPath, "validation_arg_mismatch2.ni",
+                "function 'test' expects arguments");
+  check_failure(inputPath, "validation_arg_mismatch3.ni", "type mismatch!!!");
+  check_failure(inputPath, "validation_dup_function.ni",
+                "function 'test' already defined");
+  check_failure(inputPath, "validation_function_not_found.ni",
+                "function 'test' not found");
+  check_failure(inputPath, "validation_type_mismatch.ni", "type mismatch!!!");
+  check_failure(inputPath, "validation_var_not_found.ni",
+                "variable 'a' not found");
+  check_failure(inputPath, "validation_var_redefined.ni",
+                "variable 'a' already defined");
+  check_failure(inputPath, "validation_var_redefined2.ni",
+                "variable 'a' already defined");
 
   fprintf(stderr, "\"%s\" is unknown\n", inputPath);
   return 1;
