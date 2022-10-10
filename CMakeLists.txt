@@ -224,7 +224,8 @@ add_executable(
 FOREACH(test ${TEST_SRC})
     GET_FILENAME_COMPONENT(TName ${test} NAME_WE)
     GET_FILENAME_COMPONENT(TPath ${test} DIRECTORY)
-    ADD_TEST(NAME ${TName} COMMAND ni_test "$<TARGET_FILE:ni>" "${TPath}/${TName}.ni")
+    ADD_TEST(NAME ${TName} COMMAND ni_test "${TPath}/${TName}.ni")
+    SET_PROPERTY(TEST ${TName} PROPERTY ENVIRONMENT_MODIFICATION "PATH=path_list_append:${CMAKE_CURRENT_BINARY_DIR}")
 ENDFOREACH(test)
 
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})
