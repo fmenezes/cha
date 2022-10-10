@@ -82,12 +82,18 @@ int main(int argc, char *argv[]) {
                 "function 'test' expects no arguments");
   check_failure(inputPath, "validation_arg_mismatch2.ni",
                 "function 'test' expects arguments");
-  check_failure(inputPath, "validation_arg_mismatch3.ni", "type mismatch!!!");
+  check_failure(inputPath, "validation_arg_mismatch3.ni",
+                "type mismatch expects 'byte' passed 'int'");
   check_failure(inputPath, "validation_dup_function.ni",
                 "function 'test' already defined");
   check_failure(inputPath, "validation_function_not_found.ni",
                 "function 'test' not found");
-  check_failure(inputPath, "validation_type_mismatch.ni", "type mismatch!!!");
+  check_failure(inputPath, "validation_ret_mismatch.ni",
+                "return type mismatch expects 'int' passed 'byte'");
+  check_failure(inputPath, "validation_type_mismatch.ni",
+                "type mismatch expects 'byte' passed 'int'");
+  check_failure(inputPath, "validation_type_mismatch2.ni",
+                "type mismatch expects 'byte' passed 'int'");
   check_failure(inputPath, "validation_var_not_found.ni",
                 "variable 'a' not found");
   check_failure(inputPath, "validation_var_redefined.ni",

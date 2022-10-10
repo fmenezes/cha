@@ -1,8 +1,8 @@
 fun main() int {
   var a int
   a = 10
-  ret test(a)
+  test(a)
+  ret 0
 }
-fun test(i byte) byte {
-  ret i
-}
+
+fun test(i byte) {}

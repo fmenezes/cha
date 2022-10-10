@@ -59,6 +59,7 @@ typedef struct ni_ast_type ni_ast_type;
 struct ni_ast_node {
   ni_ast_node_type node_type;
   ni_ast_location location;
+  ni_ast_type *_result_type;
   union {
     char *const_value;
     struct {
@@ -118,6 +119,8 @@ ni_ast_node *make_ni_ast_node_constant_number(ni_ast_location loc,
                                               const char *value);
 ni_ast_node *make_ni_ast_node_constant_float(ni_ast_location loc,
                                              const char *value);
+ni_ast_type *make_ni_ast_type(ni_ast_location loc,
+                              ni_ast_internal_type internal_type);
 ni_ast_type *make_ni_ast_type_byte(ni_ast_location loc);
 ni_ast_type *make_ni_ast_type_sbyte(ni_ast_location loc);
 ni_ast_type *make_ni_ast_type_short(ni_ast_location loc);
