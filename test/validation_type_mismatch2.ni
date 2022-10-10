@@ -3,6 +3,6 @@ fun main() int {
   var b byte
   a = 1
   b = 2
-  a = b
+  a = a + b
   ret a
 }

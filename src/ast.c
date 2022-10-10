@@ -11,6 +11,7 @@ ni_ast_node *make_ni_ast_node_constant_number(ni_ast_location loc,
   ni_ast_node *node = malloc(sizeof(ni_ast_node));
   node->node_type = NI_AST_NODE_TYPE_CONSTANT_NUMBER;
   node->location = loc;
+  node->_result_type = NULL;
   node->const_value = strdup(value);
   return node;
 }
@@ -20,6 +21,7 @@ ni_ast_node *make_ni_ast_node_constant_float(ni_ast_location loc,
   ni_ast_node *node = malloc(sizeof(ni_ast_node));
   node->node_type = NI_AST_NODE_TYPE_CONSTANT_FLOAT;
   node->location = loc;
+  node->_result_type = NULL;
   node->const_value = strdup(value);
   return node;
 }
@@ -120,6 +122,7 @@ ni_ast_node *make_ni_ast_node_bin_op(ni_ast_location loc, ni_ast_operator op,
   ni_ast_node *node = malloc(sizeof(ni_ast_node));
   node->node_type = NI_AST_NODE_TYPE_BIN_OP;
   node->location = loc;
+  node->_result_type = NULL;
   node->bin_op.op = op;
   node->bin_op.left = left;
   node->bin_op.right = right;
@@ -132,6 +135,7 @@ ni_ast_node *make_ni_ast_node_variable_declaration(ni_ast_location loc,
   ni_ast_node *node = malloc(sizeof(ni_ast_node));
   node->node_type = NI_AST_NODE_TYPE_VARIABLE_DECLARATION;
   node->location = loc;
+  node->_result_type = NULL;
   node->variable_declaration.identifier = strdup(identifier);
   node->variable_declaration.type = type;
   return node;
@@ -143,6 +147,7 @@ ni_ast_node *make_ni_ast_node_variable_assignment(ni_ast_location loc,
   ni_ast_node *node = malloc(sizeof(ni_ast_node));
   node->node_type = NI_AST_NODE_TYPE_VARIABLE_ASSIGNMENT;
   node->location = loc;
+  node->_result_type = NULL;
   node->variable_assignment.identifier = strdup(identifier);
   node->variable_assignment.value = value;
   return node;
@@ -153,6 +158,7 @@ ni_ast_node *make_ni_ast_node_variable_lookup(ni_ast_location loc,
   ni_ast_node *node = malloc(sizeof(ni_ast_node));
   node->node_type = NI_AST_NODE_TYPE_VARIABLE_LOOKUP;
   node->location = loc;
+  node->_result_type = NULL;
   node->variable_lookup.identifier = strdup(identifier);
   return node;
 }
@@ -163,6 +169,7 @@ ni_ast_node *make_ni_ast_node_argument(ni_ast_location loc,
   ni_ast_node *node = malloc(sizeof(ni_ast_node));
   node->node_type = NI_AST_NODE_TYPE_ARGUMENT;
   node->location = loc;
+  node->_result_type = NULL;
   node->argument.identifier = strdup(identifier);
   node->argument.type = type;
   return node;
@@ -173,6 +180,7 @@ ni_ast_node *make_ni_ast_node_block(ni_ast_location loc,
   ni_ast_node *node = malloc(sizeof(ni_ast_node));
   node->node_type = NI_AST_NODE_TYPE_BLOCK;
   node->location = loc;
+  node->_result_type = NULL;
   node->block = block;
   return node;
 }
@@ -183,6 +191,7 @@ ni_ast_node *make_ni_ast_node_function_declaration(
   ni_ast_node *node = malloc(sizeof(ni_ast_node));
   node->node_type = NI_AST_NODE_TYPE_FUNCTION_DECLARATION;
   node->location = loc;
+  node->_result_type = NULL;
   node->function_declaration.identifier = strdup(identifier);
   node->function_declaration.return_type = return_type;
   node->function_declaration.argument_list = argument_list;
@@ -196,6 +205,7 @@ ni_ast_node *make_ni_ast_node_function_call(ni_ast_location loc,
   ni_ast_node *node = malloc(sizeof(ni_ast_node));
   node->node_type = NI_AST_NODE_TYPE_FUNCTION_CALL;
   node->location = loc;
+  node->_result_type = NULL;
   node->function_call.identifier = strdup(identifier);
   node->function_call.argument_list = argument_list;
   return node;
@@ -206,11 +216,25 @@ ni_ast_node *make_ni_ast_node_function_return(ni_ast_location loc,
   ni_ast_node *node = malloc(sizeof(ni_ast_node));
   node->node_type = NI_AST_NODE_TYPE_FUNCTION_RETURN;
   node->location = loc;
+  node->_result_type = NULL;
   node->function_return.value = value;
   return node;
 }
 
+ni_ast_type *make_ni_ast_type(ni_ast_location loc,
+                              ni_ast_internal_type internal_type) {
+  ni_ast_type *t = malloc(sizeof(ni_ast_type));
+  t->internal_type = internal_type;
+  t->location = loc;
+  t->location.file = strdup(loc.file);
+  return t;
+}
+
 void free_ni_ast_type(ni_ast_type *type) {
+  if (type == NULL) {
+    return;
+  }
+
   free(type->location.file);
   free(type);
 }
@@ -262,6 +286,7 @@ void free_ni_ast_node(ni_ast_node *node) {
     break;
   }
 
+  free_ni_ast_type(node->_result_type);
   free(node->location.file);
   free(node);
 }
