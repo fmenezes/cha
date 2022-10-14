@@ -14,4 +14,5 @@ RUN apt-get update \
     && wget https://apt.llvm.org/llvm.sh \
     && chmod +x llvm.sh \
     && ./llvm.sh 15 all \
-    && rm llvm.sh
+    && rm llvm.sh \
+    && apt-get install -y bolt-15
