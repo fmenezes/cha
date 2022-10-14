@@ -13,5 +13,5 @@ RUN apt-get update \
     && apt-get -y install --no-install-recommends lsb-release wget software-properties-common gnupg build-essential flex wget bison cmake zlib1g-dev python3-venv \
     && wget https://apt.llvm.org/llvm.sh \
     && chmod +x llvm.sh \
-    && ./llvm.sh 14 all \
+    && ./llvm.sh 15 all \
     && rm llvm.sh
