@@ -8,7 +8,7 @@ enable_testing()
 
 find_package(FLEX REQUIRED)
 find_package(BISON REQUIRED)
-find_package(LLVM 14 REQUIRED CONFIG)
+find_package(LLVM 15 REQUIRED CONFIG)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
