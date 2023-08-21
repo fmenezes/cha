@@ -17,7 +17,6 @@ jobs:
           sudo chmod +x llvm.sh
           sudo ./llvm.sh 15 all
           sudo rm llvm.sh
-          sudo apt-get install bolt-15 -y
       - name: Build
         run: |
           mkdir build
