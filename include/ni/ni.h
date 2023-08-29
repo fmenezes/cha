@@ -13,7 +13,7 @@ typedef enum ni_compile_format {
 } ni_compile_format;
 
 int ni_compile(const char *file, ni_compile_format format,
-                   const char *output_file);
+               const char *output_file);
 
 #ifdef __cplusplus
 }

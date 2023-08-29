@@ -1,11 +1,12 @@
 #include "ni/ni.h"
 #include "ast.h"
-#include "parser.h"
-#include "log.h"
-#include "validate.h"
 #include "codegen.h"
+#include "log.h"
+#include "parser.h"
+#include "validate.h"
 
-int ni_compile(const char *file, ni_compile_format format, const char *output_file) {
+int ni_compile(const char *file, ni_compile_format format,
+               const char *output_file) {
   ni_ast_node_list *ast;
   int ret = ni_parse(file, &ast);
   if (ret != 0) {

@@ -1,10 +1,10 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "log.h"
 #include "ast.h"
-#include "validate.h"
+#include "log.h"
 #include "symbol_table.h"
+#include "validate.h"
 
 int ni_validate_function_list(ni_ast_node_list *ast);
 int ni_validate_node_list(ni_ast_node_list *ast);

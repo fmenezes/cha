@@ -5,9 +5,9 @@
 #include <llvm-c/Core.h>
 #include <llvm-c/TargetMachine.h>
 
-#include "log.h"
 #include "ast.h"
 #include "codegen.h"
+#include "log.h"
 #include "symbol_table.h"
 
 int initialize_modules(const char *module_id);
