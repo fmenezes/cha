@@ -5,7 +5,7 @@
 extern "C" {
 #endif
 
-#include "ni/ast.h"
+#include "ast.h"
 
 int ni_validate(ni_ast_node_list *ast);
 

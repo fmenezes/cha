@@ -3,8 +3,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "ni/ast.h"
-#include "ni/parser.h"
+#include "ast.h"
+#include "parser.h"
 #include "log.h"
 
 ni_ast_node_list *parsed_ast;
@@ -19,7 +19,7 @@ int yyerror(const char *msg);
 %locations
 
 %code{
-# include "ni/ast.h"
+# include "ast.h"
 ni_ast_location convert_location(YYLTYPE start, YYLTYPE end);
 }
 

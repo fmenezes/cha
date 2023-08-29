@@ -2,11 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "log.h"
-#include "ni/ast.h"
-#include "ni/codegen.h"
-#include "ni/parser.h"
-#include "ni/validate.h"
+#include "ni/ni.h"
 
 int main(int argc, char *argv[]) {
   if (argc == 2 && strcmp(argv[1], "--version") == 0) {
@@ -28,35 +24,19 @@ int main(int argc, char *argv[]) {
   char *outputfile = argv[2];
   char *inputfile = argv[3];
 
-  ni_ast_codegen_format codegen_format;
+  ni_compile_format compile_format;
   if (strcmp(format, "-s") == 0) {
-    codegen_format = NI_CODEGEN_FORMAT_ASSEMBLY_FILE;
+    compile_format = NI_COMPILE_FORMAT_ASSEMBLY_FILE;
   } else if (strcmp(format, "-c") == 0) {
-    codegen_format = NI_CODEGEN_FORMAT_OBJECT_FILE;
+    compile_format = NI_COMPILE_FORMAT_OBJECT_FILE;
   } else if (strcmp(format, "-ll") == 0) {
-    codegen_format = NI_CODEGEN_FORMAT_LLVM_IR;
+    compile_format = NI_COMPILE_FORMAT_LLVM_IR;
   } else if (strcmp(format, "-o") == 0) {
-    codegen_format = NI_CODEGEN_FORMAT_BINARY_FILE;
+    compile_format = NI_COMPILE_FORMAT_BINARY_FILE;
   } else {
-    log_error("Invalid format: %s\n", format);
+    fprintf(stderr, "invalid format: %s\n", format);
     return 1;
   }
 
-  ni_ast_node_list *ast;
-  int ret = ni_parse(inputfile, &ast);
-  if (ret != 0) {
-    log_error("Could not parse file %s\n", inputfile);
-    return ret;
-  }
-
-  ret = ni_validate(ast);
-  if (ret != 0) {
-    return ret;
-  }
-
-  ret = ni_ast_codegen(ast, codegen_format, outputfile);
-
-  free_ni_ast_node_list(ast);
-
-  return ret;
+  return ni_compile(inputfile, compile_format, outputfile);
 }

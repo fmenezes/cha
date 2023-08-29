@@ -5,9 +5,9 @@
 #include <llvm-c/Core.h>
 #include <llvm-c/TargetMachine.h>
 
+#include "ast.h"
+#include "codegen.h"
 #include "log.h"
-#include "ni/ast.h"
-#include "ni/codegen.h"
 #include "symbol_table.h"
 
 int initialize_modules(const char *module_id);
@@ -277,7 +277,7 @@ int ni_ast_codegen_node_fun(ni_ast_node *ast_node) {
   return ret;
 }
 
-int ni_ast_codegen(ni_ast_node_list *ast, enum ni_ast_codegen_format format,
+int ni_ast_codegen(ni_ast_node_list *ast, ni_compile_format format,
                    const char *file_path) {
   int ret = initialize_modules("nic");
   if (ret != 0) {
@@ -300,7 +300,7 @@ int ni_ast_codegen(ni_ast_node_list *ast, enum ni_ast_codegen_format format,
   LLVMDisposeMessage(errors);
   errors = NULL;
 
-  if (format == NI_CODEGEN_FORMAT_LLVM_IR) {
+  if (format == NI_COMPILE_FORMAT_LLVM_IR) {
     if (LLVMPrintModuleToFile(module, file_path, &errors) != 0) {
       log_error(errors);
       LLVMDisposeMessage(errors);
@@ -311,17 +311,17 @@ int ni_ast_codegen(ni_ast_node_list *ast, enum ni_ast_codegen_format format,
     errors = NULL;
   } else {
     LLVMCodeGenFileType gen_type = LLVMObjectFile;
-    if (format == NI_CODEGEN_FORMAT_ASSEMBLY_FILE) {
+    if (format == NI_COMPILE_FORMAT_ASSEMBLY_FILE) {
       gen_type = LLVMAssemblyFile;
     }
     char *obj_file_path = (char *)file_path;
-    if (format == NI_CODEGEN_FORMAT_BINARY_FILE) {
+    if (format == NI_COMPILE_FORMAT_BINARY_FILE) {
       obj_file_path = malloc(strlen(file_path) + 3);
       sprintf(obj_file_path, "%s.o", file_path);
     }
     if (LLVMTargetMachineEmitToFile(target_machine, module, obj_file_path,
                                     gen_type, &errors) != 0) {
-      if (format == NI_CODEGEN_FORMAT_BINARY_FILE) {
+      if (format == NI_COMPILE_FORMAT_BINARY_FILE) {
         free(obj_file_path);
       }
       log_error(errors);
@@ -332,7 +332,7 @@ int ni_ast_codegen(ni_ast_node_list *ast, enum ni_ast_codegen_format format,
     LLVMDisposeMessage(errors);
     errors = NULL;
 
-    if (format == NI_CODEGEN_FORMAT_BINARY_FILE) {
+    if (format == NI_COMPILE_FORMAT_BINARY_FILE) {
       free_modules();
       char cmd[5000];
       sprintf(cmd, "cc -o %s %s", file_path, obj_file_path);
