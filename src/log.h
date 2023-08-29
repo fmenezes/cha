@@ -5,7 +5,7 @@
 extern "C" {
 #endif
 
-#include "ni/ast.h"
+#include "ast.h"
 
 void log_validation_error(ni_ast_location loc, const char *format, ...);
 void log_error(const char *format, ...);

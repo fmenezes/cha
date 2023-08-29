@@ -2,8 +2,8 @@
 #include <string.h>
 
 #include "log.h"
-#include "ni/ast.h"
-#include "ni/validate.h"
+#include "ast.h"
+#include "validate.h"
 #include "symbol_table.h"
 
 int ni_validate_function_list(ni_ast_node_list *ast);

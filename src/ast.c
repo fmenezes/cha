@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "ni/ast.h"
+#include "ast.h"
 #include "parser.tab.h"
 
 extern ni_ast_node_list *parsed_ast;

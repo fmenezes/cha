@@ -2,8 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "ni/ast.h"
-#include "ni/ast_dump.h"
+#include "ast.h"
+#include "ast_dump.h"
 #include "parser.tab.h"
 
 void ni_ast_dump_node(FILE *out, const ni_ast_node *node);
