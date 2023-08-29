@@ -2,11 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "ast.h"
-#include "codegen.h"
-#include "log.h"
-#include "parser.h"
-#include "validate.h"
+#include "ni/ni.h"
 
 int main(int argc, char *argv[]) {
   if (argc == 2 && strcmp(argv[1], "--version") == 0) {
@@ -38,7 +34,7 @@ int main(int argc, char *argv[]) {
   } else if (strcmp(format, "-o") == 0) {
     compile_format = NI_COMPILE_FORMAT_BINARY_FILE;
   } else {
-    log_error("Invalid format: %s\n", format);
+    fprintf(stderr, "invalid format: %s\n", format);
     return 1;
   }
 
