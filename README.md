@@ -47,3 +47,14 @@ ni -ll output.ll examples/test.ni
 ```
 ni -o output examples/test.ni
 ```
+
+## Ni Programming Language
+
+### Built-in types
+- int8, uint8, int16, uint16, int32, uint32, int64, uint64, int128, uint128
+- float32, float64
+
+Type aliases:
+- int: int32
+- uint: uint32
+- byte: uint8

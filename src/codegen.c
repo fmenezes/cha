@@ -436,11 +436,11 @@ LLVMBool signed_type(ni_ast_node *ast_node) {
   }
 
   switch (ast_node->node_type) {
-  case NI_AST_INTERNAL_TYPE_BYTE:
-  case NI_AST_INTERNAL_TYPE_USHORT:
-  case NI_AST_INTERNAL_TYPE_ULONG:
-  case NI_AST_INTERNAL_TYPE_ULARGE:
-  case NI_AST_INTERNAL_TYPE_UINT:
+  case NI_AST_INTERNAL_TYPE_UINT8:
+  case NI_AST_INTERNAL_TYPE_UINT16:
+  case NI_AST_INTERNAL_TYPE_UINT64:
+  case NI_AST_INTERNAL_TYPE_UINT128:
+  case NI_AST_INTERNAL_TYPE_UINT32:
     return 0;
   default:
     return 1;
@@ -455,26 +455,24 @@ LLVMTypeRef make_type(ni_ast_type *ast_type) {
   }
 
   switch (ast_type->internal_type) {
-  case NI_AST_INTERNAL_TYPE_BYTE:
-  case NI_AST_INTERNAL_TYPE_SBYTE:
+  case NI_AST_INTERNAL_TYPE_UINT8:
+  case NI_AST_INTERNAL_TYPE_INT8:
     return LLVMInt8TypeInContext(context);
-  case NI_AST_INTERNAL_TYPE_INT:
-  case NI_AST_INTERNAL_TYPE_UINT:
+  case NI_AST_INTERNAL_TYPE_INT32:
+  case NI_AST_INTERNAL_TYPE_UINT32:
     return LLVMInt32TypeInContext(context);
-  case NI_AST_INTERNAL_TYPE_SHORT:
-  case NI_AST_INTERNAL_TYPE_USHORT:
+  case NI_AST_INTERNAL_TYPE_INT16:
+  case NI_AST_INTERNAL_TYPE_UINT16:
     return LLVMInt16TypeInContext(context);
-  case NI_AST_INTERNAL_TYPE_LONG:
-  case NI_AST_INTERNAL_TYPE_ULONG:
+  case NI_AST_INTERNAL_TYPE_INT64:
+  case NI_AST_INTERNAL_TYPE_UINT64:
     return LLVMInt64TypeInContext(context);
-  case NI_AST_INTERNAL_TYPE_LARGE:
-  case NI_AST_INTERNAL_TYPE_ULARGE:
+  case NI_AST_INTERNAL_TYPE_INT128:
+  case NI_AST_INTERNAL_TYPE_UINT128:
     return LLVMInt128TypeInContext(context);
-  case NI_AST_INTERNAL_TYPE_SFLOAT:
-    return LLVMHalfTypeInContext(context);
-  case NI_AST_INTERNAL_TYPE_FLOAT:
+  case NI_AST_INTERNAL_TYPE_FLOAT32:
     return LLVMFloatTypeInContext(context);
-  case NI_AST_INTERNAL_TYPE_DOUBLE:
+  case NI_AST_INTERNAL_TYPE_FLOAT64:
     return LLVMDoubleTypeInContext(context);
   }
 

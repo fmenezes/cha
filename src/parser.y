@@ -30,7 +30,7 @@ ni_ast_location convert_location(YYLTYPE start, YYLTYPE end);
   ni_ast_node_list* list;
 }
 
-%token FUN OPENPAR CLOSEPAR OPENCUR CLOSECUR COMMA VAR EQUALS RET PLUS MINUS MULTIPLY REFTYPE_BYTE REFTYPE_SBYTE REFTYPE_SHORT REFTYPE_USHORT REFTYPE_INT REFTYPE_UINT REFTYPE_LONG REFTYPE_ULONG REFTYPE_LARGE REFTYPE_ULARGE REFTYPE_FLOAT REFTYPE_SFLOAT REFTYPE_DOUBLE
+%token FUN OPENPAR CLOSEPAR OPENCUR CLOSECUR COMMA VAR EQUALS RET PLUS MINUS MULTIPLY REFTYPE_INT8 REFTYPE_UINT8 REFTYPE_INT16 REFTYPE_UINT16 REFTYPE_INT32 REFTYPE_UINT32 REFTYPE_INT64 REFTYPE_UINT64 REFTYPE_INT128 REFTYPE_UINT128 REFTYPE_FLOAT32 REFTYPE_FLOAT64
 %token <str> IDENTIFIER NUMBER FLOAT
 
 %nterm <list> instructions block def_args call_args statements
@@ -104,19 +104,18 @@ expr :
 	;
 
 reftype :
-	REFTYPE_BYTE																	{ $$ = make_ni_ast_type_byte(convert_location(@1, @1)); }
-	| REFTYPE_SBYTE																	{ $$ = make_ni_ast_type_sbyte(convert_location(@1, @1)); }
-	| REFTYPE_INT																	{ $$ = make_ni_ast_type_int(convert_location(@1, @1)); }
-	| REFTYPE_UINT																	{ $$ = make_ni_ast_type_uint(convert_location(@1, @1)); }
-	| REFTYPE_SHORT																	{ $$ = make_ni_ast_type_short(convert_location(@1, @1)); }
-	| REFTYPE_USHORT																{ $$ = make_ni_ast_type_ushort(convert_location(@1, @1)); }
-	| REFTYPE_LONG																	{ $$ = make_ni_ast_type_long(convert_location(@1, @1)); }
-	| REFTYPE_ULONG																	{ $$ = make_ni_ast_type_ulong(convert_location(@1, @1)); }
-	| REFTYPE_LARGE																	{ $$ = make_ni_ast_type_large(convert_location(@1, @1)); }
-	| REFTYPE_ULARGE																{ $$ = make_ni_ast_type_ularge(convert_location(@1, @1)); }
-	| REFTYPE_SFLOAT																{ $$ = make_ni_ast_type_sfloat(convert_location(@1, @1)); }
-	| REFTYPE_FLOAT																	{ $$ = make_ni_ast_type_float(convert_location(@1, @1)); }
-	| REFTYPE_DOUBLE																{ $$ = make_ni_ast_type_double(convert_location(@1, @1)); }
+	REFTYPE_INT8																	{ $$ = make_ni_ast_type_int8(convert_location(@1, @1)); }
+	| REFTYPE_UINT8																	{ $$ = make_ni_ast_type_uint8(convert_location(@1, @1)); }
+	| REFTYPE_INT16																	{ $$ = make_ni_ast_type_int16(convert_location(@1, @1)); }
+	| REFTYPE_UINT16																{ $$ = make_ni_ast_type_uint16(convert_location(@1, @1)); }
+	| REFTYPE_INT32																	{ $$ = make_ni_ast_type_int32(convert_location(@1, @1)); }
+	| REFTYPE_UINT32																{ $$ = make_ni_ast_type_uint32(convert_location(@1, @1)); }
+	| REFTYPE_INT64																	{ $$ = make_ni_ast_type_int64(convert_location(@1, @1)); }
+	| REFTYPE_UINT64																{ $$ = make_ni_ast_type_uint64(convert_location(@1, @1)); }
+	| REFTYPE_INT128																{ $$ = make_ni_ast_type_int128(convert_location(@1, @1)); }
+	| REFTYPE_UINT128																{ $$ = make_ni_ast_type_uint128(convert_location(@1, @1)); }
+	| REFTYPE_FLOAT32																{ $$ = make_ni_ast_type_float32(convert_location(@1, @1)); }
+	| REFTYPE_FLOAT64																{ $$ = make_ni_ast_type_float64(convert_location(@1, @1)); }
 	;
 
 const :

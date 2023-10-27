@@ -26,93 +26,86 @@ ni_ast_node *make_ni_ast_node_constant_float(ni_ast_location loc,
   return node;
 }
 
-ni_ast_type *make_ni_ast_type_byte(ni_ast_location loc) {
+ni_ast_type *make_ni_ast_type_uint8(ni_ast_location loc) {
   ni_ast_type *t = malloc(sizeof(ni_ast_type));
-  t->internal_type = NI_AST_INTERNAL_TYPE_BYTE;
+  t->internal_type = NI_AST_INTERNAL_TYPE_UINT8;
   t->location = loc;
   return t;
 }
 
-ni_ast_type *make_ni_ast_type_sbyte(ni_ast_location loc) {
+ni_ast_type *make_ni_ast_type_int8(ni_ast_location loc) {
   ni_ast_type *t = malloc(sizeof(ni_ast_type));
-  t->internal_type = NI_AST_INTERNAL_TYPE_SBYTE;
+  t->internal_type = NI_AST_INTERNAL_TYPE_INT8;
   t->location = loc;
   return t;
 }
 
-ni_ast_type *make_ni_ast_type_short(ni_ast_location loc) {
+ni_ast_type *make_ni_ast_type_int16(ni_ast_location loc) {
   ni_ast_type *t = malloc(sizeof(ni_ast_type));
-  t->internal_type = NI_AST_INTERNAL_TYPE_SHORT;
+  t->internal_type = NI_AST_INTERNAL_TYPE_INT16;
   t->location = loc;
   return t;
 }
 
-ni_ast_type *make_ni_ast_type_ushort(ni_ast_location loc) {
+ni_ast_type *make_ni_ast_type_uint16(ni_ast_location loc) {
   ni_ast_type *t = malloc(sizeof(ni_ast_type));
-  t->internal_type = NI_AST_INTERNAL_TYPE_USHORT;
+  t->internal_type = NI_AST_INTERNAL_TYPE_UINT16;
   t->location = loc;
   return t;
 }
 
-ni_ast_type *make_ni_ast_type_int(ni_ast_location loc) {
+ni_ast_type *make_ni_ast_type_int32(ni_ast_location loc) {
   ni_ast_type *t = malloc(sizeof(ni_ast_type));
-  t->internal_type = NI_AST_INTERNAL_TYPE_INT;
+  t->internal_type = NI_AST_INTERNAL_TYPE_INT32;
   t->location = loc;
   return t;
 }
 
-ni_ast_type *make_ni_ast_type_uint(ni_ast_location loc) {
+ni_ast_type *make_ni_ast_type_uint32(ni_ast_location loc) {
   ni_ast_type *t = malloc(sizeof(ni_ast_type));
-  t->internal_type = NI_AST_INTERNAL_TYPE_UINT;
+  t->internal_type = NI_AST_INTERNAL_TYPE_UINT32;
   t->location = loc;
   return t;
 }
 
-ni_ast_type *make_ni_ast_type_long(ni_ast_location loc) {
+ni_ast_type *make_ni_ast_type_int64(ni_ast_location loc) {
   ni_ast_type *t = malloc(sizeof(ni_ast_type));
-  t->internal_type = NI_AST_INTERNAL_TYPE_LONG;
+  t->internal_type = NI_AST_INTERNAL_TYPE_INT64;
   t->location = loc;
   return t;
 }
 
-ni_ast_type *make_ni_ast_type_ulong(ni_ast_location loc) {
+ni_ast_type *make_ni_ast_type_uint64(ni_ast_location loc) {
   ni_ast_type *t = malloc(sizeof(ni_ast_type));
-  t->internal_type = NI_AST_INTERNAL_TYPE_ULONG;
+  t->internal_type = NI_AST_INTERNAL_TYPE_UINT64;
   t->location = loc;
   return t;
 }
 
-ni_ast_type *make_ni_ast_type_large(ni_ast_location loc) {
+ni_ast_type *make_ni_ast_type_int128(ni_ast_location loc) {
   ni_ast_type *t = malloc(sizeof(ni_ast_type));
-  t->internal_type = NI_AST_INTERNAL_TYPE_LARGE;
+  t->internal_type = NI_AST_INTERNAL_TYPE_INT128;
   t->location = loc;
   return t;
 }
 
-ni_ast_type *make_ni_ast_type_ularge(ni_ast_location loc) {
+ni_ast_type *make_ni_ast_type_uint128(ni_ast_location loc) {
   ni_ast_type *t = malloc(sizeof(ni_ast_type));
-  t->internal_type = NI_AST_INTERNAL_TYPE_ULARGE;
+  t->internal_type = NI_AST_INTERNAL_TYPE_UINT128;
   t->location = loc;
   return t;
 }
 
-ni_ast_type *make_ni_ast_type_sfloat(ni_ast_location loc) {
+ni_ast_type *make_ni_ast_type_float32(ni_ast_location loc) {
   ni_ast_type *t = malloc(sizeof(ni_ast_type));
-  t->internal_type = NI_AST_INTERNAL_TYPE_SFLOAT;
+  t->internal_type = NI_AST_INTERNAL_TYPE_FLOAT32;
   t->location = loc;
   return t;
 }
 
-ni_ast_type *make_ni_ast_type_float(ni_ast_location loc) {
+ni_ast_type *make_ni_ast_type_float64(ni_ast_location loc) {
   ni_ast_type *t = malloc(sizeof(ni_ast_type));
-  t->internal_type = NI_AST_INTERNAL_TYPE_FLOAT;
-  t->location = loc;
-  return t;
-}
-
-ni_ast_type *make_ni_ast_type_double(ni_ast_location loc) {
-  ni_ast_type *t = malloc(sizeof(ni_ast_type));
-  t->internal_type = NI_AST_INTERNAL_TYPE_DOUBLE;
+  t->internal_type = NI_AST_INTERNAL_TYPE_FLOAT64;
   t->location = loc;
   return t;
 }
