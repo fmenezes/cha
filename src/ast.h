@@ -16,19 +16,18 @@ typedef struct ni_ast_location {
 } ni_ast_location;
 
 typedef enum ni_ast_internal_type {
-  NI_AST_INTERNAL_TYPE_LARGE,
-  NI_AST_INTERNAL_TYPE_ULARGE,
-  NI_AST_INTERNAL_TYPE_LONG,
-  NI_AST_INTERNAL_TYPE_ULONG,
-  NI_AST_INTERNAL_TYPE_SHORT,
-  NI_AST_INTERNAL_TYPE_USHORT,
-  NI_AST_INTERNAL_TYPE_INT,
-  NI_AST_INTERNAL_TYPE_UINT,
-  NI_AST_INTERNAL_TYPE_SBYTE,
-  NI_AST_INTERNAL_TYPE_BYTE,
-  NI_AST_INTERNAL_TYPE_SFLOAT,
-  NI_AST_INTERNAL_TYPE_FLOAT,
-  NI_AST_INTERNAL_TYPE_DOUBLE,
+  NI_AST_INTERNAL_TYPE_INT128,
+  NI_AST_INTERNAL_TYPE_UINT128,
+  NI_AST_INTERNAL_TYPE_INT64,
+  NI_AST_INTERNAL_TYPE_UINT64,
+  NI_AST_INTERNAL_TYPE_INT16,
+  NI_AST_INTERNAL_TYPE_UINT16,
+  NI_AST_INTERNAL_TYPE_INT32,
+  NI_AST_INTERNAL_TYPE_UINT32,
+  NI_AST_INTERNAL_TYPE_INT8,
+  NI_AST_INTERNAL_TYPE_UINT8,
+  NI_AST_INTERNAL_TYPE_FLOAT32,
+  NI_AST_INTERNAL_TYPE_FLOAT64,
 } ni_ast_internal_type;
 
 typedef enum ni_ast_node_type {
@@ -121,19 +120,18 @@ ni_ast_node *make_ni_ast_node_constant_float(ni_ast_location loc,
                                              const char *value);
 ni_ast_type *make_ni_ast_type(ni_ast_location loc,
                               ni_ast_internal_type internal_type);
-ni_ast_type *make_ni_ast_type_byte(ni_ast_location loc);
-ni_ast_type *make_ni_ast_type_sbyte(ni_ast_location loc);
-ni_ast_type *make_ni_ast_type_short(ni_ast_location loc);
-ni_ast_type *make_ni_ast_type_ushort(ni_ast_location loc);
-ni_ast_type *make_ni_ast_type_int(ni_ast_location loc);
-ni_ast_type *make_ni_ast_type_uint(ni_ast_location loc);
-ni_ast_type *make_ni_ast_type_long(ni_ast_location loc);
-ni_ast_type *make_ni_ast_type_ulong(ni_ast_location loc);
-ni_ast_type *make_ni_ast_type_large(ni_ast_location loc);
-ni_ast_type *make_ni_ast_type_ularge(ni_ast_location loc);
-ni_ast_type *make_ni_ast_type_sfloat(ni_ast_location loc);
-ni_ast_type *make_ni_ast_type_float(ni_ast_location loc);
-ni_ast_type *make_ni_ast_type_double(ni_ast_location loc);
+ni_ast_type *make_ni_ast_type_int8(ni_ast_location loc);
+ni_ast_type *make_ni_ast_type_uint8(ni_ast_location loc);
+ni_ast_type *make_ni_ast_type_int16(ni_ast_location loc);
+ni_ast_type *make_ni_ast_type_uint16(ni_ast_location loc);
+ni_ast_type *make_ni_ast_type_int32(ni_ast_location loc);
+ni_ast_type *make_ni_ast_type_uint32(ni_ast_location loc);
+ni_ast_type *make_ni_ast_type_int64(ni_ast_location loc);
+ni_ast_type *make_ni_ast_type_uint64(ni_ast_location loc);
+ni_ast_type *make_ni_ast_type_int128(ni_ast_location loc);
+ni_ast_type *make_ni_ast_type_uint128(ni_ast_location loc);
+ni_ast_type *make_ni_ast_type_float32(ni_ast_location loc);
+ni_ast_type *make_ni_ast_type_float64(ni_ast_location loc);
 ni_ast_node *make_ni_ast_node_bin_op(ni_ast_location loc, ni_ast_operator op,
                                      ni_ast_node *left, ni_ast_node *right);
 ni_ast_node *make_ni_ast_node_variable_declaration(ni_ast_location loc,

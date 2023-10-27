@@ -5,6 +5,7 @@
 #include "ast.h"
 #include "ast_dump.h"
 #include "parser.tab.h"
+#include "validate.h"
 
 void ni_ast_dump_node(FILE *out, const ni_ast_node *node);
 void ni_ast_dump_type(FILE *out, const ni_ast_type *type);
@@ -96,47 +97,10 @@ void ni_ast_dump_type(FILE *out, const ni_ast_type *type) {
     return;
   }
 
-  switch (type->internal_type) {
-  case NI_AST_INTERNAL_TYPE_BYTE:
-    fprintf(out, "\"byte\"");
-    break;
-  case NI_AST_INTERNAL_TYPE_SBYTE:
-    fprintf(out, "\"sbyte\"");
-    break;
-  case NI_AST_INTERNAL_TYPE_SHORT:
-    fprintf(out, "\"short\"");
-    break;
-  case NI_AST_INTERNAL_TYPE_USHORT:
-    fprintf(out, "\"ushort\"");
-    break;
-  case NI_AST_INTERNAL_TYPE_INT:
-    fprintf(out, "\"int\"");
-    break;
-  case NI_AST_INTERNAL_TYPE_UINT:
-    fprintf(out, "\"uint\"");
-    break;
-  case NI_AST_INTERNAL_TYPE_LONG:
-    fprintf(out, "\"long\"");
-    break;
-  case NI_AST_INTERNAL_TYPE_ULONG:
-    fprintf(out, "\"ulong\"");
-    break;
-  case NI_AST_INTERNAL_TYPE_LARGE:
-    fprintf(out, "\"large\"");
-    break;
-  case NI_AST_INTERNAL_TYPE_ULARGE:
-    fprintf(out, "\"ularge\"");
-    break;
-  case NI_AST_INTERNAL_TYPE_FLOAT:
-    fprintf(out, "\"float\"");
-    break;
-  case NI_AST_INTERNAL_TYPE_SFLOAT:
-    fprintf(out, "\"sfloat\"");
-    break;
-  case NI_AST_INTERNAL_TYPE_DOUBLE:
-    fprintf(out, "\"double\"");
-    break;
-  }
+  char *tmp;
+  type_str(type, tmp);
+  fprintf(out, "\"%s\"", tmp);
+  free(tmp);
 }
 
 void ni_ast_dump(FILE *out, const ni_ast_node_list *ast) {

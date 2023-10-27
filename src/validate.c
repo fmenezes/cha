@@ -20,7 +20,6 @@ int ni_validate_node_ret(ni_ast_node *ast_node);
 int ni_validate_const_num(ni_ast_node *ast_node);
 int ni_validate_const_float(ni_ast_node *ast_node);
 int type_cmp(ni_ast_type *ast_type_1, ni_ast_type *ast_type_2);
-void type_str(ni_ast_type *ast_type, char **str);
 
 symbol_table *fn_validate_table = NULL;
 symbol_table *var_validate_table = NULL;
@@ -28,13 +27,13 @@ ni_ast_node *fun = NULL;
 
 int ni_validate_const_num(ni_ast_node *ast_node) {
   ast_node->_result_type =
-      make_ni_ast_type(ast_node->location, NI_AST_INTERNAL_TYPE_INT);
+      make_ni_ast_type(ast_node->location, NI_AST_INTERNAL_TYPE_INT32);
   return 0;
 }
 
 int ni_validate_const_float(ni_ast_node *ast_node) {
   ast_node->_result_type =
-      make_ni_ast_type(ast_node->location, NI_AST_INTERNAL_TYPE_FLOAT);
+      make_ni_ast_type(ast_node->location, NI_AST_INTERNAL_TYPE_FLOAT64);
   return 0;
 }
 
@@ -364,7 +363,7 @@ int type_cmp(ni_ast_type *ast_type_1, ni_ast_type *ast_type_2) {
   return 1;
 }
 
-void type_str(ni_ast_type *ast_type, char **str) {
+void type_str(const ni_ast_type *ast_type, char **str) {
   if (str == NULL) {
     return;
   }
@@ -374,44 +373,41 @@ void type_str(ni_ast_type *ast_type, char **str) {
     sprintf(out, "void");
   } else {
     switch (ast_type->internal_type) {
-    case NI_AST_INTERNAL_TYPE_BYTE:
-      sprintf(out, "byte");
+    case NI_AST_INTERNAL_TYPE_UINT8:
+      sprintf(out, "uint8");
       break;
-    case NI_AST_INTERNAL_TYPE_SBYTE:
-      sprintf(out, "sbyte");
+    case NI_AST_INTERNAL_TYPE_INT8:
+      sprintf(out, "int8");
       break;
-    case NI_AST_INTERNAL_TYPE_SHORT:
-      sprintf(out, "short");
+    case NI_AST_INTERNAL_TYPE_INT16:
+      sprintf(out, "int16");
       break;
-    case NI_AST_INTERNAL_TYPE_USHORT:
-      sprintf(out, "ushort");
+    case NI_AST_INTERNAL_TYPE_UINT16:
+      sprintf(out, "uint16");
       break;
-    case NI_AST_INTERNAL_TYPE_INT:
-      sprintf(out, "int");
+    case NI_AST_INTERNAL_TYPE_INT32:
+      sprintf(out, "int32");
       break;
-    case NI_AST_INTERNAL_TYPE_UINT:
-      sprintf(out, "uint");
+    case NI_AST_INTERNAL_TYPE_UINT32:
+      sprintf(out, "uint32");
       break;
-    case NI_AST_INTERNAL_TYPE_LONG:
-      sprintf(out, "long");
+    case NI_AST_INTERNAL_TYPE_INT64:
+      sprintf(out, "int64");
       break;
-    case NI_AST_INTERNAL_TYPE_ULONG:
-      sprintf(out, "ulong");
+    case NI_AST_INTERNAL_TYPE_UINT64:
+      sprintf(out, "uint64");
       break;
-    case NI_AST_INTERNAL_TYPE_LARGE:
-      sprintf(out, "large");
+    case NI_AST_INTERNAL_TYPE_INT128:
+      sprintf(out, "int128");
       break;
-    case NI_AST_INTERNAL_TYPE_ULARGE:
-      sprintf(out, "ularge");
+    case NI_AST_INTERNAL_TYPE_UINT128:
+      sprintf(out, "uint128");
       break;
-    case NI_AST_INTERNAL_TYPE_FLOAT:
-      sprintf(out, "float");
+    case NI_AST_INTERNAL_TYPE_FLOAT32:
+      sprintf(out, "float32");
       break;
-    case NI_AST_INTERNAL_TYPE_SFLOAT:
-      sprintf(out, "sfloat");
-      break;
-    case NI_AST_INTERNAL_TYPE_DOUBLE:
-      sprintf(out, "double");
+    case NI_AST_INTERNAL_TYPE_FLOAT64:
+      sprintf(out, "float64");
       break;
     }
   }

@@ -31,56 +31,64 @@ identifier [_a-zA-Z][_a-zA-Z0-9]{0,31}
 	return RET;
 }
 
-"byte" {
-	return REFTYPE_BYTE;
+"int8" {
+	return REFTYPE_INT8;
 }
 
-"sbyte" {
-	return REFTYPE_SBYTE;
+"uint8" {
+	return REFTYPE_UINT8;
 }
 
-"short" {
-	return REFTYPE_SHORT;
+"byte" { // type alias for uint8
+	return REFTYPE_UINT8;
 }
 
-"ushort" {
-	return REFTYPE_USHORT;
+"int16" {
+	return REFTYPE_INT16;
 }
 
-"int" {
-	return REFTYPE_INT;
+"uint16" {
+	return REFTYPE_UINT16;
 }
 
-"uint" {
-	return REFTYPE_UINT;
+"int32" {
+	return REFTYPE_INT32;
 }
 
-"long" {
-	return REFTYPE_LONG;
+"uint32" {
+	return REFTYPE_UINT32;
 }
 
-"ulong" {
-	return REFTYPE_ULONG;
+"int" { // type alias for int32
+	return REFTYPE_INT32;
 }
 
-"large" {
-	return REFTYPE_LARGE;
+"uint" { // type alias for uint32
+	return REFTYPE_UINT32;
 }
 
-"ularge" {
-	return REFTYPE_ULARGE;
+"int64" {
+	return REFTYPE_INT64;
 }
 
-"double" {
-	return REFTYPE_DOUBLE;
+"uint64" {
+	return REFTYPE_UINT64;
 }
 
-"float" {
-	return REFTYPE_FLOAT;
+"int128" {
+	return REFTYPE_INT128;
 }
 
-"sfloat" {
-	return REFTYPE_SFLOAT;
+"uint128" {
+	return REFTYPE_UINT128;
+}
+
+"float32" {
+	return REFTYPE_FLOAT32;
+}
+
+"float64" {
+	return REFTYPE_FLOAT64;
 }
 
 {identifier} {

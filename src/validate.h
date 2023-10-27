@@ -8,6 +8,7 @@ extern "C" {
 #include "ast.h"
 
 int ni_validate(ni_ast_node_list *ast);
+void type_str(const ni_ast_type *ast_type, char **str);
 
 #ifdef __cplusplus
 }
