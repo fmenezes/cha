@@ -4,8 +4,8 @@
 
 #include "ast.h"
 #include "ast_dump.h"
-#include "validate.h"
 #include "parser.tab.h"
+#include "validate.h"
 
 void ni_ast_dump_node(FILE *out, const ni_ast_node *node);
 void ni_ast_dump_type(FILE *out, const ni_ast_type *type);
