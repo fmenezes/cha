@@ -54,7 +54,8 @@ ni -o output examples/test.ni
 
 | Types | Values |
 | --- | --- |
-| int8, uint8, int16, uint16, int32, uint32, int64, uint64, int128, uint128 | 1, 10000, -14, 0x2A
+| int8, int16, int32, int64, int128 | 1, 10000, -14, 0x2A
+| uint8, uint16, uint32, uint64, uint128 | 1, 10000, 0x2A
 | float32, float64 | 0.34, 1234.55, -23.67 |
 
 Type aliases:
@@ -70,3 +71,11 @@ Type aliases:
 | + | a + 2 |
 | - | a - 2 |
 | * | a * 2 |
+
+### Functions
+
+```
+fun square(a int) int {
+    ret a * a
+}
+```
