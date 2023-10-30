@@ -51,10 +51,31 @@ ni -o output examples/test.ni
 ## Ni Programming Language
 
 ### Built-in types
-- int8, uint8, int16, uint16, int32, uint32, int64, uint64, int128, uint128
-- float32, float64
+
+| Types | Values |
+| --- | --- |
+| int8, int16, int32, int64, int128 | 1, 10000, -14, 0x2A
+| uint8, uint16, uint32, uint64, uint128 | 1, 10000, 0x2A
+| float32, float64 | 0.34, 1234.55, -23.67 |
 
 Type aliases:
 - int: int32
 - uint: uint32
 - byte: uint8
+
+### Operators
+
+| Operator | Example |
+| --- | --- |
+| = | a = 10 |
+| + | a + 2 |
+| - | a - 2 |
+| * | a * 2 |
+
+### Functions
+
+```
+fun square(a int) int {
+    ret a * a
+}
+```
