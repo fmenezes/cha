@@ -8,7 +8,7 @@ extern "C" {
 #include <stdio.h>
 
 typedef struct ni_ast_location {
-  char *file;
+  char file[500];
   int line_begin;
   int column_begin;
   int line_end;

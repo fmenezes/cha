@@ -97,10 +97,9 @@ void ni_ast_dump_type(FILE *out, const ni_ast_type *type) {
     return;
   }
 
-  char *tmp;
-  type_str(type, tmp);
+  char tmp[TYPE_STR_LEN];
+  type_str(tmp, type);
   fprintf(out, "\"%s\"", tmp);
-  free(tmp);
 }
 
 void ni_ast_dump(FILE *out, const ni_ast_node_list *ast) {

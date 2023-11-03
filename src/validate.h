@@ -7,8 +7,10 @@ extern "C" {
 
 #include "ast.h"
 
+#define TYPE_STR_LEN 30
+
 int ni_validate(ni_ast_node_list *ast);
-void type_str(const ni_ast_type *ast_type, char **str);
+void type_str(char *out, const ni_ast_type *ast_type);
 
 #ifdef __cplusplus
 }

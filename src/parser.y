@@ -132,7 +132,7 @@ int yyerror(const char *msg) {
 
 ni_ast_location convert_location(YYLTYPE start, YYLTYPE end) {
   ni_ast_location location;
-  location.file = strdup(current_file);
+  sprintf(location.file, "%s", current_file);
   location.line_begin = start.first_line;
   location.column_begin = start.first_column;
   location.line_end = end.last_line;
