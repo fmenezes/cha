@@ -19,7 +19,7 @@ int ni_validate_node_call(ni_ast_node *ast_node);
 int ni_validate_node_ret(ni_ast_node *ast_node);
 int ni_validate_const_num(ni_ast_node *ast_node);
 int ni_validate_const_float(ni_ast_node *ast_node);
-int type_cmp(ni_ast_type *ast_type_1, ni_ast_type *ast_type_2);
+int type_cmp(const ni_ast_type *ast_type_1, const ni_ast_type *ast_type_2);
 
 symbol_table *fn_validate_table = NULL;
 symbol_table *var_validate_table = NULL;
@@ -180,15 +180,13 @@ int ni_validate_node_var_assign(ni_ast_node *ast_node) {
 
   if (type_cmp(ast_node->variable_assignment.value->_result_type,
                v->node->variable_declaration.type) != 0) {
-    char *expected_type = NULL;
-    char *got_type = NULL;
-    type_str(v->node->variable_declaration.type, &expected_type);
-    type_str(ast_node->variable_assignment.value->_result_type, &got_type);
+    char expected_type[TYPE_STR_LEN];
+    char got_type[TYPE_STR_LEN];
+    type_str(expected_type, v->node->variable_declaration.type);
+    type_str(got_type, ast_node->variable_assignment.value->_result_type);
     log_validation_error(ast_node->location,
                          "type mismatch expects '%s' passed '%s'",
                          expected_type, got_type);
-    free(expected_type);
-    free(got_type);
     return 1;
   }
 
@@ -229,17 +227,14 @@ int ni_validate_node_bin_op(ni_ast_node *ast_node) {
       break;
     }
 
-    char *ltype = NULL;
-    char *rtype = NULL;
-    type_str(ast_node->bin_op.left->_result_type, &ltype);
-    type_str(ast_node->bin_op.right->_result_type, &rtype);
+    char ltype[TYPE_STR_LEN];
+    char rtype[TYPE_STR_LEN];
+    type_str(ltype, ast_node->bin_op.left->_result_type);
+    type_str(rtype, ast_node->bin_op.right->_result_type);
 
     log_validation_error(ast_node->location,
                          "incompatible types found: %s %s %s", ltype, op,
                          rtype);
-
-    free(ltype);
-    free(rtype);
 
     return 1;
   }
@@ -298,15 +293,13 @@ int ni_validate_node_call(ni_ast_node *ast_node) {
           ret_arg =
               type_cmp(arg->node->_result_type, def_arg->node->argument.type);
           if (ret_arg != 0) {
-            char *expected_type = NULL;
-            char *got_type = NULL;
-            type_str(def_arg->node->argument.type, &expected_type);
-            type_str(arg->node->_result_type, &got_type);
+            char expected_type[TYPE_STR_LEN];
+            char got_type[TYPE_STR_LEN];
+            type_str(expected_type, def_arg->node->argument.type);
+            type_str(got_type, arg->node->_result_type);
             log_validation_error(arg->node->location,
                                  "type mismatch expects '%s' passed '%s'",
                                  expected_type, got_type);
-            free(expected_type);
-            free(got_type);
             ret = ret_arg;
           }
           arg = arg->next;
@@ -335,22 +328,20 @@ int ni_validate_node_ret(ni_ast_node *ast_node) {
   int type_ret = type_cmp(ast_node->function_return.value->_result_type,
                           fun->function_declaration.return_type);
   if (type_ret != 0) {
-    char *expected_type = NULL;
-    char *got_type = NULL;
-    type_str(fun->function_declaration.return_type, &expected_type);
-    type_str(ast_node->function_return.value->_result_type, &got_type);
+    char expected_type[TYPE_STR_LEN];
+    char got_type[TYPE_STR_LEN];
+    type_str(expected_type, fun->function_declaration.return_type);
+    type_str(got_type, ast_node->function_return.value->_result_type);
     log_validation_error(ast_node->location,
                          "return type mismatch expects '%s' passed '%s'",
                          expected_type, got_type);
-    free(expected_type);
-    free(got_type);
     ret = type_ret;
   }
 
   return ret;
 }
 
-int type_cmp(ni_ast_type *ast_type_1, ni_ast_type *ast_type_2) {
+int type_cmp(const ni_ast_type *ast_type_1, const ni_ast_type *ast_type_2) {
   if (ast_type_1 == NULL && ast_type_2 == NULL) {
     return 0;
   }
@@ -363,21 +354,20 @@ int type_cmp(ni_ast_type *ast_type_1, ni_ast_type *ast_type_2) {
   return 1;
 }
 
-void type_str(const ni_ast_type *ast_type, char **str) {
-  if (str == NULL) {
+void type_str(char *out, const ni_ast_type *ast_type) {
+  if (out == NULL) {
     return;
   }
 
-  char out[30];
   if (ast_type == NULL) {
     sprintf(out, "void");
   } else {
     switch (ast_type->internal_type) {
-    case NI_AST_INTERNAL_TYPE_UINT8:
-      sprintf(out, "uint8");
-      break;
     case NI_AST_INTERNAL_TYPE_INT8:
       sprintf(out, "int8");
+      break;
+    case NI_AST_INTERNAL_TYPE_UINT8:
+      sprintf(out, "uint8");
       break;
     case NI_AST_INTERNAL_TYPE_INT16:
       sprintf(out, "int16");
@@ -411,5 +401,4 @@ void type_str(const ni_ast_type *ast_type, char **str) {
       break;
     }
   }
-  *str = strdup(out);
 }

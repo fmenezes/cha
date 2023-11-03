@@ -35,7 +35,7 @@ int insert_symbol_table(symbol_table *table, const char *key, ni_ast_node *node,
   }
 
   entry = malloc(sizeof(symbol_entry));
-  entry->key = strdup(key);
+  sprintf(entry->key, "%s", key);
   entry->next = NULL;
   entry->value = malloc(sizeof(symbol_value));
   entry->value->node = node;
@@ -71,7 +71,6 @@ void free_symbol_table(symbol_table *table) {
     symbol_entry *entry = table->entries[i].head;
     while (entry != NULL) {
       symbol_entry *next = entry->next;
-      free(entry->key);
       free(entry->value);
       free(entry);
       entry = next;

@@ -219,7 +219,6 @@ ni_ast_type *make_ni_ast_type(ni_ast_location loc,
   ni_ast_type *t = malloc(sizeof(ni_ast_type));
   t->internal_type = internal_type;
   t->location = loc;
-  t->location.file = strdup(loc.file);
   return t;
 }
 
@@ -227,8 +226,6 @@ void free_ni_ast_type(ni_ast_type *type) {
   if (type == NULL) {
     return;
   }
-
-  free(type->location.file);
   free(type);
 }
 
@@ -280,7 +277,6 @@ void free_ni_ast_node(ni_ast_node *node) {
   }
 
   free_ni_ast_type(node->_result_type);
-  free(node->location.file);
   free(node);
 }
 

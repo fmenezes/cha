@@ -24,10 +24,11 @@ void check_failure(const char *file, const char *expected_file,
   cleanup();
   if (ret == 0) {
     fprintf(stderr, "\"%s\" returned 0 expected non-zero\n", cmd);
+    free(got_msg);
     exit(1);
   }
   if (strstr(got_msg, msg) == NULL) {
-    fprintf(stderr, "expected: \"%s\", got : \"%s\"\n", msg, got_msg);
+    fprintf(stderr, "expected: \"%s\", got: \"%s\"\n", msg, got_msg);
     free(got_msg);
     exit(1);
   }

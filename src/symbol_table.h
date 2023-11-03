@@ -33,7 +33,7 @@ struct symbol_entry_list {
 };
 
 struct symbol_entry {
-  char *key;
+  char key[30];
   symbol_value *value;
   symbol_entry *next;
 };
