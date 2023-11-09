@@ -126,6 +126,8 @@ int main(int argc, char *argv[], char **envp) {
                 "variable 'a' already defined");
   check_failure(inputPath, "validation_var_redefined2.ni",
                 "variable 'a' already defined");
+  check_failure(inputPath, "validation_types_overflow.ni",
+                "value '-300' incompatible with 'uint8' type");
 
   fprintf(stderr, "\"%s\" is unknown\n", inputPath);
   return 1;
