@@ -6,12 +6,22 @@
 
 extern ni_ast_node_list *parsed_ast;
 
-ni_ast_node *make_ni_ast_node_constant_number(ni_ast_location loc,
-                                              const char *value) {
+ni_ast_node *make_ni_ast_node_constant_integer(ni_ast_location loc,
+                                               const char *value) {
   ni_ast_node *node = malloc(sizeof(ni_ast_node));
-  node->node_type = NI_AST_NODE_TYPE_CONSTANT_NUMBER;
+  node->node_type = NI_AST_NODE_TYPE_CONSTANT_INT;
   node->location = loc;
-  node->_result_type = NULL;
+  node->_result_type = make_ni_ast_type(loc, NI_AST_INTERNAL_TYPE_CONST_INT);
+  node->const_value = strdup(value);
+  return node;
+}
+
+ni_ast_node *make_ni_ast_node_constant_unsigned_integer(ni_ast_location loc,
+                                                        const char *value) {
+  ni_ast_node *node = malloc(sizeof(ni_ast_node));
+  node->node_type = NI_AST_NODE_TYPE_CONSTANT_UINT;
+  node->location = loc;
+  node->_result_type = make_ni_ast_type(loc, NI_AST_INTERNAL_TYPE_CONST_UINT);
   node->const_value = strdup(value);
   return node;
 }
@@ -21,7 +31,7 @@ ni_ast_node *make_ni_ast_node_constant_float(ni_ast_location loc,
   ni_ast_node *node = malloc(sizeof(ni_ast_node));
   node->node_type = NI_AST_NODE_TYPE_CONSTANT_FLOAT;
   node->location = loc;
-  node->_result_type = NULL;
+  node->_result_type = make_ni_ast_type(loc, NI_AST_INTERNAL_TYPE_CONST_FLOAT);
   node->const_value = strdup(value);
   return node;
 }
@@ -92,6 +102,13 @@ ni_ast_type *make_ni_ast_type_int128(ni_ast_location loc) {
 ni_ast_type *make_ni_ast_type_uint128(ni_ast_location loc) {
   ni_ast_type *t = malloc(sizeof(ni_ast_type));
   t->internal_type = NI_AST_INTERNAL_TYPE_UINT128;
+  t->location = loc;
+  return t;
+}
+
+ni_ast_type *make_ni_ast_type_float16(ni_ast_location loc) {
+  ni_ast_type *t = malloc(sizeof(ni_ast_type));
+  t->internal_type = NI_AST_INTERNAL_TYPE_FLOAT16;
   t->location = loc;
   return t;
 }
@@ -235,7 +252,7 @@ void free_ni_ast_node(ni_ast_node *node) {
   }
 
   switch (node->node_type) {
-  case NI_AST_NODE_TYPE_CONSTANT_NUMBER:
+  case NI_AST_NODE_TYPE_CONSTANT_INT:
   case NI_AST_NODE_TYPE_CONSTANT_FLOAT:
     free(node->const_value);
     break;

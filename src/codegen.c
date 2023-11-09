@@ -44,7 +44,8 @@ int ni_ast_codegen_node(ni_ast_node *ast_node) {
     return 0;
   }
   switch (ast_node->node_type) {
-  case NI_AST_NODE_TYPE_CONSTANT_NUMBER:
+  case NI_AST_NODE_TYPE_CONSTANT_INT:
+  case NI_AST_NODE_TYPE_CONSTANT_UINT:
     return ni_ast_codegen_node_constant_number(ast_node);
   case NI_AST_NODE_TYPE_CONSTANT_FLOAT:
     return ni_ast_codegen_node_constant_float(ast_node);
@@ -105,14 +106,16 @@ int ni_ast_codegen_node_constant_number(ni_ast_node *ast_node) {
     radix = 10;
   }
 
-  return_operand = LLVMConstIntOfString(LLVMInt32TypeInContext(context),
-                                        ast_node->const_value, radix);
+  LLVMTypeRef t = make_type(ast_node->_result_type);
+
+  return_operand = LLVMConstIntOfString(t, ast_node->const_value, radix);
   return 0;
 }
 
 int ni_ast_codegen_node_constant_float(ni_ast_node *ast_node) {
-  return_operand = LLVMConstRealOfString(LLVMFloatTypeInContext(context),
-                                         ast_node->const_value);
+  LLVMTypeRef t = make_type(ast_node->_result_type);
+
+  return_operand = LLVMConstRealOfString(t, ast_node->const_value);
   return 0;
 }
 
@@ -458,18 +461,22 @@ LLVMTypeRef make_type(ni_ast_type *ast_type) {
   case NI_AST_INTERNAL_TYPE_UINT8:
   case NI_AST_INTERNAL_TYPE_INT8:
     return LLVMInt8TypeInContext(context);
-  case NI_AST_INTERNAL_TYPE_INT32:
-  case NI_AST_INTERNAL_TYPE_UINT32:
-    return LLVMInt32TypeInContext(context);
   case NI_AST_INTERNAL_TYPE_INT16:
   case NI_AST_INTERNAL_TYPE_UINT16:
     return LLVMInt16TypeInContext(context);
+  case NI_AST_INTERNAL_TYPE_CONST_UINT:
+  case NI_AST_INTERNAL_TYPE_CONST_INT:
+  case NI_AST_INTERNAL_TYPE_INT32:
+  case NI_AST_INTERNAL_TYPE_UINT32:
+    return LLVMInt32TypeInContext(context);
   case NI_AST_INTERNAL_TYPE_INT64:
   case NI_AST_INTERNAL_TYPE_UINT64:
     return LLVMInt64TypeInContext(context);
   case NI_AST_INTERNAL_TYPE_INT128:
   case NI_AST_INTERNAL_TYPE_UINT128:
     return LLVMInt128TypeInContext(context);
+  case NI_AST_INTERNAL_TYPE_FLOAT16:
+    return LLVMHalfTypeInContext(context);
   case NI_AST_INTERNAL_TYPE_FLOAT32:
     return LLVMFloatTypeInContext(context);
   case NI_AST_INTERNAL_TYPE_FLOAT64:

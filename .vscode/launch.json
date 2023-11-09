@@ -1,0 +1,25 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug test_bin.ni",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceRoot}/build/ni",
+            "args": [ "-o", "${workspaceRoot}/build/test_bin", "${workspaceRoot}/test/test_bin.ni" ],
+            "cwd": "${workspaceRoot}/build"
+        },
+        {
+            "name": "Debug ctest test_bin.ni",
+            "type": "cppdbg",
+            "request": "launch",
+            "environment": [{"name":"PATH","value":"${workspaceRoot}/build:${env:PATH}"}],
+            "program": "${workspaceRoot}/build/ni_test",
+            "args": [ "test_bin.ni" ],
+            "cwd": "${workspaceRoot}/test"
+        }
+    ]
+}

@@ -58,12 +58,16 @@ void check_success(const char *file, const char *expected_file) {
 
   char cmd[1000];
   sprintf(cmd, "ni -ll out.ll %s 2>&1", file);
-  int ret = run_process(cmd, NULL);
+  char *got_msg = NULL;
+  int ret = run_process(cmd, &got_msg);
   cleanup();
   if (ret != 0) {
-    fprintf(stderr, "\"%s\" returned %d expected 0\n", cmd, ret);
+    fprintf(stderr, "\"%s\" returned %d expected 0\nerror message:%s\n", cmd,
+            ret, got_msg);
+    free(got_msg);
     exit(1);
   }
+  free(got_msg);
   exit(0);
 }
 
@@ -94,6 +98,7 @@ int main(int argc, char *argv[], char **envp) {
 
   check_bin(inputPath, "test_bin.ni");
   check_success(inputPath, "parse_passes.ni");
+  check_success(inputPath, "type_assign_passes.ni");
   check_failure(inputPath, "parse_failure.ni", "syntax error");
   check_success(inputPath, "validation_passes.ni");
   check_failure(inputPath, "validation_arg_dup.ni",
@@ -111,9 +116,9 @@ int main(int argc, char *argv[], char **envp) {
   check_failure(inputPath, "validation_ret_mismatch.ni",
                 "return type mismatch expects 'int32' passed 'uint8'");
   check_failure(inputPath, "validation_type_mismatch.ni",
-                "type mismatch expects 'uint8' passed 'int32'");
+                "type mismatch expects 'int32' passed 'uint8'");
   check_failure(inputPath, "validation_type_mismatch2.ni",
-                "type mismatch expects 'uint8' passed 'int32'");
+                "incompatible types found: int32 + uint8");
   check_failure(inputPath, "validation_var_not_found.ni",
                 "variable 'a' not found");
   check_failure(inputPath, "validation_var_redefined.ni",

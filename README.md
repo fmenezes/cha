@@ -56,7 +56,7 @@ ni -o output examples/test.ni
 | --- | --- |
 | int8, int16, int32, int64, int128 | 1, 10000, -14, 0x2A
 | uint8, uint16, uint32, uint64, uint128 | 1, 10000, 0x2A
-| float32, float64 | 0.34, 1234.55, -23.67 |
+| float16, float32, float64 | 0.34, 1234.55, -23.67 |
 
 Type aliases:
 - int: int32

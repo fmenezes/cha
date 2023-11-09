@@ -15,8 +15,9 @@ int yycolumn = 1;
 %option noyywrap yylineno
 
 /* RegEx */
-number -?[0-9]+|0[xX][0-9A-Fa-f]+
-float -?[0-9]+\.[0-9]+
+integer [+-]?[0-9]+|0[xX][0-9A-Fa-f]+
+uinteger ([+-]?[0-9]+|0[xX][0-9A-Fa-f]+)u
+float [+-]?[0-9]+\.[0-9]+
 identifier [_a-zA-Z][_a-zA-Z0-9]{0,31}
 %%
 "var" {
@@ -83,6 +84,10 @@ identifier [_a-zA-Z][_a-zA-Z0-9]{0,31}
 	return REFTYPE_UINT128;
 }
 
+"float16" {
+	return REFTYPE_FLOAT16;
+}
+
 "float32" {
 	return REFTYPE_FLOAT32;
 }
@@ -96,9 +101,14 @@ identifier [_a-zA-Z][_a-zA-Z0-9]{0,31}
 	return IDENTIFIER;
 }
 
-{number} {
+{integer} {
 	yylval = strdup(yytext);
-	return NUMBER;
+	return INTEGER;
+}
+
+{uinteger} {
+	yylval = strdup(yytext);
+	return UINTEGER;
 }
 
 {float} {
