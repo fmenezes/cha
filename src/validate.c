@@ -332,8 +332,8 @@ int ni_validate_node_call(ni_ast_node *ast_node) {
     if (ni_validate_node(arg->node) != 0) {
       ret = 1;
     }
-    if (ni_check_type_assignment(
-            arg->node, def_arg->node->argument.type) != 0) {
+    if (ni_check_type_assignment(arg->node, def_arg->node->argument.type) !=
+        0) {
       char expected_type[TYPE_STR_LEN];
       char got_type[TYPE_STR_LEN];
       type_str(expected_type, def_arg->node->argument.type);

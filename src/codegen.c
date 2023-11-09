@@ -108,16 +108,14 @@ int ni_ast_codegen_node_constant_number(ni_ast_node *ast_node) {
 
   LLVMTypeRef t = make_type(ast_node->_result_type);
 
-  return_operand = LLVMConstIntOfString(t,
-                                        ast_node->const_value, radix);
+  return_operand = LLVMConstIntOfString(t, ast_node->const_value, radix);
   return 0;
 }
 
 int ni_ast_codegen_node_constant_float(ni_ast_node *ast_node) {
   LLVMTypeRef t = make_type(ast_node->_result_type);
 
-  return_operand = LLVMConstRealOfString(t,
-                                         ast_node->const_value);
+  return_operand = LLVMConstRealOfString(t, ast_node->const_value);
   return 0;
 }
 

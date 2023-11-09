@@ -17,7 +17,7 @@ ni_ast_node *make_ni_ast_node_constant_integer(ni_ast_location loc,
 }
 
 ni_ast_node *make_ni_ast_node_constant_unsigned_integer(ni_ast_location loc,
-                                               const char *value) {
+                                                        const char *value) {
   ni_ast_node *node = malloc(sizeof(ni_ast_node));
   node->node_type = NI_AST_NODE_TYPE_CONSTANT_UINT;
   node->location = loc;

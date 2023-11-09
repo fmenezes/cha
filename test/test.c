@@ -62,7 +62,8 @@ void check_success(const char *file, const char *expected_file) {
   int ret = run_process(cmd, &got_msg);
   cleanup();
   if (ret != 0) {
-    fprintf(stderr, "\"%s\" returned %d expected 0\nerror message:%s\n", cmd, ret, got_msg);
+    fprintf(stderr, "\"%s\" returned %d expected 0\nerror message:%s\n", cmd,
+            ret, got_msg);
     free(got_msg);
     exit(1);
   }
