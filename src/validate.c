@@ -6,7 +6,7 @@
 #include "symbol_table.h"
 #include "validate.h"
 
-int ni_validate_function_list(ni_ast_node_list *ast);
+int ni_validate_top_level(ni_ast_node_list *ast);
 int ni_validate_node_list(ni_ast_node_list *ast);
 int ni_validate_node(ni_ast_node *ast_node);
 int ni_validate_node_fun(ni_ast_node *ast_node);
@@ -17,42 +17,68 @@ int ni_validate_node_var_lookup(ni_ast_node *ast_node);
 int ni_validate_node_bin_op(ni_ast_node *ast_node);
 int ni_validate_node_call(ni_ast_node *ast_node);
 int ni_validate_node_ret(ni_ast_node *ast_node);
-int ni_validate_const_num(ni_ast_node *ast_node);
-int ni_validate_const_float(ni_ast_node *ast_node);
-int type_cmp(const ni_ast_type *ast_type_1, const ni_ast_type *ast_type_2);
+int ni_check_type_assignment(ni_ast_node *ast_node,
+                             const ni_ast_type *ast_type);
+void ni_set_type_on_const(ni_ast_node *ast_node,
+                          ni_ast_internal_type internal_type);
 
-symbol_table *fn_validate_table = NULL;
-symbol_table *var_validate_table = NULL;
+symbol_table *fn_top_level_table = NULL;
+symbol_table *fun_table = NULL;
 ni_ast_node *fun = NULL;
 
-int ni_validate_const_num(ni_ast_node *ast_node) {
-  ast_node->_result_type =
-      make_ni_ast_type(ast_node->location, NI_AST_INTERNAL_TYPE_INT32);
-  return 0;
-}
+// clang-format off
+ni_ast_internal_type convert_bin_op[16][16] = {
+/*                                       NI_AST_INTERNAL_TYPE_CONST_INT     NI_AST_INTERNAL_TYPE_INT8          NI_AST_INTERNAL_TYPE_INT16         NI_AST_INTERNAL_TYPE_INT32         NI_AST_INTERNAL_TYPE_INT64         NI_AST_INTERNAL_TYPE_INT128        NI_AST_INTERNAL_TYPE_CONST_UINT    NI_AST_INTERNAL_TYPE_UINT8         NI_AST_INTERNAL_TYPE_UINT16        NI_AST_INTERNAL_TYPE_UINT32        NI_AST_INTERNAL_TYPE_UINT64        NI_AST_INTERNAL_TYPE_UINT128       NI_AST_INTERNAL_TYPE_CONST_FLOAT   NI_AST_INTERNAL_TYPE_FLOAT16       NI_AST_INTERNAL_TYPE_FLOAT32       NI_AST_INTERNAL_TYPE_FLOAT64     */
+/* NI_AST_INTERNAL_TYPE_CONST_INT   */ { NI_AST_INTERNAL_TYPE_CONST_INT,    NI_AST_INTERNAL_TYPE_INT8,         NI_AST_INTERNAL_TYPE_INT16,        NI_AST_INTERNAL_TYPE_INT32,        NI_AST_INTERNAL_TYPE_INT64,        NI_AST_INTERNAL_TYPE_INT128,       NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF       },
+/* NI_AST_INTERNAL_TYPE_INT8        */ { NI_AST_INTERNAL_TYPE_INT8,         NI_AST_INTERNAL_TYPE_INT8,         NI_AST_INTERNAL_TYPE_INT16,        NI_AST_INTERNAL_TYPE_INT32,        NI_AST_INTERNAL_TYPE_INT64,        NI_AST_INTERNAL_TYPE_INT128,       NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF       },
+/* NI_AST_INTERNAL_TYPE_INT16       */ { NI_AST_INTERNAL_TYPE_INT16,        NI_AST_INTERNAL_TYPE_INT16,        NI_AST_INTERNAL_TYPE_INT16,        NI_AST_INTERNAL_TYPE_INT32,        NI_AST_INTERNAL_TYPE_INT64,        NI_AST_INTERNAL_TYPE_INT128,       NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF       },
+/* NI_AST_INTERNAL_TYPE_INT32       */ { NI_AST_INTERNAL_TYPE_INT32,        NI_AST_INTERNAL_TYPE_INT32,        NI_AST_INTERNAL_TYPE_INT32,        NI_AST_INTERNAL_TYPE_INT32,        NI_AST_INTERNAL_TYPE_INT64,        NI_AST_INTERNAL_TYPE_INT128,       NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF       },
+/* NI_AST_INTERNAL_TYPE_INT64       */ { NI_AST_INTERNAL_TYPE_INT64,        NI_AST_INTERNAL_TYPE_INT64,        NI_AST_INTERNAL_TYPE_INT64,        NI_AST_INTERNAL_TYPE_INT64,        NI_AST_INTERNAL_TYPE_INT64,        NI_AST_INTERNAL_TYPE_INT128,       NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF       },
+/* NI_AST_INTERNAL_TYPE_INT128      */ { NI_AST_INTERNAL_TYPE_INT128,       NI_AST_INTERNAL_TYPE_INT128,       NI_AST_INTERNAL_TYPE_INT128,       NI_AST_INTERNAL_TYPE_INT128,       NI_AST_INTERNAL_TYPE_INT128,       NI_AST_INTERNAL_TYPE_INT128,       NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF       },
+/* NI_AST_INTERNAL_TYPE_CONST_UINT  */ { NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_CONST_UINT,   NI_AST_INTERNAL_TYPE_UINT8,        NI_AST_INTERNAL_TYPE_UINT16,       NI_AST_INTERNAL_TYPE_UINT32,       NI_AST_INTERNAL_TYPE_UINT64,       NI_AST_INTERNAL_TYPE_UINT128,      NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF       },
+/* NI_AST_INTERNAL_TYPE_UINT8       */ { NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UINT8,        NI_AST_INTERNAL_TYPE_UINT8,        NI_AST_INTERNAL_TYPE_UINT16,       NI_AST_INTERNAL_TYPE_UINT32,       NI_AST_INTERNAL_TYPE_UINT64,       NI_AST_INTERNAL_TYPE_UINT128,      NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF       },
+/* NI_AST_INTERNAL_TYPE_UINT16      */ { NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UINT16,       NI_AST_INTERNAL_TYPE_UINT16,       NI_AST_INTERNAL_TYPE_UINT16,       NI_AST_INTERNAL_TYPE_UINT32,       NI_AST_INTERNAL_TYPE_UINT64,       NI_AST_INTERNAL_TYPE_UINT128,      NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF       },
+/* NI_AST_INTERNAL_TYPE_UINT32      */ { NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UINT32,       NI_AST_INTERNAL_TYPE_UINT32,       NI_AST_INTERNAL_TYPE_UINT32,       NI_AST_INTERNAL_TYPE_UINT32,       NI_AST_INTERNAL_TYPE_UINT64,       NI_AST_INTERNAL_TYPE_UINT128,      NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF       },
+/* NI_AST_INTERNAL_TYPE_UINT64      */ { NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UINT64,       NI_AST_INTERNAL_TYPE_UINT64,       NI_AST_INTERNAL_TYPE_UINT64,       NI_AST_INTERNAL_TYPE_UINT64,       NI_AST_INTERNAL_TYPE_UINT64,       NI_AST_INTERNAL_TYPE_UINT128,      NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF       },
+/* NI_AST_INTERNAL_TYPE_UINT128     */ { NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UINT128,      NI_AST_INTERNAL_TYPE_UINT128,      NI_AST_INTERNAL_TYPE_UINT128,      NI_AST_INTERNAL_TYPE_UINT128,      NI_AST_INTERNAL_TYPE_UINT128,      NI_AST_INTERNAL_TYPE_UINT128,      NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF       },
+/* NI_AST_INTERNAL_TYPE_CONST_FLOAT */ { NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_CONST_FLOAT,  NI_AST_INTERNAL_TYPE_FLOAT16,      NI_AST_INTERNAL_TYPE_FLOAT32,      NI_AST_INTERNAL_TYPE_FLOAT64     },
+/* NI_AST_INTERNAL_TYPE_FLOAT16     */ { NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_FLOAT16,      NI_AST_INTERNAL_TYPE_FLOAT16,      NI_AST_INTERNAL_TYPE_FLOAT32,      NI_AST_INTERNAL_TYPE_FLOAT64     },
+/* NI_AST_INTERNAL_TYPE_FLOAT32     */ { NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_FLOAT32,      NI_AST_INTERNAL_TYPE_FLOAT32,      NI_AST_INTERNAL_TYPE_FLOAT32,      NI_AST_INTERNAL_TYPE_FLOAT64     },
+/* NI_AST_INTERNAL_TYPE_FLOAT64     */ { NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_UNDEF,        NI_AST_INTERNAL_TYPE_FLOAT64,      NI_AST_INTERNAL_TYPE_FLOAT64,      NI_AST_INTERNAL_TYPE_FLOAT64,      NI_AST_INTERNAL_TYPE_FLOAT64     },
+};
 
-int ni_validate_const_float(ni_ast_node *ast_node) {
-  ast_node->_result_type =
-      make_ni_ast_type(ast_node->location, NI_AST_INTERNAL_TYPE_FLOAT64);
-  return 0;
-}
+int convert_assign[16][16] = {
+/*                               INTO -> NI_AST_INTERNAL_TYPE_CONST_INT     NI_AST_INTERNAL_TYPE_INT8          NI_AST_INTERNAL_TYPE_INT16         NI_AST_INTERNAL_TYPE_INT32         NI_AST_INTERNAL_TYPE_INT64         NI_AST_INTERNAL_TYPE_INT128        NI_AST_INTERNAL_TYPE_CONST_UINT    NI_AST_INTERNAL_TYPE_UINT8         NI_AST_INTERNAL_TYPE_UINT16        NI_AST_INTERNAL_TYPE_UINT32        NI_AST_INTERNAL_TYPE_UINT64        NI_AST_INTERNAL_TYPE_UINT128       NI_AST_INTERNAL_TYPE_CONST_FLOAT   NI_AST_INTERNAL_TYPE_FLOAT16       NI_AST_INTERNAL_TYPE_FLOAT32       NI_AST_INTERNAL_TYPE_FLOAT64     */
+/*              FROM                */
+/* NI_AST_INTERNAL_TYPE_CONST_INT   */ { 1,                                 0,                                 0,                                 0,                                 0,                                 0,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1                                 },
+/* NI_AST_INTERNAL_TYPE_INT8        */ { 1,                                 0,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1                                 },
+/* NI_AST_INTERNAL_TYPE_INT16       */ { 1,                                 1,                                 0,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1                                 },
+/* NI_AST_INTERNAL_TYPE_INT32       */ { 1,                                 1,                                 1,                                 0,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1                                 },
+/* NI_AST_INTERNAL_TYPE_INT64       */ { 1,                                 1,                                 1,                                 1,                                 0,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1                                 },
+/* NI_AST_INTERNAL_TYPE_INT128      */ { 1,                                 1,                                 1,                                 1,                                 1,                                 0,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1                                 },
+/* NI_AST_INTERNAL_TYPE_CONST_UINT  */ { 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 0,                                 0,                                 0,                                 0,                                 0,                                 1,                                 1,                                 1,                                 1                                 },
+/* NI_AST_INTERNAL_TYPE_UINT8       */ { 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 0,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1                                 },
+/* NI_AST_INTERNAL_TYPE_UINT16      */ { 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 0,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1                                 },
+/* NI_AST_INTERNAL_TYPE_UINT32      */ { 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 0,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1                                 },
+/* NI_AST_INTERNAL_TYPE_UINT64      */ { 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 0,                                 1,                                 1,                                 1,                                 1,                                 1                                 },
+/* NI_AST_INTERNAL_TYPE_UINT128     */ { 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 0,                                 1,                                 1,                                 1,                                 1                                 },
+/* NI_AST_INTERNAL_TYPE_CONST_FLOAT */ { 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 0,                                 0,                                 0                                 },
+/* NI_AST_INTERNAL_TYPE_FLOAT16     */ { 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 0,                                 1,                                 1                                 },
+/* NI_AST_INTERNAL_TYPE_FLOAT32     */ { 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 0,                                 1                                 },
+/* NI_AST_INTERNAL_TYPE_FLOAT64     */ { 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 0                                 },
+};
+// clang-format on
 
 int ni_validate(ni_ast_node_list *ast) {
-  fn_validate_table = make_symbol_table(SYMBOL_TABLE_SIZE);
+  fn_top_level_table = make_symbol_table(SYMBOL_TABLE_SIZE);
 
-  int ret = ni_validate_function_list(ast);
-  if (ret != 0) {
-    free_symbol_table(fn_validate_table);
-    return ret;
-  }
+  int ret = ni_validate_top_level(ast);
 
-  ret = ni_validate_node_list(ast);
-
-  free_symbol_table(fn_validate_table);
+  free_symbol_table(fn_top_level_table);
   return ret;
 }
 
-int ni_validate_function_list(ni_ast_node_list *ast) {
+int ni_validate_top_level(ni_ast_node_list *ast) {
   int ret = 0;
   ni_ast_node_list_entry *ast_current_node = ast->head;
   while (ast_current_node != NULL) {
@@ -61,17 +87,22 @@ int ni_validate_function_list(ni_ast_node_list *ast) {
       log_validation_error(ast_current_node->node->location,
                            "expected function declaration");
       ret = 1;
-    } else {
-      ret = insert_symbol_table(
-          fn_validate_table,
-          ast_current_node->node->function_declaration.identifier,
-          ast_current_node->node, NULL, NULL);
+    } else if (insert_symbol_table(
+                   fn_top_level_table,
+                   ast_current_node->node->function_declaration.identifier,
+                   ast_current_node->node, NULL, NULL) != 0) {
+      ret = 1;
+      log_validation_error(
+          ast_current_node->node->location, "function '%s' already defined",
+          ast_current_node->node->function_declaration.identifier);
+    }
+    ast_current_node = ast_current_node->next;
+  }
 
-      if (ret != 0) {
-        log_validation_error(
-            ast_current_node->node->location, "function '%s' already defined",
-            ast_current_node->node->function_declaration.identifier);
-      }
+  ast_current_node = ast->head;
+  while (ast_current_node != NULL) {
+    if (ni_validate_node(ast_current_node->node) != 0) {
+      ret = 1;
     }
     ast_current_node = ast_current_node->next;
   }
@@ -86,9 +117,8 @@ int ni_validate_node_list(ni_ast_node_list *ast) {
   int ret = 0;
   ni_ast_node_list_entry *ast_current_node = ast->head;
   while (ast_current_node != NULL) {
-    ret = ni_validate_node(ast_current_node->node);
-    if (ret != 0) {
-      return ret;
+    if (ni_validate_node(ast_current_node->node) != 0) {
+      ret = 1;
     }
     ast_current_node = ast_current_node->next;
   }
@@ -119,55 +149,49 @@ int ni_validate_node(ni_ast_node *ast_node) {
     return ni_validate_node_ret(ast_node);
   case NI_AST_NODE_TYPE_ARGUMENT:
     return ni_validate_node_arg(ast_node);
-  case NI_AST_NODE_TYPE_CONSTANT_NUMBER:
-    return ni_validate_const_num(ast_node);
-  case NI_AST_NODE_TYPE_CONSTANT_FLOAT:
-    return ni_validate_const_float(ast_node);
   default:
     return 0; // no validation
   }
 }
 
 int ni_validate_node_fun(ni_ast_node *ast_node) {
-  var_validate_table = make_symbol_table(SYMBOL_TABLE_SIZE);
-
+  fun_table = make_symbol_table(SYMBOL_TABLE_SIZE);
   fun = ast_node;
 
   int ret = ni_validate_node_list(ast_node->function_declaration.argument_list);
 
-  int ret_block = ni_validate_node_list(ast_node->function_declaration.block);
-  if (ret_block != 0) {
-    ret = ret_block;
+  if (ni_validate_node_list(ast_node->function_declaration.block) != 0) {
+    ret = 1;
   }
 
-  free_symbol_table(var_validate_table);
+  fun = NULL;
+  free_symbol_table(fun_table);
   return ret;
 }
 
 int ni_validate_node_var(ni_ast_node *ast_node) {
-  int ret = insert_symbol_table(var_validate_table,
-                                ast_node->variable_declaration.identifier,
-                                ast_node, NULL, NULL);
-  if (ret != 0) {
+  if (insert_symbol_table(fun_table, ast_node->variable_declaration.identifier,
+                          ast_node, NULL, NULL) != 0) {
     log_validation_error(ast_node->location, "variable '%s' already defined",
                          ast_node->variable_declaration.identifier);
+    return 1;
   }
-  return ret;
+  return 0;
 }
 
 int ni_validate_node_arg(ni_ast_node *ast_node) {
-  int ret = insert_symbol_table(
-      var_validate_table, ast_node->argument.identifier, ast_node, NULL, NULL);
-  if (ret != 0) {
+  if (insert_symbol_table(fun_table, ast_node->argument.identifier, ast_node,
+                          NULL, NULL) != 0) {
     log_validation_error(ast_node->location, "argument '%s' already defined",
                          ast_node->argument.identifier);
+    return 1;
   }
-  return ret;
+  return 0;
 }
 
 int ni_validate_node_var_assign(ni_ast_node *ast_node) {
-  symbol_value *v = get_symbol_table(var_validate_table,
-                                     ast_node->variable_assignment.identifier);
+  symbol_value *v =
+      get_symbol_table(fun_table, ast_node->variable_assignment.identifier);
   if (v == NULL) {
     log_validation_error(ast_node->location, "variable '%s' not found",
                          ast_node->variable_assignment.identifier);
@@ -178,8 +202,8 @@ int ni_validate_node_var_assign(ni_ast_node *ast_node) {
     return 1;
   }
 
-  if (type_cmp(ast_node->variable_assignment.value->_result_type,
-               v->node->variable_declaration.type) != 0) {
+  if (ni_check_type_assignment(ast_node->variable_assignment.value,
+                               v->node->variable_declaration.type) != 0) {
     char expected_type[TYPE_STR_LEN];
     char got_type[TYPE_STR_LEN];
     type_str(expected_type, v->node->variable_declaration.type);
@@ -194,8 +218,8 @@ int ni_validate_node_var_assign(ni_ast_node *ast_node) {
 }
 
 int ni_validate_node_var_lookup(ni_ast_node *ast_node) {
-  symbol_value *v = get_symbol_table(var_validate_table,
-                                     ast_node->variable_lookup.identifier);
+  symbol_value *v =
+      get_symbol_table(fun_table, ast_node->variable_lookup.identifier);
   if (v == NULL) {
     log_validation_error(ast_node->location, "variable '%s' not found",
                          ast_node->variable_lookup.identifier);
@@ -212,9 +236,14 @@ int ni_validate_node_bin_op(ni_ast_node *ast_node) {
   if (ret_left != 0 || ret_right != 0) {
     return 1;
   }
-  if (type_cmp(ast_node->bin_op.left->_result_type,
-               ast_node->bin_op.right->_result_type) != 0) {
-    char op[5];
+
+  ast_node->_result_type = make_ni_ast_type(
+      ast_node->location,
+      convert_bin_op[ast_node->bin_op.left->_result_type->internal_type]
+                    [ast_node->bin_op.right->_result_type->internal_type]);
+
+  if (ast_node->_result_type->internal_type == NI_AST_INTERNAL_TYPE_UNDEF) {
+    char op[2];
     switch (ast_node->bin_op.op) {
     case NI_AST_OPERATOR_PLUS:
       sprintf(op, "+");
@@ -238,96 +267,113 @@ int ni_validate_node_bin_op(ni_ast_node *ast_node) {
 
     return 1;
   }
-  ast_node->_result_type = make_ni_ast_type(
-      ast_node->location, ast_node->bin_op.left->_result_type->internal_type);
+
+  ni_set_type_on_const(ast_node->bin_op.left,
+                       ast_node->_result_type->internal_type);
+  ni_set_type_on_const(ast_node->bin_op.right,
+                       ast_node->_result_type->internal_type);
+
   return 0;
 }
 
 int ni_validate_node_call(ni_ast_node *ast_node) {
   symbol_value *callee_fun =
-      get_symbol_table(fn_validate_table, ast_node->function_call.identifier);
+      get_symbol_table(fn_top_level_table, ast_node->function_call.identifier);
+
   if (callee_fun == NULL) {
     log_validation_error(ast_node->location, "function '%s' not found",
                          ast_node->function_call.identifier);
     return 1;
   }
+
   if (callee_fun->node->function_declaration.return_type != NULL) {
     ast_node->_result_type = make_ni_ast_type(
         ast_node->location,
         callee_fun->node->function_declaration.return_type->internal_type);
   }
-  int ret = 0;
+
   if ((ast_node->function_call.argument_list == NULL ||
        ast_node->function_call.argument_list->count == 0) &&
       callee_fun->node->function_declaration.argument_list != NULL &&
       callee_fun->node->function_declaration.argument_list->count > 0) {
     log_validation_error(ast_node->location, "function '%s' expects arguments",
                          ast_node->function_call.identifier);
-  } else if (ast_node->function_call.argument_list != NULL &&
-             ast_node->function_call.argument_list->count > 0) {
-    if (callee_fun->node->function_declaration.argument_list == NULL) {
-      log_validation_error(ast_node->location,
-                           "function '%s' expects no arguments",
-                           ast_node->function_call.identifier);
-      ret = 1;
-    } else {
-      if (ast_node->function_call.argument_list->count !=
-          callee_fun->node->function_declaration.argument_list->count) {
-        log_validation_error(
-            ast_node->location,
-            "function '%s' expects %d arguments but %d were passed",
-            ast_node->function_call.identifier,
-            fun->function_declaration.argument_list->count,
-            ast_node->function_call.argument_list->count);
-        ret = 1;
-      } else {
-        ni_ast_node_list_entry *arg =
-            ast_node->function_call.argument_list->head;
-        ni_ast_node_list_entry *def_arg =
-            callee_fun->node->function_declaration.argument_list->head;
-        while (arg != NULL) {
-          int ret_arg = ni_validate_node(arg->node);
-          if (ret_arg != 0) {
-            ret = ret_arg;
-          }
-          ret_arg =
-              type_cmp(arg->node->_result_type, def_arg->node->argument.type);
-          if (ret_arg != 0) {
-            char expected_type[TYPE_STR_LEN];
-            char got_type[TYPE_STR_LEN];
-            type_str(expected_type, def_arg->node->argument.type);
-            type_str(got_type, arg->node->_result_type);
-            log_validation_error(arg->node->location,
-                                 "type mismatch expects '%s' passed '%s'",
-                                 expected_type, got_type);
-            ret = ret_arg;
-          }
-          arg = arg->next;
-          def_arg = def_arg->next;
-        }
-      }
-    }
+    return 1;
   }
 
+  if (ast_node->function_call.argument_list == NULL ||
+      ast_node->function_call.argument_list->count == 0) {
+    return 0;
+  }
+
+  if (callee_fun->node->function_declaration.argument_list == NULL) {
+    log_validation_error(ast_node->location,
+                         "function '%s' expects no arguments",
+                         ast_node->function_call.identifier);
+    return 1;
+  }
+
+  if (ast_node->function_call.argument_list->count !=
+      callee_fun->node->function_declaration.argument_list->count) {
+    log_validation_error(
+        ast_node->location,
+        "function '%s' expects %d arguments but %d were passed",
+        ast_node->function_call.identifier,
+        fun->function_declaration.argument_list->count,
+        ast_node->function_call.argument_list->count);
+    return 1;
+  }
+
+  ni_ast_node_list_entry *arg = ast_node->function_call.argument_list->head;
+  ni_ast_node_list_entry *def_arg =
+      callee_fun->node->function_declaration.argument_list->head;
+  int ret = 0;
+  while (arg != NULL) {
+    if (ni_validate_node(arg->node) != 0) {
+      ret = 1;
+    }
+    if (ni_check_type_assignment(
+            arg->node, def_arg->node->argument.type) != 0) {
+      char expected_type[TYPE_STR_LEN];
+      char got_type[TYPE_STR_LEN];
+      type_str(expected_type, def_arg->node->argument.type);
+      type_str(got_type, arg->node->_result_type);
+      log_validation_error(arg->node->location,
+                           "type mismatch expects '%s' passed '%s'",
+                           expected_type, got_type);
+      ret = 1;
+    }
+
+    arg = arg->next;
+    def_arg = def_arg->next;
+  }
   return ret;
 }
 
 int ni_validate_node_ret(ni_ast_node *ast_node) {
-  int ret = ni_validate_node(ast_node->function_return.value);
+  if (ni_validate_node(ast_node->function_return.value) != 0) {
+    return 1;
+  }
+
+  if (ast_node->function_return.value == NULL &&
+      fun->function_declaration.return_type == NULL) {
+    return 0;
+  }
 
   if (ast_node->function_return.value == NULL &&
       fun->function_declaration.return_type != NULL) {
     log_validation_error(ast_node->location, "return value expected");
-    ret = 1;
-  } else if (ast_node->function_return.value != NULL &&
-             fun->function_declaration.return_type == NULL) {
-    log_validation_error(ast_node->location, "return value not expected");
-    ret = 1;
+    return 1;
   }
 
-  int type_ret = type_cmp(ast_node->function_return.value->_result_type,
-                          fun->function_declaration.return_type);
-  if (type_ret != 0) {
+  if (ast_node->function_return.value != NULL &&
+      fun->function_declaration.return_type == NULL) {
+    log_validation_error(ast_node->location, "return value not expected");
+    return 1;
+  }
+
+  if (ni_check_type_assignment(ast_node->function_return.value,
+                               fun->function_declaration.return_type) != 0) {
     char expected_type[TYPE_STR_LEN];
     char got_type[TYPE_STR_LEN];
     type_str(expected_type, fun->function_declaration.return_type);
@@ -335,23 +381,10 @@ int ni_validate_node_ret(ni_ast_node *ast_node) {
     log_validation_error(ast_node->location,
                          "return type mismatch expects '%s' passed '%s'",
                          expected_type, got_type);
-    ret = type_ret;
+    return 1;
   }
 
-  return ret;
-}
-
-int type_cmp(const ni_ast_type *ast_type_1, const ni_ast_type *ast_type_2) {
-  if (ast_type_1 == NULL && ast_type_2 == NULL) {
-    return 0;
-  }
-
-  if (ast_type_1 != NULL && ast_type_2 != NULL &&
-      ast_type_1->internal_type == ast_type_2->internal_type) {
-    return 0;
-  }
-
-  return 1;
+  return 0;
 }
 
 void type_str(char *out, const ni_ast_type *ast_type) {
@@ -363,6 +396,12 @@ void type_str(char *out, const ni_ast_type *ast_type) {
     sprintf(out, "void");
   } else {
     switch (ast_type->internal_type) {
+    case NI_AST_INTERNAL_TYPE_CONST_INT:
+      sprintf(out, "int");
+      break;
+    case NI_AST_INTERNAL_TYPE_CONST_UINT:
+      sprintf(out, "uint");
+      break;
     case NI_AST_INTERNAL_TYPE_INT8:
       sprintf(out, "int8");
       break;
@@ -393,6 +432,12 @@ void type_str(char *out, const ni_ast_type *ast_type) {
     case NI_AST_INTERNAL_TYPE_UINT128:
       sprintf(out, "uint128");
       break;
+    case NI_AST_INTERNAL_TYPE_CONST_FLOAT:
+      sprintf(out, "float");
+      break;
+    case NI_AST_INTERNAL_TYPE_FLOAT16:
+      sprintf(out, "float16");
+      break;
     case NI_AST_INTERNAL_TYPE_FLOAT32:
       sprintf(out, "float32");
       break;
@@ -400,5 +445,29 @@ void type_str(char *out, const ni_ast_type *ast_type) {
       sprintf(out, "float64");
       break;
     }
+  }
+}
+
+int ni_check_type_assignment(ni_ast_node *ast_node,
+                             const ni_ast_type *ast_type) {
+
+  if (convert_assign[ast_node->_result_type->internal_type]
+                    [ast_type->internal_type] != 0) {
+    return 1;
+  }
+  ni_set_type_on_const(ast_node, ast_type->internal_type);
+
+  return 0;
+}
+
+void ni_set_type_on_const(ni_ast_node *ast_node,
+                          ni_ast_internal_type internal_type) {
+  if (ast_node->_result_type->internal_type == NI_AST_INTERNAL_TYPE_CONST_INT ||
+      ast_node->_result_type->internal_type ==
+          NI_AST_INTERNAL_TYPE_CONST_UINT ||
+      ast_node->_result_type->internal_type ==
+          NI_AST_INTERNAL_TYPE_CONST_FLOAT) {
+    ast_node->_result_type =
+        make_ni_ast_type(ast_node->location, internal_type);
   }
 }

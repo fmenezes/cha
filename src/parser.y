@@ -30,8 +30,8 @@ ni_ast_location convert_location(YYLTYPE start, YYLTYPE end);
   ni_ast_node_list* list;
 }
 
-%token FUN OPENPAR CLOSEPAR OPENCUR CLOSECUR COMMA VAR EQUALS RET PLUS MINUS MULTIPLY REFTYPE_INT8 REFTYPE_UINT8 REFTYPE_INT16 REFTYPE_UINT16 REFTYPE_INT32 REFTYPE_UINT32 REFTYPE_INT64 REFTYPE_UINT64 REFTYPE_INT128 REFTYPE_UINT128 REFTYPE_FLOAT32 REFTYPE_FLOAT64
-%token <str> IDENTIFIER NUMBER FLOAT
+%token FUN OPENPAR CLOSEPAR OPENCUR CLOSECUR COMMA VAR EQUALS RET PLUS MINUS MULTIPLY REFTYPE_INT8 REFTYPE_UINT8 REFTYPE_INT16 REFTYPE_UINT16 REFTYPE_INT32 REFTYPE_UINT32 REFTYPE_INT64 REFTYPE_UINT64 REFTYPE_INT128 REFTYPE_UINT128 REFTYPE_FLOAT16 REFTYPE_FLOAT32 REFTYPE_FLOAT64
+%token <str> IDENTIFIER INTEGER UINTEGER FLOAT
 
 %nterm <list> instructions block def_args call_args statements
 %nterm <node> function statement arg expr const
@@ -114,19 +114,28 @@ reftype :
 	| REFTYPE_UINT64																{ $$ = make_ni_ast_type_uint64(convert_location(@1, @1)); }
 	| REFTYPE_INT128																{ $$ = make_ni_ast_type_int128(convert_location(@1, @1)); }
 	| REFTYPE_UINT128																{ $$ = make_ni_ast_type_uint128(convert_location(@1, @1)); }
+	| REFTYPE_FLOAT16																{ $$ = make_ni_ast_type_float16(convert_location(@1, @1)); }
 	| REFTYPE_FLOAT32																{ $$ = make_ni_ast_type_float32(convert_location(@1, @1)); }
 	| REFTYPE_FLOAT64																{ $$ = make_ni_ast_type_float64(convert_location(@1, @1)); }
 	;
 
 const :
-	NUMBER																			{ $$ = make_ni_ast_node_constant_number(convert_location(@1, @1), $1); free($1); }
+	INTEGER																			{ $$ = make_ni_ast_node_constant_integer(convert_location(@1, @1), $1); free($1); }
+	| UINTEGER																		{ $$ = make_ni_ast_node_constant_unsigned_integer(convert_location(@1, @1), $1); free($1); }
 	| FLOAT																			{ $$ = make_ni_ast_node_constant_float(convert_location(@1, @1), $1); free($1); }
 	;
 
 %%
 
 int yyerror(const char *msg) {
-  log_error(msg);
+  ni_ast_location location;
+  sprintf(location.file, "%s", current_file);
+  location.line_begin = yylloc.first_line;
+  location.column_begin = yylloc.first_column;
+  location.line_end = yylloc.last_line;
+  location.column_end = yylloc.last_column;
+  
+  log_validation_error(location, msg);
   return 1;
 }
 

@@ -16,22 +16,28 @@ typedef struct ni_ast_location {
 } ni_ast_location;
 
 typedef enum ni_ast_internal_type {
-  NI_AST_INTERNAL_TYPE_INT128,
-  NI_AST_INTERNAL_TYPE_UINT128,
-  NI_AST_INTERNAL_TYPE_INT64,
-  NI_AST_INTERNAL_TYPE_UINT64,
-  NI_AST_INTERNAL_TYPE_INT16,
-  NI_AST_INTERNAL_TYPE_UINT16,
-  NI_AST_INTERNAL_TYPE_INT32,
-  NI_AST_INTERNAL_TYPE_UINT32,
+  NI_AST_INTERNAL_TYPE_UNDEF = -1,
+  NI_AST_INTERNAL_TYPE_CONST_INT,
   NI_AST_INTERNAL_TYPE_INT8,
+  NI_AST_INTERNAL_TYPE_INT16,
+  NI_AST_INTERNAL_TYPE_INT32,
+  NI_AST_INTERNAL_TYPE_INT64,
+  NI_AST_INTERNAL_TYPE_INT128,
+  NI_AST_INTERNAL_TYPE_CONST_UINT,
   NI_AST_INTERNAL_TYPE_UINT8,
+  NI_AST_INTERNAL_TYPE_UINT16,
+  NI_AST_INTERNAL_TYPE_UINT32,
+  NI_AST_INTERNAL_TYPE_UINT64,
+  NI_AST_INTERNAL_TYPE_UINT128,
+  NI_AST_INTERNAL_TYPE_CONST_FLOAT,
+  NI_AST_INTERNAL_TYPE_FLOAT16,
   NI_AST_INTERNAL_TYPE_FLOAT32,
   NI_AST_INTERNAL_TYPE_FLOAT64,
 } ni_ast_internal_type;
 
 typedef enum ni_ast_node_type {
-  NI_AST_NODE_TYPE_CONSTANT_NUMBER,
+  NI_AST_NODE_TYPE_CONSTANT_INT,
+  NI_AST_NODE_TYPE_CONSTANT_UINT,
   NI_AST_NODE_TYPE_CONSTANT_FLOAT,
   NI_AST_NODE_TYPE_BIN_OP,
   NI_AST_NODE_TYPE_VARIABLE_DECLARATION,
@@ -114,8 +120,10 @@ struct ni_ast_type {
   ni_ast_location location;
 };
 
-ni_ast_node *make_ni_ast_node_constant_number(ni_ast_location loc,
-                                              const char *value);
+ni_ast_node *make_ni_ast_node_constant_integer(ni_ast_location loc,
+                                               const char *value);
+ni_ast_node *make_ni_ast_node_constant_unsigned_integer(ni_ast_location loc,
+                                                        const char *value);
 ni_ast_node *make_ni_ast_node_constant_float(ni_ast_location loc,
                                              const char *value);
 ni_ast_type *make_ni_ast_type(ni_ast_location loc,
@@ -130,6 +138,7 @@ ni_ast_type *make_ni_ast_type_int64(ni_ast_location loc);
 ni_ast_type *make_ni_ast_type_uint64(ni_ast_location loc);
 ni_ast_type *make_ni_ast_type_int128(ni_ast_location loc);
 ni_ast_type *make_ni_ast_type_uint128(ni_ast_location loc);
+ni_ast_type *make_ni_ast_type_float16(ni_ast_location loc);
 ni_ast_type *make_ni_ast_type_float32(ni_ast_location loc);
 ni_ast_type *make_ni_ast_type_float64(ni_ast_location loc);
 ni_ast_node *make_ni_ast_node_bin_op(ni_ast_location loc, ni_ast_operator op,
