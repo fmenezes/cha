@@ -108,17 +108,17 @@ int main(int argc, char *argv[], char **envp) {
   check_failure(inputPath, "validation_arg_mismatch2.ni",
                 "function 'test' expects arguments");
   check_failure(inputPath, "validation_arg_mismatch3.ni",
-                "type mismatch expects 'uint8' passed 'int32'");
+                "type mismatch expects 'uint8' passed 'int'");
   check_failure(inputPath, "validation_dup_function.ni",
                 "function 'test' already defined");
   check_failure(inputPath, "validation_function_not_found.ni",
                 "function 'test' not found");
   check_failure(inputPath, "validation_ret_mismatch.ni",
-                "return type mismatch expects 'int32' passed 'uint8'");
+                "return type mismatch expects 'int' passed 'uint8'");
   check_failure(inputPath, "validation_type_mismatch.ni",
-                "type mismatch expects 'int32' passed 'uint8'");
+                "type mismatch expects 'int' passed 'uint8'");
   check_failure(inputPath, "validation_type_mismatch2.ni",
-                "incompatible types found: int32 + uint8");
+                "incompatible types found: int + uint8");
   check_failure(inputPath, "validation_var_not_found.ni",
                 "variable 'a' not found");
   check_failure(inputPath, "validation_var_redefined.ni",

@@ -16,6 +16,7 @@ int ni_ast_codegen_toplevel(ni_ast_node_list *ast);
 int ni_ast_codegen_node(ni_ast_node *ast_node);
 int ni_ast_codegen_node_constant_number(ni_ast_node *ast_node);
 int ni_ast_codegen_node_constant_float(ni_ast_node *ast_node);
+int ni_ast_codegen_node_constant_bool(ni_ast_node *ast_node);
 int ni_ast_codegen_node_bin_op(ni_ast_node *ast_node);
 int ni_ast_codegen_node_var(ni_ast_node *ast_node);
 int ni_ast_codegen_node_var_assign(ni_ast_node *ast_node);
@@ -49,6 +50,8 @@ int ni_ast_codegen_node(ni_ast_node *ast_node) {
     return ni_ast_codegen_node_constant_number(ast_node);
   case NI_AST_NODE_TYPE_CONSTANT_FLOAT:
     return ni_ast_codegen_node_constant_float(ast_node);
+  case NI_AST_NODE_TYPE_CONSTANT_BOOL:
+    return ni_ast_codegen_node_constant_bool(ast_node);
   case NI_AST_NODE_TYPE_BIN_OP:
     return ni_ast_codegen_node_bin_op(ast_node);
   case NI_AST_NODE_TYPE_VARIABLE_DECLARATION:
@@ -116,6 +119,16 @@ int ni_ast_codegen_node_constant_float(ni_ast_node *ast_node) {
   LLVMTypeRef t = make_type(ast_node->_result_type);
 
   return_operand = LLVMConstRealOfString(t, ast_node->const_value);
+  return 0;
+}
+
+int ni_ast_codegen_node_constant_bool(ni_ast_node *ast_node) {
+  LLVMTypeRef t = make_type(ast_node->_result_type);
+
+  char str_bool[2];
+  sprintf(str_bool, "%d", ast_node->const_bool);
+
+  return_operand = LLVMConstIntOfString(t, str_bool, 10);
   return 0;
 }
 
@@ -458,14 +471,15 @@ LLVMTypeRef make_type(ni_ast_type *ast_type) {
   }
 
   switch (ast_type->internal_type) {
+  case NI_AST_INTERNAL_TYPE_INT:
+  case NI_AST_INTERNAL_TYPE_UINT:
+    return LLVMIntPtrTypeInContext(context, target_data_layout);
   case NI_AST_INTERNAL_TYPE_UINT8:
   case NI_AST_INTERNAL_TYPE_INT8:
     return LLVMInt8TypeInContext(context);
   case NI_AST_INTERNAL_TYPE_INT16:
   case NI_AST_INTERNAL_TYPE_UINT16:
     return LLVMInt16TypeInContext(context);
-  case NI_AST_INTERNAL_TYPE_CONST_UINT:
-  case NI_AST_INTERNAL_TYPE_CONST_INT:
   case NI_AST_INTERNAL_TYPE_INT32:
   case NI_AST_INTERNAL_TYPE_UINT32:
     return LLVMInt32TypeInContext(context);
@@ -481,6 +495,8 @@ LLVMTypeRef make_type(ni_ast_type *ast_type) {
     return LLVMFloatTypeInContext(context);
   case NI_AST_INTERNAL_TYPE_FLOAT64:
     return LLVMDoubleTypeInContext(context);
+  case NI_AST_INTERNAL_TYPE_BOOL:
+    return LLVMInt1TypeInContext(context);
   }
 
   return LLVMVoidTypeInContext(context);

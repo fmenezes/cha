@@ -16,7 +16,7 @@ int yycolumn = 1;
 
 /* RegEx */
 integer [+-]?[0-9]+|0[xX][0-9A-Fa-f]+
-uinteger ([+-]?[0-9]+|0[xX][0-9A-Fa-f]+)u
+uinteger ([0-9]+|0[xX][0-9A-Fa-f]+)u
 float [+-]?[0-9]+\.[0-9]+
 identifier [_a-zA-Z][_a-zA-Z0-9]{0,31}
 %%
@@ -60,12 +60,12 @@ identifier [_a-zA-Z][_a-zA-Z0-9]{0,31}
 	return REFTYPE_UINT32;
 }
 
-"int" { // type alias for int32
-	return REFTYPE_INT32;
+"int" {
+	return REFTYPE_INT;
 }
 
-"uint" { // type alias for uint32
-	return REFTYPE_UINT32;
+"uint" {
+	return REFTYPE_UINT;
 }
 
 "int64" {
@@ -94,6 +94,18 @@ identifier [_a-zA-Z][_a-zA-Z0-9]{0,31}
 
 "float64" {
 	return REFTYPE_FLOAT64;
+}
+
+"bool" {
+	return REFTYPE_BOOL;
+}
+
+"true" {
+	return BOOL_TRUE;
+}
+
+"false" {
+	return BOOL_FALSE;
 }
 
 {identifier} {
