@@ -30,7 +30,7 @@ ni_ast_location convert_location(YYLTYPE start, YYLTYPE end);
   ni_ast_node_list* list;
 }
 
-%token FUN OPENPAR CLOSEPAR OPENCUR CLOSECUR COMMA VAR EQUALS RET PLUS MINUS MULTIPLY REFTYPE_INT8 REFTYPE_UINT8 REFTYPE_INT16 REFTYPE_UINT16 REFTYPE_INT32 REFTYPE_UINT32 REFTYPE_INT64 REFTYPE_UINT64 REFTYPE_INT128 REFTYPE_UINT128 REFTYPE_FLOAT16 REFTYPE_FLOAT32 REFTYPE_FLOAT64
+%token FUN OPENPAR CLOSEPAR OPENCUR CLOSECUR COMMA VAR EQUALS RET PLUS MINUS MULTIPLY REFTYPE_INT8 REFTYPE_UINT8 REFTYPE_INT16 REFTYPE_UINT16 REFTYPE_INT32 REFTYPE_UINT32 REFTYPE_INT64 REFTYPE_UINT64 REFTYPE_INT128 REFTYPE_UINT128 REFTYPE_INT REFTYPE_UINT REFTYPE_FLOAT16 REFTYPE_FLOAT32 REFTYPE_FLOAT64 REFTYPE_BOOL BOOL_TRUE BOOL_FALSE
 %token <str> IDENTIFIER INTEGER UINTEGER FLOAT
 
 %nterm <list> instructions block def_args call_args statements
@@ -104,7 +104,9 @@ expr :
 	;
 
 reftype :
-	REFTYPE_INT8																	{ $$ = make_ni_ast_type_int8(convert_location(@1, @1)); }
+	REFTYPE_INT																		{ $$ = make_ni_ast_type_int(convert_location(@1, @1)); }
+	| REFTYPE_UINT																	{ $$ = make_ni_ast_type_uint(convert_location(@1, @1)); }
+	| REFTYPE_INT8																	{ $$ = make_ni_ast_type_int8(convert_location(@1, @1)); }
 	| REFTYPE_UINT8																	{ $$ = make_ni_ast_type_uint8(convert_location(@1, @1)); }
 	| REFTYPE_INT16																	{ $$ = make_ni_ast_type_int16(convert_location(@1, @1)); }
 	| REFTYPE_UINT16																{ $$ = make_ni_ast_type_uint16(convert_location(@1, @1)); }
@@ -117,12 +119,15 @@ reftype :
 	| REFTYPE_FLOAT16																{ $$ = make_ni_ast_type_float16(convert_location(@1, @1)); }
 	| REFTYPE_FLOAT32																{ $$ = make_ni_ast_type_float32(convert_location(@1, @1)); }
 	| REFTYPE_FLOAT64																{ $$ = make_ni_ast_type_float64(convert_location(@1, @1)); }
+	| REFTYPE_BOOL																	{ $$ = make_ni_ast_type_bool(convert_location(@1, @1)); }
 	;
 
 const :
 	INTEGER																			{ $$ = make_ni_ast_node_constant_integer(convert_location(@1, @1), $1); free($1); }
 	| UINTEGER																		{ $$ = make_ni_ast_node_constant_unsigned_integer(convert_location(@1, @1), $1); free($1); }
 	| FLOAT																			{ $$ = make_ni_ast_node_constant_float(convert_location(@1, @1), $1); free($1); }
+	| BOOL_TRUE																		{ $$ = make_ni_ast_node_constant_true(convert_location(@1, @1)); }
+	| BOOL_FALSE																	{ $$ = make_ni_ast_node_constant_false(convert_location(@1, @1)); }
 	;
 
 %%

@@ -5,11 +5,11 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Debug test_bin.ni",
+            "name": "Debug validation_arg_mismatch3.ni",
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceRoot}/build/ni",
-            "args": [ "-o", "${workspaceRoot}/build/test_bin", "${workspaceRoot}/test/test_bin.ni" ],
+            "args": [ "-o", "${workspaceRoot}/build/test_bin", "${workspaceRoot}/test/validation_arg_mismatch3.ni" ],
             "cwd": "${workspaceRoot}/build"
         },
         {
