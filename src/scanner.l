@@ -164,6 +164,38 @@ identifier [_a-zA-Z][_a-zA-Z0-9]{0,31}
 	return COMMA;
 }
 
+"==" {
+	return EQUALS_EQUALS;
+}
+
+"!=" {
+	return NOT_EQUALS;
+}
+
+">" {
+	return GREATER_THAN;
+}
+
+">=" {
+	return GREATER_THAN_OR_EQUALS;
+}
+
+"<" {
+	return LESS_THAN;
+}
+
+"<=" {
+	return LESS_THAN_OR_EQUALS;
+}
+
+"&&" {
+	return AND;
+}
+
+"||" {
+	return OR;
+}
+
 [ \t\r]+ { /* ignore whitespace */ }
 
 [\n]+ { yycolumn = 1; }

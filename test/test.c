@@ -98,6 +98,7 @@ int main(int argc, char *argv[], char **envp) {
 
   check_bin(inputPath, "test_bin.ni");
   check_success(inputPath, "parse_passes.ni");
+  check_success(inputPath, "operator_passes.ni");
   check_success(inputPath, "type_assign_passes.ni");
   check_failure(inputPath, "parse_failure.ni", "syntax error");
   check_success(inputPath, "validation_passes.ni");
@@ -118,7 +119,7 @@ int main(int argc, char *argv[], char **envp) {
   check_failure(inputPath, "validation_type_mismatch.ni",
                 "type mismatch expects 'int' passed 'uint8'");
   check_failure(inputPath, "validation_type_mismatch2.ni",
-                "incompatible types found: int + uint8");
+                "incompatible types found for operation: 'int', 'uint8'");
   check_failure(inputPath, "validation_var_not_found.ni",
                 "variable 'a' not found");
   check_failure(inputPath, "validation_var_redefined.ni",
