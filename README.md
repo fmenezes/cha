@@ -77,7 +77,7 @@ Type aliases:
 | >= | a >= 10 |
 | <= | a <= 10 |
 | && | a && b |
-| || | a || b |
+| `||` | a `||` b |
 
 ### Functions
 
