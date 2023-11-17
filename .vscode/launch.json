@@ -5,11 +5,11 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Debug validation_arg_mismatch3.ni",
+            "name": "Debug operator_passes.ni",
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceRoot}/build/ni",
-            "args": [ "-o", "${workspaceRoot}/build/test_bin", "${workspaceRoot}/test/validation_arg_mismatch3.ni" ],
+            "args": [ "-ll", "${workspaceRoot}/build/test.ll", "${workspaceRoot}/test/operator_passes.ni" ],
             "cwd": "${workspaceRoot}/build"
         },
         {

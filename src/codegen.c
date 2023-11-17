@@ -146,7 +146,7 @@ int ni_ast_codegen_node_bin_op(ni_ast_node *ast_node) {
   LLVMValueRef right_operand = return_operand;
 
   switch (ast_node->bin_op.op) {
-  case NI_AST_OPERATOR_PLUS:
+  case NI_AST_OPERATOR_ADD:
     if (float_type(ast_node->bin_op.left->_result_type) == 0) {
       return_operand =
           LLVMBuildFAdd(builder, left_operand, right_operand, "add");
@@ -155,7 +155,7 @@ int ni_ast_codegen_node_bin_op(ni_ast_node *ast_node) {
           LLVMBuildAdd(builder, left_operand, right_operand, "add");
     }
     break;
-  case NI_AST_OPERATOR_MINUS:
+  case NI_AST_OPERATOR_SUBTRACT:
     if (float_type(ast_node->bin_op.left->_result_type) == 0) {
       return_operand =
           LLVMBuildFSub(builder, left_operand, right_operand, "sub");

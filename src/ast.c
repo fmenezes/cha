@@ -292,6 +292,7 @@ void free_ni_ast_node(ni_ast_node *node) {
 
   switch (node->node_type) {
   case NI_AST_NODE_TYPE_CONSTANT_INT:
+  case NI_AST_NODE_TYPE_CONSTANT_UINT:
   case NI_AST_NODE_TYPE_CONSTANT_FLOAT:
     free(node->const_value);
     break;
@@ -330,6 +331,9 @@ void free_ni_ast_node(ni_ast_node *node) {
   case NI_AST_NODE_TYPE_FUNCTION_RETURN:
     free_ni_ast_node(node->function_return.value);
     break;
+  case NI_AST_NODE_TYPE_CONSTANT_BOOL:
+    // nothing to free
+    break;
   }
 
   free_ni_ast_type(node->_result_type);
@@ -362,13 +366,12 @@ void free_ni_ast_node_list(ni_ast_node_list *list) {
     return;
   }
 
-  ni_ast_node_list *cur = list;
-  while (cur->head != NULL) {
-    ni_ast_node_list_entry *next = cur->head->next;
+  while (list->head != NULL) {
+    ni_ast_node_list_entry *next = list->head->next;
 
-    free_ni_ast_node(cur->head->node);
-    free(cur->head);
-    cur->head = next;
+    free_ni_ast_node(list->head->node);
+    free(list->head);
+    list->head = next;
   }
   free(list);
 }
