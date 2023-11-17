@@ -19,6 +19,7 @@
         "__memory": "c",
         "limits": "c",
         "locale": "c",
-        "vector": "c"
+        "vector": "c",
+        "*.def": "c"
     }
 }

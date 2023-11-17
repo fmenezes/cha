@@ -27,7 +27,8 @@ int ni_ast_codegen_node_fun(ni_ast_node *ast_node);
 int ni_ast_codegen_block(ni_ast_node_list *block);
 LLVMTypeRef make_fun_signature(ni_ast_node *ast_node);
 LLVMTypeRef make_type(ni_ast_type *ast_type);
-LLVMBool signed_type(ni_ast_node *ast_node);
+int signed_type(const ni_ast_type *ast_type);
+int float_type(const ni_ast_type *ast_type);
 
 LLVMContextRef context = NULL;
 LLVMModuleRef module = NULL;
@@ -146,14 +147,113 @@ int ni_ast_codegen_node_bin_op(ni_ast_node *ast_node) {
 
   switch (ast_node->bin_op.op) {
   case NI_AST_OPERATOR_PLUS:
-    return_operand = LLVMBuildAdd(builder, left_operand, right_operand, "add");
+    if (float_type(ast_node->bin_op.left->_result_type) == 0) {
+      return_operand =
+          LLVMBuildFAdd(builder, left_operand, right_operand, "add");
+    } else {
+      return_operand =
+          LLVMBuildAdd(builder, left_operand, right_operand, "add");
+    }
     break;
   case NI_AST_OPERATOR_MINUS:
-    return_operand = LLVMBuildSub(builder, left_operand, right_operand, "sub");
+    if (float_type(ast_node->bin_op.left->_result_type) == 0) {
+      return_operand =
+          LLVMBuildFSub(builder, left_operand, right_operand, "sub");
+    } else {
+      return_operand =
+          LLVMBuildSub(builder, left_operand, right_operand, "sub");
+    }
     break;
   case NI_AST_OPERATOR_MULTIPLY:
-    return_operand = LLVMBuildMul(builder, left_operand, right_operand, "mul");
+    if (float_type(ast_node->bin_op.left->_result_type) == 0) {
+      return_operand =
+          LLVMBuildFMul(builder, left_operand, right_operand, "mul");
+    } else {
+      return_operand =
+          LLVMBuildMul(builder, left_operand, right_operand, "mul");
+    }
     break;
+  case NI_AST_OPERATOR_EQUALS_EQUALS:
+    if (float_type(ast_node->bin_op.left->_result_type) == 0) {
+      return_operand = LLVMBuildFCmp(builder, LLVMRealOEQ, left_operand,
+                                     right_operand, "eq");
+
+    } else {
+      return_operand =
+          LLVMBuildICmp(builder, LLVMIntEQ, left_operand, right_operand, "eq");
+    }
+    break;
+  case NI_AST_OPERATOR_NOT_EQUALS:
+    if (float_type(ast_node->bin_op.left->_result_type) == 0) {
+      return_operand = LLVMBuildFCmp(builder, LLVMRealONE, left_operand,
+                                     right_operand, "ne");
+
+    } else {
+      return_operand =
+          LLVMBuildICmp(builder, LLVMIntNE, left_operand, right_operand, "ne");
+    }
+    break;
+  case NI_AST_OPERATOR_GREATER_THAN:
+    if (float_type(ast_node->bin_op.left->_result_type) == 0) {
+      return_operand = LLVMBuildFCmp(builder, LLVMRealOGT, left_operand,
+                                     right_operand, "gt");
+
+    } else if (signed_type(ast_node->bin_op.left->_result_type) == 0) {
+      return_operand =
+          LLVMBuildICmp(builder, LLVMIntSGT, left_operand, right_operand, "gt");
+    } else {
+      return_operand =
+          LLVMBuildICmp(builder, LLVMIntUGT, left_operand, right_operand, "gt");
+    }
+    break;
+  case NI_AST_OPERATOR_GREATER_THAN_OR_EQUALS:
+    if (float_type(ast_node->bin_op.left->_result_type) == 0) {
+      return_operand = LLVMBuildFCmp(builder, LLVMRealOGE, left_operand,
+                                     right_operand, "ge");
+
+    } else if (signed_type(ast_node->bin_op.left->_result_type) == 0) {
+      return_operand =
+          LLVMBuildICmp(builder, LLVMIntSGE, left_operand, right_operand, "ge");
+    } else {
+      return_operand =
+          LLVMBuildICmp(builder, LLVMIntUGE, left_operand, right_operand, "ge");
+    }
+    break;
+  case NI_AST_OPERATOR_LESS_THAN:
+    if (float_type(ast_node->bin_op.left->_result_type) == 0) {
+      return_operand = LLVMBuildFCmp(builder, LLVMRealOLT, left_operand,
+                                     right_operand, "lt");
+
+    } else if (signed_type(ast_node->bin_op.left->_result_type) == 0) {
+      return_operand =
+          LLVMBuildICmp(builder, LLVMIntSLT, left_operand, right_operand, "lt");
+    } else {
+      return_operand =
+          LLVMBuildICmp(builder, LLVMIntULT, left_operand, right_operand, "lt");
+    }
+    break;
+  case NI_AST_OPERATOR_LESS_THAN_OR_EQUALS:
+    if (float_type(ast_node->bin_op.left->_result_type) == 0) {
+      return_operand = LLVMBuildFCmp(builder, LLVMRealOLE, left_operand,
+                                     right_operand, "le");
+
+    } else if (signed_type(ast_node->bin_op.left->_result_type) == 0) {
+      return_operand =
+          LLVMBuildICmp(builder, LLVMIntSLE, left_operand, right_operand, "le");
+    } else {
+      return_operand =
+          LLVMBuildICmp(builder, LLVMIntULE, left_operand, right_operand, "le");
+    }
+    break;
+  case NI_AST_OPERATOR_AND:
+    return_operand = LLVMBuildAnd(builder, left_operand, right_operand, "and");
+    break;
+  case NI_AST_OPERATOR_OR:
+    return_operand = LLVMBuildOr(builder, left_operand, right_operand, "or");
+    break;
+  default:
+    log_validation_error(ast_node->location, "operation not supported");
+    return 1;
   }
 
   return 0;
@@ -174,7 +274,8 @@ int ni_ast_codegen_node_var_assign(ni_ast_node *ast_node) {
   symbol_value *value =
       get_symbol_table(var_table, ast_node->variable_lookup.identifier);
   if (value == NULL) {
-    log_error("variable '%s' not found", ast_node->variable_lookup.identifier);
+    log_validation_error(ast_node->location, "variable '%s' not found",
+                         ast_node->variable_lookup.identifier);
     return 1;
   }
 
@@ -190,7 +291,8 @@ int ni_ast_codegen_node_var_lookup(ni_ast_node *ast_node) {
   symbol_value *value =
       get_symbol_table(var_table, ast_node->variable_lookup.identifier);
   if (value == NULL) {
-    log_error("variable '%s' not found", ast_node->variable_lookup.identifier);
+    log_validation_error(ast_node->location, "variable '%s' not found",
+                         ast_node->variable_lookup.identifier);
     return 1;
   }
 
@@ -225,7 +327,8 @@ int ni_ast_codegen_node_call(ni_ast_node *ast_node) {
       get_symbol_table(fn_table, ast_node->function_call.identifier);
   if (function == NULL) {
     free(args);
-    log_error("function '%s' not found", ast_node->function_call.identifier);
+    log_validation_error(ast_node->location, "function '%s' not found",
+                         ast_node->function_call.identifier);
     return 1;
   }
 
@@ -297,6 +400,7 @@ int ni_ast_codegen(ni_ast_node_list *ast, ni_compile_format format,
                    const char *file_path) {
   int ret = initialize_modules("nic");
   if (ret != 0) {
+    free_modules();
     return ret;
   }
 
@@ -446,17 +550,35 @@ void free_modules() {
   free_symbol_table(fn_table);
 }
 
-LLVMBool signed_type(ni_ast_node *ast_node) {
-  if (ast_node == NULL) {
+int signed_type(const ni_ast_type *ast_type) {
+  if (ast_type == NULL) {
+    return 1;
+  }
+
+  switch (ast_type->internal_type) {
+  case NI_AST_INTERNAL_TYPE_CONST_UINT:
+  case NI_AST_INTERNAL_TYPE_UINT:
+  case NI_AST_INTERNAL_TYPE_UINT8:
+  case NI_AST_INTERNAL_TYPE_UINT16:
+  case NI_AST_INTERNAL_TYPE_UINT32:
+  case NI_AST_INTERNAL_TYPE_UINT64:
+  case NI_AST_INTERNAL_TYPE_UINT128:
+    return 1;
+  default:
+    return 0;
+  }
+}
+
+int float_type(const ni_ast_type *ast_type) {
+  if (ast_type == NULL) {
     return 0;
   }
 
-  switch (ast_node->node_type) {
-  case NI_AST_INTERNAL_TYPE_UINT8:
-  case NI_AST_INTERNAL_TYPE_UINT16:
-  case NI_AST_INTERNAL_TYPE_UINT64:
-  case NI_AST_INTERNAL_TYPE_UINT128:
-  case NI_AST_INTERNAL_TYPE_UINT32:
+  switch (ast_type->internal_type) {
+  case NI_AST_INTERNAL_TYPE_CONST_FLOAT:
+  case NI_AST_INTERNAL_TYPE_FLOAT16:
+  case NI_AST_INTERNAL_TYPE_FLOAT32:
+  case NI_AST_INTERNAL_TYPE_FLOAT64:
     return 0;
   default:
     return 1;
@@ -471,6 +593,10 @@ LLVMTypeRef make_type(ni_ast_type *ast_type) {
   }
 
   switch (ast_type->internal_type) {
+  case NI_AST_INTERNAL_TYPE_UNDEF:
+    return LLVMVoidTypeInContext(context);
+  case NI_AST_INTERNAL_TYPE_CONST_INT:
+  case NI_AST_INTERNAL_TYPE_CONST_UINT:
   case NI_AST_INTERNAL_TYPE_INT:
   case NI_AST_INTERNAL_TYPE_UINT:
     return LLVMIntPtrTypeInContext(context, target_data_layout);
@@ -491,6 +617,7 @@ LLVMTypeRef make_type(ni_ast_type *ast_type) {
     return LLVMInt128TypeInContext(context);
   case NI_AST_INTERNAL_TYPE_FLOAT16:
     return LLVMHalfTypeInContext(context);
+  case NI_AST_INTERNAL_TYPE_CONST_FLOAT:
   case NI_AST_INTERNAL_TYPE_FLOAT32:
     return LLVMFloatTypeInContext(context);
   case NI_AST_INTERNAL_TYPE_FLOAT64:
