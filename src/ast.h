@@ -55,8 +55,8 @@ typedef enum ni_ast_node_type {
 } ni_ast_node_type;
 
 typedef enum ni_ast_operator {
-  NI_AST_OPERATOR_PLUS,
-  NI_AST_OPERATOR_MINUS,
+  NI_AST_OPERATOR_ADD,
+  NI_AST_OPERATOR_SUBTRACT,
   NI_AST_OPERATOR_MULTIPLY,
   NI_AST_OPERATOR_EQUALS_EQUALS,
   NI_AST_OPERATOR_NOT_EQUALS,

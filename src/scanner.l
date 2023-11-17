@@ -129,11 +129,11 @@ identifier [_a-zA-Z][_a-zA-Z0-9]{0,31}
 }
 
 "+" {
-	return PLUS;
+	return ADD;
 }
 
 "-" {
-	return MINUS;
+	return SUBTRACT;
 }
 
 "*" {

@@ -30,14 +30,14 @@ ni_ast_location convert_location(YYLTYPE start, YYLTYPE end);
   ni_ast_node_list* list;
 }
 
-%token FUN OPENPAR CLOSEPAR OPENCUR CLOSECUR COMMA VAR EQUALS RET PLUS MINUS MULTIPLY REFTYPE_INT8 REFTYPE_UINT8 REFTYPE_INT16 REFTYPE_UINT16 REFTYPE_INT32 REFTYPE_UINT32 REFTYPE_INT64 REFTYPE_UINT64 REFTYPE_INT128 REFTYPE_UINT128 REFTYPE_INT REFTYPE_UINT REFTYPE_FLOAT16 REFTYPE_FLOAT32 REFTYPE_FLOAT64 REFTYPE_BOOL BOOL_TRUE BOOL_FALSE EQUALS_EQUALS NOT_EQUALS GREATER_THAN GREATER_THAN_OR_EQUALS LESS_THAN LESS_THAN_OR_EQUALS AND OR
+%token FUN OPENPAR CLOSEPAR OPENCUR CLOSECUR COMMA VAR EQUALS RET ADD SUBTRACT MULTIPLY REFTYPE_INT8 REFTYPE_UINT8 REFTYPE_INT16 REFTYPE_UINT16 REFTYPE_INT32 REFTYPE_UINT32 REFTYPE_INT64 REFTYPE_UINT64 REFTYPE_INT128 REFTYPE_UINT128 REFTYPE_INT REFTYPE_UINT REFTYPE_FLOAT16 REFTYPE_FLOAT32 REFTYPE_FLOAT64 REFTYPE_BOOL BOOL_TRUE BOOL_FALSE EQUALS_EQUALS NOT_EQUALS GREATER_THAN GREATER_THAN_OR_EQUALS LESS_THAN LESS_THAN_OR_EQUALS AND OR
 %token <str> IDENTIFIER INTEGER UINTEGER FLOAT
 
 %nterm <list> instructions block def_args call_args statements
 %nterm <node> function statement arg expr const
 %nterm <type> reftype
 
-%left PLUS MINUS
+%left ADD SUBTRACT
 %left MULTIPLY
 
 %start parse
@@ -97,8 +97,8 @@ expr :
 	| IDENTIFIER																	{ $$ = make_ni_ast_node_variable_lookup(convert_location(@1, @1), $1); free($1); }
 	| IDENTIFIER OPENPAR CLOSEPAR													{ $$ = make_ni_ast_node_function_call(convert_location(@1, @3), $1, NULL); free($1); }
 	| IDENTIFIER OPENPAR call_args CLOSEPAR											{ $$ = make_ni_ast_node_function_call(convert_location(@1, @4), $1, $3); free($1); }
-	| expr PLUS expr																{ $$ = make_ni_ast_node_bin_op(convert_location(@1, @3), NI_AST_OPERATOR_PLUS, $1, $3); }
-	| expr MINUS expr																{ $$ = make_ni_ast_node_bin_op(convert_location(@1, @3), NI_AST_OPERATOR_MINUS, $1, $3); }
+	| expr ADD expr																	{ $$ = make_ni_ast_node_bin_op(convert_location(@1, @3), NI_AST_OPERATOR_ADD, $1, $3); }
+	| expr SUBTRACT expr															{ $$ = make_ni_ast_node_bin_op(convert_location(@1, @3), NI_AST_OPERATOR_SUBTRACT, $1, $3); }
 	| expr MULTIPLY expr															{ $$ = make_ni_ast_node_bin_op(convert_location(@1, @3), NI_AST_OPERATOR_MULTIPLY, $1, $3); }
 	| expr EQUALS_EQUALS expr														{ $$ = make_ni_ast_node_bin_op(convert_location(@1, @3), NI_AST_OPERATOR_EQUALS_EQUALS, $1, $3); }
 	| expr NOT_EQUALS expr															{ $$ = make_ni_ast_node_bin_op(convert_location(@1, @3), NI_AST_OPERATOR_NOT_EQUALS, $1, $3); }

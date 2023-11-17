@@ -314,8 +314,8 @@ int ni_validate_node_bin_op(ni_ast_node *ast_node) {
   }
 
   switch (ast_node->bin_op.op) {
-  case NI_AST_OPERATOR_PLUS:     // +
-  case NI_AST_OPERATOR_MINUS:    // -
+  case NI_AST_OPERATOR_ADD:      // +
+  case NI_AST_OPERATOR_SUBTRACT: // -
   case NI_AST_OPERATOR_MULTIPLY: // *
     ast_node->_result_type = make_ni_ast_type(
         ast_node->location,
