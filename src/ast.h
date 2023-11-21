@@ -44,6 +44,7 @@ typedef enum ni_ast_node_type {
   NI_AST_NODE_TYPE_CONSTANT_FLOAT,
   NI_AST_NODE_TYPE_CONSTANT_BOOL,
   NI_AST_NODE_TYPE_BIN_OP,
+  NI_AST_NODE_TYPE_CONSTANT_DECLARATION,
   NI_AST_NODE_TYPE_VARIABLE_DECLARATION,
   NI_AST_NODE_TYPE_VARIABLE_ASSIGNMENT,
   NI_AST_NODE_TYPE_VARIABLE_LOOKUP,
@@ -87,7 +88,12 @@ struct ni_ast_node {
     } bin_op;
     struct {
       char *identifier;
+      ni_ast_node *value;
+    } constant_declaration;
+    struct {
+      char *identifier;
       ni_ast_type *type;
+      ni_ast_node *value;
     } variable_declaration;
     struct {
       char *identifier;
@@ -163,7 +169,8 @@ ni_ast_node *make_ni_ast_node_bin_op(ni_ast_location loc, ni_ast_operator op,
                                      ni_ast_node *left, ni_ast_node *right);
 ni_ast_node *make_ni_ast_node_variable_declaration(ni_ast_location loc,
                                                    const char *identifier,
-                                                   ni_ast_type *type);
+                                                   ni_ast_type *type,
+                                                   ni_ast_node *value);
 ni_ast_node *make_ni_ast_node_variable_assignment(ni_ast_location loc,
                                                   const char *identifier,
                                                   ni_ast_node *value);
@@ -177,6 +184,9 @@ ni_ast_node *make_ni_ast_node_block(ni_ast_location loc,
 ni_ast_node *make_ni_ast_node_function_declaration(
     ni_ast_location loc, const char *identifier, ni_ast_type *return_type,
     ni_ast_node_list *argument_list, ni_ast_node_list *block);
+ni_ast_node *make_ni_ast_node_constant_declaration(ni_ast_location loc,
+                                                   const char *identifier,
+                                                   ni_ast_node *value);
 ni_ast_node *make_ni_ast_node_function_call(ni_ast_location loc,
                                             const char *identifier,
                                             ni_ast_node_list *argument_list);

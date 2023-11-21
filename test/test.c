@@ -111,7 +111,7 @@ int main(int argc, char *argv[], char **envp) {
   check_failure(inputPath, "validation_arg_mismatch3.ni",
                 "type mismatch expects 'uint8' passed 'int'");
   check_failure(inputPath, "validation_dup_function.ni",
-                "function 'test' already defined");
+                "'test' already defined");
   check_failure(inputPath, "validation_function_not_found.ni",
                 "function 'test' not found");
   check_failure(inputPath, "validation_ret_mismatch.ni",
@@ -120,8 +120,7 @@ int main(int argc, char *argv[], char **envp) {
                 "type mismatch expects 'int' passed 'uint8'");
   check_failure(inputPath, "validation_type_mismatch2.ni",
                 "incompatible types found for operation: 'int', 'uint8'");
-  check_failure(inputPath, "validation_var_not_found.ni",
-                "variable 'a' not found");
+  check_failure(inputPath, "validation_var_not_found.ni", "'a' not found");
   check_failure(inputPath, "validation_var_redefined.ni",
                 "variable 'a' already defined");
   check_failure(inputPath, "validation_var_redefined2.ni",

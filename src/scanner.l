@@ -108,26 +108,6 @@ identifier [_a-zA-Z][_a-zA-Z0-9]{0,31}
 	return BOOL_FALSE;
 }
 
-{identifier} {
-	yylval = strdup(yytext);
-	return IDENTIFIER;
-}
-
-{integer} {
-	yylval = strdup(yytext);
-	return INTEGER;
-}
-
-{uinteger} {
-	yylval = strdup(yytext);
-	return UINTEGER;
-}
-
-{float} {
-	yylval = strdup(yytext);
-	return FLOAT;
-}
-
 "+" {
 	return ADD;
 }
@@ -196,8 +176,32 @@ identifier [_a-zA-Z][_a-zA-Z0-9]{0,31}
 	return OR;
 }
 
+"const" {
+	return KEYWORD_CONST;
+}
+
 [ \t\r]+ { /* ignore whitespace */ }
 
 [\n]+ { yycolumn = 1; }
+
+{integer} { // regex matchers should be last
+	yylval = strdup(yytext);
+	return INTEGER;
+}
+
+{uinteger} {
+	yylval = strdup(yytext);
+	return UINTEGER;
+}
+
+{float} {
+	yylval = strdup(yytext);
+	return FLOAT;
+}
+
+{identifier} {
+	yylval = strdup(yytext);
+	return IDENTIFIER;
+}
 
 %%

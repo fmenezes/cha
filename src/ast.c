@@ -180,13 +180,15 @@ ni_ast_node *make_ni_ast_node_bin_op(ni_ast_location loc, ni_ast_operator op,
 
 ni_ast_node *make_ni_ast_node_variable_declaration(ni_ast_location loc,
                                                    const char *identifier,
-                                                   ni_ast_type *type) {
+                                                   ni_ast_type *type,
+                                                   ni_ast_node *value) {
   ni_ast_node *node = malloc(sizeof(ni_ast_node));
   node->node_type = NI_AST_NODE_TYPE_VARIABLE_DECLARATION;
   node->location = loc;
   node->_result_type = NULL;
   node->variable_declaration.identifier = strdup(identifier);
   node->variable_declaration.type = type;
+  node->variable_declaration.value = value;
   return node;
 }
 
@@ -300,6 +302,10 @@ void free_ni_ast_node(ni_ast_node *node) {
     free_ni_ast_node(node->bin_op.left);
     free_ni_ast_node(node->bin_op.right);
     break;
+  case NI_AST_NODE_TYPE_CONSTANT_DECLARATION:
+    free_ni_ast_node(node->constant_declaration.value);
+    free(node->constant_declaration.identifier);
+    break;
   case NI_AST_NODE_TYPE_VARIABLE_DECLARATION:
     free_ni_ast_type(node->variable_declaration.type);
     free(node->variable_declaration.identifier);
@@ -374,4 +380,16 @@ void free_ni_ast_node_list(ni_ast_node_list *list) {
     list->head = next;
   }
   free(list);
+}
+
+ni_ast_node *make_ni_ast_node_constant_declaration(ni_ast_location loc,
+                                                   const char *identifier,
+                                                   ni_ast_node *value) {
+  ni_ast_node *node = malloc(sizeof(ni_ast_node));
+  node->node_type = NI_AST_NODE_TYPE_CONSTANT_DECLARATION;
+  node->location = loc;
+  node->_result_type = NULL;
+  node->constant_declaration.identifier = strdup(identifier);
+  node->constant_declaration.value = value;
+  return node;
 }

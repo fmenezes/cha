@@ -70,6 +70,7 @@ int ni_ast_codegen_node(ni_ast_node *ast_node) {
   case NI_AST_NODE_TYPE_BLOCK:
     return ni_ast_codegen_block(ast_node->block);
   case NI_AST_NODE_TYPE_ARGUMENT:
+  case NI_AST_NODE_TYPE_CONSTANT_DECLARATION:
     // DO NOTHING
     break;
   }
@@ -260,14 +261,25 @@ int ni_ast_codegen_node_bin_op(ni_ast_node *ast_node) {
 }
 
 int ni_ast_codegen_node_var(ni_ast_node *ast_node) {
-  LLVMTypeRef type = make_type(ast_node->argument.type);
+  LLVMTypeRef type = make_type(ast_node->variable_declaration.type);
 
   LLVMValueRef addr =
       LLVMBuildAlloca(builder, type, ast_node->variable_declaration.identifier);
 
-  return insert_symbol_table(var_table,
-                             ast_node->variable_declaration.identifier,
-                             ast_node, addr, type);
+  if (insert_symbol_table(var_table, ast_node->variable_declaration.identifier,
+                          ast_node, addr, type) != 0) {
+    return 1;
+  }
+
+  if (ast_node->variable_declaration.value != NULL) {
+    if (ni_ast_codegen_node(ast_node->variable_declaration.value) != 0) {
+      return 1;
+    }
+
+    LLVMBuildStore(builder, return_operand, addr);
+  }
+
+  return 0;
 }
 
 int ni_ast_codegen_node_var_assign(ni_ast_node *ast_node) {
@@ -291,9 +303,12 @@ int ni_ast_codegen_node_var_lookup(ni_ast_node *ast_node) {
   symbol_value *value =
       get_symbol_table(var_table, ast_node->variable_lookup.identifier);
   if (value == NULL) {
-    log_validation_error(ast_node->location, "variable '%s' not found",
-                         ast_node->variable_lookup.identifier);
-    return 1;
+    value = get_symbol_table(fn_table, ast_node->variable_lookup.identifier);
+    if (value == NULL) {
+      log_validation_error(ast_node->location, "'%s' not found",
+                           ast_node->variable_lookup.identifier);
+      return 1;
+    }
   }
 
   return_operand = LLVMBuildLoad2(builder, value->type, value->ref,
