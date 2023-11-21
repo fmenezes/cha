@@ -86,3 +86,13 @@ fun square(a int) int {
     ret a * a
 }
 ```
+
+### Constants
+
+```
+const ten = 10
+fun timesten(a int) int {
+    ret a * ten
+}
+```
+
