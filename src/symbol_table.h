@@ -21,11 +21,12 @@ typedef struct symbol_entry_list symbol_entry_list;
 typedef struct symbol_entry symbol_entry;
 typedef struct symbol_value symbol_value;
 
-symbol_table *make_symbol_table(int size);
+symbol_table *make_symbol_table(int size, symbol_table *parent);
 int insert_symbol_table(symbol_table *table, const char *key, ni_ast_node *node,
                         LLVMValueRef ref, LLVMTypeRef type);
 symbol_value *get_symbol_table(symbol_table *table, const char *key);
 void free_symbol_table(symbol_table *table);
+void free_all_symbol_tables(symbol_table *table);
 
 struct symbol_entry_list {
   symbol_entry *head;
@@ -41,6 +42,7 @@ struct symbol_entry {
 struct symbol_table {
   int size;
   symbol_entry_list *entries;
+  symbol_table *parent;
 };
 
 struct symbol_value {
