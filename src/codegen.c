@@ -265,8 +265,9 @@ int ni_ast_codegen_node_var(ni_ast_node *ast_node) {
   LLVMValueRef addr =
       LLVMBuildAlloca(builder, type, ast_node->variable_declaration.identifier);
 
-  if (insert_symbol_table(codegen_symbol_table, ast_node->variable_declaration.identifier,
-                          ast_node, addr, type) != 0) {
+  if (insert_symbol_table(codegen_symbol_table,
+                          ast_node->variable_declaration.identifier, ast_node,
+                          addr, type) != 0) {
     return 1;
   }
 
@@ -282,8 +283,8 @@ int ni_ast_codegen_node_var(ni_ast_node *ast_node) {
 }
 
 int ni_ast_codegen_node_var_assign(ni_ast_node *ast_node) {
-  symbol_value *value =
-      get_symbol_table(codegen_symbol_table, ast_node->variable_lookup.identifier);
+  symbol_value *value = get_symbol_table(codegen_symbol_table,
+                                         ast_node->variable_lookup.identifier);
   if (value == NULL) {
     log_validation_error(ast_node->location, "variable '%s' not found",
                          ast_node->variable_lookup.identifier);
@@ -299,10 +300,11 @@ int ni_ast_codegen_node_var_assign(ni_ast_node *ast_node) {
 }
 
 int ni_ast_codegen_node_var_lookup(ni_ast_node *ast_node) {
-  symbol_value *value =
-      get_symbol_table(codegen_symbol_table, ast_node->variable_lookup.identifier);
+  symbol_value *value = get_symbol_table(codegen_symbol_table,
+                                         ast_node->variable_lookup.identifier);
   if (value == NULL) {
-    value = get_symbol_table(codegen_symbol_table, ast_node->variable_lookup.identifier);
+    value = get_symbol_table(codegen_symbol_table,
+                             ast_node->variable_lookup.identifier);
     if (value == NULL) {
       log_validation_error(ast_node->location, "'%s' not found",
                            ast_node->variable_lookup.identifier);
@@ -337,8 +339,8 @@ int ni_ast_codegen_node_call(ni_ast_node *ast_node) {
     }
   }
 
-  symbol_value *function =
-      get_symbol_table(codegen_symbol_table, ast_node->function_call.identifier);
+  symbol_value *function = get_symbol_table(codegen_symbol_table,
+                                            ast_node->function_call.identifier);
   if (function == NULL) {
     free(args);
     log_validation_error(ast_node->location, "function '%s' not found",
@@ -369,7 +371,8 @@ int ni_ast_codegen_node_ret(ni_ast_node *ast_node) {
 }
 
 int ni_ast_codegen_node_fun(ni_ast_node *ast_node) {
-  symbol_table *new_table = make_symbol_table(SYMBOL_TABLE_SIZE, codegen_symbol_table);
+  symbol_table *new_table =
+      make_symbol_table(SYMBOL_TABLE_SIZE, codegen_symbol_table);
   codegen_symbol_table = new_table;
 
   LLVMTypeRef fn_type = make_fun_signature(ast_node);
@@ -377,8 +380,9 @@ int ni_ast_codegen_node_fun(ni_ast_node *ast_node) {
   LLVMValueRef function = LLVMAddFunction(
       module, ast_node->function_declaration.identifier, fn_type);
 
-  insert_symbol_table(codegen_symbol_table, ast_node->function_declaration.identifier,
-                      ast_node, function, fn_type);
+  insert_symbol_table(codegen_symbol_table,
+                      ast_node->function_declaration.identifier, ast_node,
+                      function, fn_type);
 
   LLVMBasicBlockRef entry_block = LLVMAppendBasicBlock(function, "entry");
   LLVMPositionBuilderAtEnd(builder, entry_block);
@@ -393,8 +397,9 @@ int ni_ast_codegen_node_fun(ni_ast_node *ast_node) {
           LLVMBuildAlloca(builder, type, current->node->argument.identifier);
       LLVMBuildStore(builder, LLVMGetParam(function, i), addr);
 
-      insert_symbol_table(codegen_symbol_table, current->node->argument.identifier,
-                          current->node, addr, type);
+      insert_symbol_table(codegen_symbol_table,
+                          current->node->argument.identifier, current->node,
+                          addr, type);
 
       current = current->next;
       i++;

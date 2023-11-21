@@ -240,7 +240,8 @@ int ni_validate_node(ni_ast_node *ast_node) {
 }
 
 int ni_validate_node_fun(ni_ast_node *ast_node) {
-  symbol_table *new_table = make_symbol_table(SYMBOL_TABLE_SIZE, validate_symbol_table);
+  symbol_table *new_table =
+      make_symbol_table(SYMBOL_TABLE_SIZE, validate_symbol_table);
   validate_symbol_table = new_table;
   fun = ast_node;
 
@@ -261,8 +262,9 @@ int ni_validate_node_var(ni_ast_node *ast_node) {
   if (ni_validate_node(ast_node->variable_declaration.value) != 0) {
     return 1;
   }
-  if (insert_symbol_table(validate_symbol_table, ast_node->variable_declaration.identifier,
-                          ast_node, NULL, NULL) != 0) {
+  if (insert_symbol_table(validate_symbol_table,
+                          ast_node->variable_declaration.identifier, ast_node,
+                          NULL, NULL) != 0) {
     log_validation_error(ast_node->location, "variable '%s' already defined",
                          ast_node->variable_declaration.identifier);
     return 1;
@@ -282,8 +284,8 @@ int ni_validate_node_const(ni_ast_node *ast_node) {
 }
 
 int ni_validate_node_arg(ni_ast_node *ast_node) {
-  if (insert_symbol_table(validate_symbol_table, ast_node->argument.identifier, ast_node,
-                          NULL, NULL) != 0) {
+  if (insert_symbol_table(validate_symbol_table, ast_node->argument.identifier,
+                          ast_node, NULL, NULL) != 0) {
     log_validation_error(ast_node->location, "argument '%s' already defined",
                          ast_node->argument.identifier);
     return 1;
@@ -292,8 +294,8 @@ int ni_validate_node_arg(ni_ast_node *ast_node) {
 }
 
 int ni_validate_node_var_assign(ni_ast_node *ast_node) {
-  symbol_value *v =
-      get_symbol_table(validate_symbol_table, ast_node->variable_assignment.identifier);
+  symbol_value *v = get_symbol_table(validate_symbol_table,
+                                     ast_node->variable_assignment.identifier);
   if (v == NULL) {
     log_validation_error(ast_node->location, "variable '%s' not found",
                          ast_node->variable_assignment.identifier);
@@ -320,11 +322,11 @@ int ni_validate_node_var_assign(ni_ast_node *ast_node) {
 }
 
 int ni_validate_node_var_lookup(ni_ast_node *ast_node) {
-  symbol_value *v =
-      get_symbol_table(validate_symbol_table, ast_node->variable_lookup.identifier);
+  symbol_value *v = get_symbol_table(validate_symbol_table,
+                                     ast_node->variable_lookup.identifier);
   if (v == NULL) {
     log_validation_error(ast_node->location, "'%s' not found",
-                          ast_node->variable_lookup.identifier);
+                         ast_node->variable_lookup.identifier);
     return 1;
   }
   switch (v->node->node_type) {
@@ -437,8 +439,8 @@ int ni_validate_node_bin_op(ni_ast_node *ast_node) {
 }
 
 int ni_validate_node_call(ni_ast_node *ast_node) {
-  symbol_value *callee_fun =
-      get_symbol_table(validate_symbol_table, ast_node->function_call.identifier);
+  symbol_value *callee_fun = get_symbol_table(
+      validate_symbol_table, ast_node->function_call.identifier);
 
   if (callee_fun == NULL) {
     log_validation_error(ast_node->location, "function '%s' not found",
