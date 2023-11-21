@@ -10,6 +10,7 @@ int ni_validate_top_level(ni_ast_node_list *ast);
 int ni_validate_node_list(ni_ast_node_list *ast);
 int ni_validate_node(ni_ast_node *ast_node);
 int ni_validate_node_fun(ni_ast_node *ast_node);
+int ni_validate_node_const(ni_ast_node *ast_node);
 int ni_validate_node_var(ni_ast_node *ast_node);
 int ni_validate_node_arg(ni_ast_node *ast_node);
 int ni_validate_node_var_assign(ni_ast_node *ast_node);
@@ -22,7 +23,7 @@ int ni_check_type_assignment(ni_ast_node *ast_node,
 void ni_set_type_on_const(ni_ast_node *ast_node,
                           ni_ast_internal_type internal_type);
 
-symbol_table *fn_top_level_table = NULL;
+symbol_table *top_level_table = NULL;
 symbol_table *fun_table = NULL;
 ni_ast_node *fun = NULL;
 
@@ -146,11 +147,11 @@ int convert_bool_comparison_op[19][19] = { // && ||
 // clang-format on
 
 int ni_validate(ni_ast_node_list *ast) {
-  fn_top_level_table = make_symbol_table(SYMBOL_TABLE_SIZE);
+  top_level_table = make_symbol_table(SYMBOL_TABLE_SIZE);
 
   int ret = ni_validate_top_level(ast);
 
-  free_symbol_table(fn_top_level_table);
+  free_symbol_table(top_level_table);
   return ret;
 }
 
@@ -158,20 +159,27 @@ int ni_validate_top_level(ni_ast_node_list *ast) {
   int ret = 0;
   ni_ast_node_list_entry *ast_current_node = ast->head;
   while (ast_current_node != NULL) {
-    if (ast_current_node->node->node_type !=
-        NI_AST_NODE_TYPE_FUNCTION_DECLARATION) {
+    switch (ast_current_node->node->node_type) {
+    case NI_AST_NODE_TYPE_FUNCTION_DECLARATION:
+      if (insert_symbol_table(
+              top_level_table,
+              ast_current_node->node->function_declaration.identifier,
+              ast_current_node->node, NULL, NULL) != 0) {
+        ret = 1;
+        log_validation_error(
+            ast_current_node->node->location, "'%s' already defined",
+            ast_current_node->node->function_declaration.identifier);
+      }
+      break;
+    case NI_AST_NODE_TYPE_CONSTANT_DECLARATION:
+      break; // validate later
+    default:
+      ret = 1;
       log_validation_error(ast_current_node->node->location,
-                           "expected function declaration");
-      ret = 1;
-    } else if (insert_symbol_table(
-                   fn_top_level_table,
-                   ast_current_node->node->function_declaration.identifier,
-                   ast_current_node->node, NULL, NULL) != 0) {
-      ret = 1;
-      log_validation_error(
-          ast_current_node->node->location, "function '%s' already defined",
-          ast_current_node->node->function_declaration.identifier);
+                           "unexpected token");
+      break;
     }
+
     ast_current_node = ast_current_node->next;
   }
 
@@ -209,6 +217,8 @@ int ni_validate_node(ni_ast_node *ast_node) {
   switch (ast_node->node_type) {
   case NI_AST_NODE_TYPE_FUNCTION_DECLARATION:
     return ni_validate_node_fun(ast_node);
+  case NI_AST_NODE_TYPE_CONSTANT_DECLARATION:
+    return ni_validate_node_const(ast_node);
   case NI_AST_NODE_TYPE_BLOCK:
     return ni_validate_node_list(ast_node->block);
   case NI_AST_NODE_TYPE_VARIABLE_DECLARATION:
@@ -246,10 +256,24 @@ int ni_validate_node_fun(ni_ast_node *ast_node) {
 }
 
 int ni_validate_node_var(ni_ast_node *ast_node) {
+  if (ni_validate_node(ast_node->variable_declaration.value) != 0) {
+    return 1;
+  }
   if (insert_symbol_table(fun_table, ast_node->variable_declaration.identifier,
                           ast_node, NULL, NULL) != 0) {
     log_validation_error(ast_node->location, "variable '%s' already defined",
                          ast_node->variable_declaration.identifier);
+    return 1;
+  }
+  return 0;
+}
+
+int ni_validate_node_const(ni_ast_node *ast_node) {
+  if (insert_symbol_table(top_level_table,
+                          ast_node->constant_declaration.identifier, ast_node,
+                          NULL, NULL) != 0) {
+    log_validation_error(ast_node->location, "constant '%s' already defined",
+                         ast_node->constant_declaration.identifier);
     return 1;
   }
   return 0;
@@ -297,12 +321,43 @@ int ni_validate_node_var_lookup(ni_ast_node *ast_node) {
   symbol_value *v =
       get_symbol_table(fun_table, ast_node->variable_lookup.identifier);
   if (v == NULL) {
-    log_validation_error(ast_node->location, "variable '%s' not found",
-                         ast_node->variable_lookup.identifier);
+    v = get_symbol_table(top_level_table, ast_node->variable_lookup.identifier);
+    if (v == NULL) {
+      log_validation_error(ast_node->location, "'%s' not found",
+                           ast_node->variable_lookup.identifier);
+      return 1;
+    }
+  }
+  switch (v->node->node_type) {
+  case NI_AST_NODE_TYPE_CONSTANT_DECLARATION: // replace lookup with value
+    free(ast_node->variable_lookup.identifier);
+    ast_node->node_type = v->node->constant_declaration.value->node_type;
+    ast_node->_result_type = make_ni_ast_type(
+        ast_node->location,
+        v->node->constant_declaration.value->_result_type->internal_type);
+    switch (ast_node->node_type) {
+    case NI_AST_NODE_TYPE_CONSTANT_UINT:
+    case NI_AST_NODE_TYPE_CONSTANT_INT:
+    case NI_AST_NODE_TYPE_CONSTANT_FLOAT:
+      ast_node->const_value =
+          strdup(v->node->constant_declaration.value->const_value);
+      break;
+    case NI_AST_NODE_TYPE_CONSTANT_BOOL:
+      ast_node->const_bool = v->node->constant_declaration.value->const_bool;
+      break;
+    default:
+      // other types are irrelevant
+      break;
+    }
+    break;
+  case NI_AST_NODE_TYPE_VARIABLE_DECLARATION: // copy type
+    ast_node->_result_type = make_ni_ast_type(
+        ast_node->location, v->node->variable_declaration.type->internal_type);
+    break;
+  default:
+    log_validation_error(ast_node->location, "incompatible element found");
     return 1;
   }
-  ast_node->_result_type = make_ni_ast_type(
-      ast_node->location, v->node->variable_declaration.type->internal_type);
   return 0;
 }
 
@@ -384,7 +439,7 @@ int ni_validate_node_bin_op(ni_ast_node *ast_node) {
 
 int ni_validate_node_call(ni_ast_node *ast_node) {
   symbol_value *callee_fun =
-      get_symbol_table(fn_top_level_table, ast_node->function_call.identifier);
+      get_symbol_table(top_level_table, ast_node->function_call.identifier);
 
   if (callee_fun == NULL) {
     log_validation_error(ast_node->location, "function '%s' not found",
@@ -502,6 +557,9 @@ void type_str(char *out, const ni_ast_type *ast_type) {
     sprintf(out, "void");
   } else {
     switch (ast_type->internal_type) {
+    case NI_AST_INTERNAL_TYPE_UNDEF:
+      sprintf(out, "undefined");
+      break;
     case NI_AST_INTERNAL_TYPE_CONST_INT:
       sprintf(out, "c_int");
       break;

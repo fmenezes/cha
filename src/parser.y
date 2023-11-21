@@ -20,6 +20,7 @@ int yyerror(const char *msg);
 
 %code{
 # include "ast.h"
+
 ni_ast_location convert_location(YYLTYPE start, YYLTYPE end);
 }
 
@@ -30,11 +31,11 @@ ni_ast_location convert_location(YYLTYPE start, YYLTYPE end);
   ni_ast_node_list* list;
 }
 
-%token FUN OPENPAR CLOSEPAR OPENCUR CLOSECUR COMMA VAR EQUALS RET ADD SUBTRACT MULTIPLY REFTYPE_INT8 REFTYPE_UINT8 REFTYPE_INT16 REFTYPE_UINT16 REFTYPE_INT32 REFTYPE_UINT32 REFTYPE_INT64 REFTYPE_UINT64 REFTYPE_INT128 REFTYPE_UINT128 REFTYPE_INT REFTYPE_UINT REFTYPE_FLOAT16 REFTYPE_FLOAT32 REFTYPE_FLOAT64 REFTYPE_BOOL BOOL_TRUE BOOL_FALSE EQUALS_EQUALS NOT_EQUALS GREATER_THAN GREATER_THAN_OR_EQUALS LESS_THAN LESS_THAN_OR_EQUALS AND OR
+%token FUN OPENPAR CLOSEPAR OPENCUR CLOSECUR COMMA VAR EQUALS RET ADD SUBTRACT MULTIPLY REFTYPE_INT8 REFTYPE_UINT8 REFTYPE_INT16 REFTYPE_UINT16 REFTYPE_INT32 REFTYPE_UINT32 REFTYPE_INT64 REFTYPE_UINT64 REFTYPE_INT128 REFTYPE_UINT128 REFTYPE_INT REFTYPE_UINT REFTYPE_FLOAT16 REFTYPE_FLOAT32 REFTYPE_FLOAT64 REFTYPE_BOOL BOOL_TRUE BOOL_FALSE EQUALS_EQUALS NOT_EQUALS GREATER_THAN GREATER_THAN_OR_EQUALS LESS_THAN LESS_THAN_OR_EQUALS AND OR KEYWORD_CONST
 %token <str> IDENTIFIER INTEGER UINTEGER FLOAT
 
-%nterm <list> instructions block def_args call_args statements
-%nterm <node> function statement arg expr const
+%nterm <list> top_level block def_args call_args statements
+%nterm <node> instruction const_definition function statement arg expr const_value
 %nterm <type> reftype
 
 %left ADD SUBTRACT
@@ -45,12 +46,21 @@ ni_ast_location convert_location(YYLTYPE start, YYLTYPE end);
 %%
 
 parse :
-	instructions																	{ parsed_ast = $1; }
+	top_level																		{ parsed_ast = $1; }
 	;
 
-instructions :
-	function																		{ $$ = make_ni_ast_node_list($1); }
-	| instructions function															{ $$ = $1; ni_ast_node_list_append($$, $2); }
+top_level :
+	instruction																		{ $$ = make_ni_ast_node_list($1); }
+	| top_level instruction															{ $$ = $1; ni_ast_node_list_append($$, $2); }
+	;
+
+instruction :
+	const_definition																{ $$ = $1; }
+	| function																		{ $$ = $1; }
+	;
+
+const_definition :
+	KEYWORD_CONST IDENTIFIER EQUALS const_value										{ $$ = make_ni_ast_node_constant_declaration(convert_location(@1, @4), $2, $4); free($2); }
 	;
 
 function :
@@ -85,7 +95,8 @@ statements :
 	;
 
 statement :
-	VAR IDENTIFIER reftype															{ $$ = make_ni_ast_node_variable_declaration(convert_location(@1, @3), $2, $3); free($2); }
+	VAR IDENTIFIER reftype															{ $$ = make_ni_ast_node_variable_declaration(convert_location(@1, @3), $2, $3, NULL); free($2); }
+	| VAR IDENTIFIER reftype EQUALS expr											{ $$ = make_ni_ast_node_variable_declaration(convert_location(@1, @5), $2, $3, $5); free($2); }
 	| IDENTIFIER EQUALS expr														{ $$ = make_ni_ast_node_variable_assignment(convert_location(@1, @3), $1, $3); free($1); }
 	| expr																			{ $$ = $1; }
 	| RET expr																		{ $$ = make_ni_ast_node_function_return(convert_location(@1, @2), $2); }
@@ -93,7 +104,7 @@ statement :
 	;
 
 expr :
-	const																			{ $$ = $1; }
+	const_value																		{ $$ = $1; }
 	| IDENTIFIER																	{ $$ = make_ni_ast_node_variable_lookup(convert_location(@1, @1), $1); free($1); }
 	| IDENTIFIER OPENPAR CLOSEPAR													{ $$ = make_ni_ast_node_function_call(convert_location(@1, @3), $1, NULL); free($1); }
 	| IDENTIFIER OPENPAR call_args CLOSEPAR											{ $$ = make_ni_ast_node_function_call(convert_location(@1, @4), $1, $3); free($1); }
@@ -130,7 +141,7 @@ reftype :
 	| REFTYPE_BOOL																	{ $$ = make_ni_ast_type_bool(convert_location(@1, @1)); }
 	;
 
-const :
+const_value :
 	INTEGER																			{ $$ = make_ni_ast_node_constant_integer(convert_location(@1, @1), $1); free($1); }
 	| UINTEGER																		{ $$ = make_ni_ast_node_constant_unsigned_integer(convert_location(@1, @1), $1); free($1); }
 	| FLOAT																			{ $$ = make_ni_ast_node_constant_float(convert_location(@1, @1), $1); free($1); }
