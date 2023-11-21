@@ -12,9 +12,10 @@ int hash_function(const char *str) {
   return hash;
 }
 
-symbol_table *make_symbol_table(int size) {
+symbol_table *make_symbol_table(int size, symbol_table *parent) {
   symbol_table *table = malloc(sizeof(symbol_table));
   table->size = size;
+  table->parent = parent;
   table->entries = malloc(sizeof(symbol_entry_list) * size);
   for (int i = 0; i < size; i++) {
     table->entries[i].head = NULL;
@@ -52,6 +53,9 @@ int insert_symbol_table(symbol_table *table, const char *key, ni_ast_node *node,
 }
 
 symbol_value *get_symbol_table(symbol_table *table, const char *key) {
+  if (table == NULL) {
+    return NULL;
+  }
   int index = hash_function(key) % table->size;
   symbol_entry *entry = table->entries[index].head;
   while (entry != NULL) {
@@ -60,7 +64,7 @@ symbol_value *get_symbol_table(symbol_table *table, const char *key) {
     }
     entry = entry->next;
   }
-  return NULL;
+  return get_symbol_table(table->parent, key);
 }
 
 void free_symbol_table(symbol_table *table) {
@@ -78,4 +82,11 @@ void free_symbol_table(symbol_table *table) {
   }
   free(table->entries);
   free(table);
+}
+
+void free_all_symbol_tables(symbol_table *table) {
+  if (table->parent != NULL) {
+    free_all_symbol_tables(table->parent);
+  }
+  free_symbol_table(table);
 }
