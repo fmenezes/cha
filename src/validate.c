@@ -18,10 +18,13 @@ int ni_validate_node_var_lookup(ni_ast_node *ast_node);
 int ni_validate_node_bin_op(ni_ast_node *ast_node);
 int ni_validate_node_call(ni_ast_node *ast_node);
 int ni_validate_node_ret(ni_ast_node *ast_node);
+int ni_validate_node_if(ni_ast_node *ast_node);
 int ni_check_type_assignment(ni_ast_node *ast_node,
                              const ni_ast_type *ast_type);
 void ni_set_type_on_const(ni_ast_node *ast_node,
                           ni_ast_internal_type internal_type);
+void ni_validate_create_stack_frame();
+void ni_validate_release_stack_frame();
 
 symbol_table *validate_symbol_table = NULL;
 ni_ast_node *fun = NULL;
@@ -234,15 +237,15 @@ int ni_validate_node(ni_ast_node *ast_node) {
     return ni_validate_node_ret(ast_node);
   case NI_AST_NODE_TYPE_ARGUMENT:
     return ni_validate_node_arg(ast_node);
+  case NI_AST_NODE_TYPE_IF:
+    return ni_validate_node_if(ast_node);
   default:
     return 0; // no validation
   }
 }
 
 int ni_validate_node_fun(ni_ast_node *ast_node) {
-  symbol_table *new_table =
-      make_symbol_table(SYMBOL_TABLE_SIZE, validate_symbol_table);
-  validate_symbol_table = new_table;
+  ni_validate_create_stack_frame();
   fun = ast_node;
 
   int ret = ni_validate_node_list(ast_node->function_declaration.argument_list);
@@ -253,8 +256,7 @@ int ni_validate_node_fun(ni_ast_node *ast_node) {
 
   fun = NULL;
 
-  validate_symbol_table = validate_symbol_table->parent;
-  free_symbol_table(new_table);
+  ni_validate_release_stack_frame();
   return ret;
 }
 
@@ -378,6 +380,12 @@ int ni_validate_node_bin_op(ni_ast_node *ast_node) {
         convert_arithmetic_op
             [ast_node->bin_op.left->_result_type->internal_type]
             [ast_node->bin_op.right->_result_type->internal_type]);
+    ni_set_type_on_const(ast_node->bin_op.left,
+                         ast_node->_result_type->internal_type);
+    ni_set_type_on_const(ast_node->bin_op.right,
+                         ast_node->_result_type->internal_type);
+
+    break;
   case NI_AST_OPERATOR_GREATER_THAN:           // >
   case NI_AST_OPERATOR_GREATER_THAN_OR_EQUALS: // >=
   case NI_AST_OPERATOR_LESS_THAN:              // <
@@ -391,6 +399,10 @@ int ni_validate_node_bin_op(ni_ast_node *ast_node) {
       ast_node->_result_type =
           make_ni_ast_type(ast_node->location, NI_AST_INTERNAL_TYPE_BOOL);
     }
+    ni_set_type_on_const(ast_node->bin_op.left,
+                         ast_node->bin_op.right->_result_type->internal_type);
+    ni_set_type_on_const(ast_node->bin_op.right,
+                         ast_node->bin_op.left->_result_type->internal_type);
     break;
   case NI_AST_OPERATOR_EQUALS_EQUALS: // ==
   case NI_AST_OPERATOR_NOT_EQUALS:    // !=
@@ -403,6 +415,10 @@ int ni_validate_node_bin_op(ni_ast_node *ast_node) {
       ast_node->_result_type =
           make_ni_ast_type(ast_node->location, NI_AST_INTERNAL_TYPE_BOOL);
     }
+    ni_set_type_on_const(ast_node->bin_op.left,
+                         ast_node->bin_op.right->_result_type->internal_type);
+    ni_set_type_on_const(ast_node->bin_op.right,
+                         ast_node->bin_op.left->_result_type->internal_type);
     break;
   case NI_AST_OPERATOR_AND: // &&
   case NI_AST_OPERATOR_OR:  // ||
@@ -429,11 +445,6 @@ int ni_validate_node_bin_op(ni_ast_node *ast_node) {
 
     return 1;
   }
-
-  ni_set_type_on_const(ast_node->bin_op.left,
-                       ast_node->_result_type->internal_type);
-  ni_set_type_on_const(ast_node->bin_op.right,
-                       ast_node->_result_type->internal_type);
 
   return 0;
 }
@@ -549,6 +560,31 @@ int ni_validate_node_ret(ni_ast_node *ast_node) {
   return 0;
 }
 
+int ni_validate_node_if(ni_ast_node *ast_node) {
+  if (ni_validate_node(ast_node->if_block.condition) != 0) {
+    return 1;
+  }
+  if (ast_node->if_block.condition->_result_type->internal_type !=
+      NI_AST_INTERNAL_TYPE_BOOL) {
+    log_validation_error(ast_node->if_block.condition->location,
+                         "condition should return bool");
+    return 1;
+  }
+  ni_validate_create_stack_frame();
+  if (ni_validate_node_list(ast_node->if_block.block) != 0) {
+    ni_validate_release_stack_frame();
+    return 1;
+  }
+  ni_validate_release_stack_frame();
+  ni_validate_create_stack_frame();
+  if (ni_validate_node_list(ast_node->if_block.else_block) != 0) {
+    ni_validate_release_stack_frame();
+    return 1;
+  }
+  ni_validate_release_stack_frame();
+  return 0;
+}
+
 void type_str(char *out, const ni_ast_type *ast_type) {
   if (out == NULL) {
     return;
@@ -644,4 +680,16 @@ void ni_set_type_on_const(ni_ast_node *ast_node,
     ast_node->_result_type =
         make_ni_ast_type(ast_node->location, internal_type);
   }
+}
+
+void ni_validate_create_stack_frame() {
+  symbol_table *new_table =
+      make_symbol_table(SYMBOL_TABLE_SIZE, validate_symbol_table);
+  validate_symbol_table = new_table;
+}
+
+void ni_validate_release_stack_frame() {
+  symbol_table *new_table = validate_symbol_table;
+  validate_symbol_table = validate_symbol_table->parent;
+  free_symbol_table(new_table);
 }

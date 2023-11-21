@@ -53,6 +53,7 @@ typedef enum ni_ast_node_type {
   NI_AST_NODE_TYPE_FUNCTION_DECLARATION,
   NI_AST_NODE_TYPE_FUNCTION_CALL,
   NI_AST_NODE_TYPE_FUNCTION_RETURN,
+  NI_AST_NODE_TYPE_IF,
 } ni_ast_node_type;
 
 typedef enum ni_ast_operator {
@@ -120,6 +121,11 @@ struct ni_ast_node {
     struct {
       ni_ast_node *value;
     } function_return;
+    struct {
+      ni_ast_node *condition;
+      ni_ast_node_list *block;
+      ni_ast_node_list *else_block;
+    } if_block;
   };
 };
 
@@ -192,6 +198,9 @@ ni_ast_node *make_ni_ast_node_function_call(ni_ast_location loc,
                                             ni_ast_node_list *argument_list);
 ni_ast_node *make_ni_ast_node_function_return(ni_ast_location loc,
                                               ni_ast_node *value);
+ni_ast_node *make_ni_ast_node_if(ni_ast_location loc, ni_ast_node *condition,
+                                 ni_ast_node_list *block,
+                                 ni_ast_node_list *else_block);
 ni_ast_node_list *make_ni_ast_node_list(ni_ast_node *head);
 void ni_ast_node_list_append(ni_ast_node_list *list, ni_ast_node *next);
 

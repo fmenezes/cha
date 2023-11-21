@@ -25,10 +25,13 @@ int ni_ast_codegen_node_ret(ni_ast_node *ast_node);
 int ni_ast_codegen_node_call(ni_ast_node *ast_node);
 int ni_ast_codegen_node_fun(ni_ast_node *ast_node);
 int ni_ast_codegen_block(ni_ast_node_list *block);
+int ni_ast_codegen_if(ni_ast_node *ast_node);
 LLVMTypeRef make_fun_signature(ni_ast_node *ast_node);
 LLVMTypeRef make_type(ni_ast_type *ast_type);
 int signed_type(const ni_ast_type *ast_type);
 int float_type(const ni_ast_type *ast_type);
+void ni_create_stack_frame();
+void ni_release_stack_frame();
 
 LLVMContextRef context = NULL;
 LLVMModuleRef module = NULL;
@@ -68,16 +71,24 @@ int ni_ast_codegen_node(ni_ast_node *ast_node) {
     return ni_ast_codegen_node_fun(ast_node);
   case NI_AST_NODE_TYPE_BLOCK:
     return ni_ast_codegen_block(ast_node->block);
+  case NI_AST_NODE_TYPE_IF:
+    return ni_ast_codegen_if(ast_node);
   case NI_AST_NODE_TYPE_ARGUMENT:
   case NI_AST_NODE_TYPE_CONSTANT_DECLARATION:
     // DO NOTHING
     break;
+  default:
+    log_validation_error(ast_node->location, "not implemented");
+    return 1;
   }
 
   return 0;
 }
 
 int ni_ast_codegen_block(ni_ast_node_list *block) {
+  if (block == NULL) {
+    return 0;
+  }
   ni_ast_node_list_entry *cur = block->head;
   while (cur != NULL) {
     int ret = ni_ast_codegen_node(cur->node);
@@ -371,9 +382,7 @@ int ni_ast_codegen_node_ret(ni_ast_node *ast_node) {
 }
 
 int ni_ast_codegen_node_fun(ni_ast_node *ast_node) {
-  symbol_table *new_table =
-      make_symbol_table(SYMBOL_TABLE_SIZE, codegen_symbol_table);
-  codegen_symbol_table = new_table;
+  ni_create_stack_frame();
 
   LLVMTypeRef fn_type = make_fun_signature(ast_node);
 
@@ -407,8 +416,7 @@ int ni_ast_codegen_node_fun(ni_ast_node *ast_node) {
   }
 
   int ret = ni_ast_codegen_block(ast_node->function_declaration.block);
-  codegen_symbol_table = codegen_symbol_table->parent;
-  free_symbol_table(new_table);
+  ni_release_stack_frame();
 
   if (LLVMVerifyFunction(function, LLVMPrintMessageAction) != 0) {
     ret = 1;
@@ -608,6 +616,52 @@ int float_type(const ni_ast_type *ast_type) {
   return 1;
 }
 
+int ni_ast_codegen_if(ni_ast_node *ast_node) {
+  LLVMBasicBlockRef current_block = LLVMGetInsertBlock(builder);
+  LLVMValueRef fun = LLVMGetBasicBlockParent(current_block);
+
+  LLVMBasicBlockRef then_block =
+      LLVMAppendBasicBlockInContext(context, fun, "then");
+  LLVMBasicBlockRef else_block =
+      LLVMAppendBasicBlockInContext(context, fun, "else");
+  LLVMBasicBlockRef end_block =
+      LLVMAppendBasicBlockInContext(context, fun, "end");
+
+  ni_create_stack_frame();
+  LLVMPositionBuilderAtEnd(builder, then_block);
+  if (ni_ast_codegen_block(ast_node->if_block.block) != 0) {
+    ni_release_stack_frame();
+    return 1;
+  }
+  if (LLVMGetLastInstruction(then_block) == NULL || !LLVMIsATerminatorInst(
+          LLVMGetLastInstruction(then_block))) {
+    LLVMBuildBr(builder, end_block);
+  }
+  ni_release_stack_frame();
+
+  ni_create_stack_frame();
+  LLVMPositionBuilderAtEnd(builder, else_block);
+  if (ni_ast_codegen_block(ast_node->if_block.else_block) != 0) {
+    ni_release_stack_frame();
+    return 1;
+  }
+  if (LLVMGetLastInstruction(else_block) == NULL || !LLVMIsATerminatorInst(
+          LLVMGetLastInstruction(else_block))) {
+    LLVMBuildBr(builder, end_block);
+  }
+  ni_release_stack_frame();
+
+  LLVMPositionBuilderAtEnd(builder, current_block);
+  if (ni_ast_codegen_node(ast_node->if_block.condition) != 0) {
+    return 1;
+  }
+  LLVMBuildCondBr(builder, return_operand, then_block, else_block);
+
+  LLVMPositionBuilderAtEnd(builder, end_block);
+
+  return 0;
+}
+
 LLVMTypeRef make_type(ni_ast_type *ast_type) {
   if (ast_type == NULL) {
     return LLVMVoidTypeInContext(context);
@@ -648,4 +702,16 @@ LLVMTypeRef make_type(ni_ast_type *ast_type) {
   }
 
   return LLVMVoidTypeInContext(context);
+}
+
+void ni_create_stack_frame() {
+  symbol_table *new_table =
+      make_symbol_table(SYMBOL_TABLE_SIZE, codegen_symbol_table);
+  codegen_symbol_table = new_table;
+}
+
+void ni_release_stack_frame() {
+  symbol_table *new_table = codegen_symbol_table;
+  codegen_symbol_table = codegen_symbol_table->parent;
+  free_symbol_table(new_table);
 }
