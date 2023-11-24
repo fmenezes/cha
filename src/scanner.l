@@ -184,6 +184,10 @@ identifier [_a-zA-Z][_a-zA-Z0-9]{0,31}
 	return KEYWORD_IF;
 }
 
+"else" {
+	return KEYWORD_ELSE;
+}
+
 [ \t\r]+ { /* ignore whitespace */ }
 
 [\n]+ { yycolumn = 1; }
