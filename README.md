@@ -102,9 +102,12 @@ if
 
 ```
 fun greaterThanTwo(a int) bool {
+    var result bool
     if a > 2 {
-        ret true
+        result = true
+    } else {
+        result = false
     }
-    ret false
+    return result
 }
 ```
