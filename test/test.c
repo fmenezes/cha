@@ -103,6 +103,7 @@ int main(int argc, char *argv[], char **envp) {
   check_success(inputPath, "type_assign_passes.ni");
   check_success(inputPath, "validation_passes.ni");
   check_success(inputPath, "if_passes.ni");
+  check_success(inputPath, "if_else_passes.ni");
 
   check_failure(inputPath, "parse_failure.ni", "syntax error");
   check_failure(inputPath, "validation_arg_dup.ni",

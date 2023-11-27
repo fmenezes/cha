@@ -633,8 +633,8 @@ int ni_ast_codegen_if(ni_ast_node *ast_node) {
     ni_release_stack_frame();
     return 1;
   }
-  if (LLVMGetLastInstruction(then_block) == NULL || !LLVMIsATerminatorInst(
-          LLVMGetLastInstruction(then_block))) {
+  if (LLVMGetLastInstruction(then_block) == NULL ||
+      !LLVMIsATerminatorInst(LLVMGetLastInstruction(then_block))) {
     LLVMBuildBr(builder, end_block);
   }
   ni_release_stack_frame();
@@ -645,8 +645,8 @@ int ni_ast_codegen_if(ni_ast_node *ast_node) {
     ni_release_stack_frame();
     return 1;
   }
-  if (LLVMGetLastInstruction(else_block) == NULL || !LLVMIsATerminatorInst(
-          LLVMGetLastInstruction(else_block))) {
+  if (LLVMGetLastInstruction(else_block) == NULL ||
+      !LLVMIsATerminatorInst(LLVMGetLastInstruction(else_block))) {
     LLVMBuildBr(builder, end_block);
   }
   ni_release_stack_frame();
