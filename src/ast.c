@@ -272,6 +272,19 @@ ni_ast_node *make_ni_ast_node_function_return(ni_ast_location loc,
   return node;
 }
 
+ni_ast_node *make_ni_ast_node_if(ni_ast_location loc, ni_ast_node *condition,
+                                 ni_ast_node_list *block,
+                                 ni_ast_node_list *else_block) {
+  ni_ast_node *node = malloc(sizeof(ni_ast_node));
+  node->node_type = NI_AST_NODE_TYPE_IF;
+  node->location = loc;
+  node->_result_type = NULL;
+  node->if_block.condition = condition;
+  node->if_block.block = block;
+  node->if_block.else_block = else_block;
+  return node;
+}
+
 ni_ast_type *make_ni_ast_type(ni_ast_location loc,
                               ni_ast_internal_type internal_type) {
   ni_ast_type *t = malloc(sizeof(ni_ast_type));

@@ -31,7 +31,7 @@ ni_ast_location convert_location(YYLTYPE start, YYLTYPE end);
   ni_ast_node_list* list;
 }
 
-%token FUN OPENPAR CLOSEPAR OPENCUR CLOSECUR COMMA VAR EQUALS RET ADD SUBTRACT MULTIPLY REFTYPE_INT8 REFTYPE_UINT8 REFTYPE_INT16 REFTYPE_UINT16 REFTYPE_INT32 REFTYPE_UINT32 REFTYPE_INT64 REFTYPE_UINT64 REFTYPE_INT128 REFTYPE_UINT128 REFTYPE_INT REFTYPE_UINT REFTYPE_FLOAT16 REFTYPE_FLOAT32 REFTYPE_FLOAT64 REFTYPE_BOOL BOOL_TRUE BOOL_FALSE EQUALS_EQUALS NOT_EQUALS GREATER_THAN GREATER_THAN_OR_EQUALS LESS_THAN LESS_THAN_OR_EQUALS AND OR KEYWORD_CONST
+%token KEYWORD_FUN OPEN_PAR CLOSE_PAR OPEN_CUR CLOSE_CUR COMMA KEYWORD_VAR EQUALS KEYWORD_RET ADD SUBTRACT MULTIPLY REFTYPE_INT8 REFTYPE_UINT8 REFTYPE_INT16 REFTYPE_UINT16 REFTYPE_INT32 REFTYPE_UINT32 REFTYPE_INT64 REFTYPE_UINT64 REFTYPE_INT128 REFTYPE_UINT128 REFTYPE_INT REFTYPE_UINT REFTYPE_FLOAT16 REFTYPE_FLOAT32 REFTYPE_FLOAT64 REFTYPE_BOOL BOOL_TRUE BOOL_FALSE EQUALS_EQUALS NOT_EQUALS GREATER_THAN GREATER_THAN_OR_EQUALS LESS_THAN LESS_THAN_OR_EQUALS AND OR KEYWORD_CONST KEYWORD_IF KEYWORD_ELSE
 %token <str> IDENTIFIER INTEGER UINTEGER FLOAT
 
 %nterm <list> top_level block def_args call_args statements
@@ -64,15 +64,15 @@ const_definition :
 	;
 
 function :
-	FUN IDENTIFIER OPENPAR CLOSEPAR block											{ $$ = make_ni_ast_node_function_declaration(convert_location(@1, @5), $2, NULL, NULL, $5); free($2); }
-	| FUN IDENTIFIER OPENPAR def_args CLOSEPAR block								{ $$ = make_ni_ast_node_function_declaration(convert_location(@1, @6), $2, NULL, $4, $6); free($2); }
-	| FUN IDENTIFIER OPENPAR CLOSEPAR reftype block									{ $$ = make_ni_ast_node_function_declaration(convert_location(@1, @6), $2, $5, NULL, $6); free($2); }
-	| FUN IDENTIFIER OPENPAR def_args CLOSEPAR reftype block						{ $$ = make_ni_ast_node_function_declaration(convert_location(@1, @7), $2, $6, $4, $7); free($2); }
+	KEYWORD_FUN IDENTIFIER OPEN_PAR CLOSE_PAR block									{ $$ = make_ni_ast_node_function_declaration(convert_location(@1, @5), $2, NULL, NULL, $5); free($2); }
+	| KEYWORD_FUN IDENTIFIER OPEN_PAR def_args CLOSE_PAR block						{ $$ = make_ni_ast_node_function_declaration(convert_location(@1, @6), $2, NULL, $4, $6); free($2); }
+	| KEYWORD_FUN IDENTIFIER OPEN_PAR CLOSE_PAR reftype block						{ $$ = make_ni_ast_node_function_declaration(convert_location(@1, @6), $2, $5, NULL, $6); free($2); }
+	| KEYWORD_FUN IDENTIFIER OPEN_PAR def_args CLOSE_PAR reftype block				{ $$ = make_ni_ast_node_function_declaration(convert_location(@1, @7), $2, $6, $4, $7); free($2); }
 	;
 
 block :
-	OPENCUR statements CLOSECUR														{ $$ = $2; }
-	| OPENCUR CLOSECUR																{ $$ = NULL; }
+	OPEN_CUR statements CLOSE_CUR													{ $$ = $2; }
+	| OPEN_CUR CLOSE_CUR															{ $$ = NULL; }
 	;
 
 arg :
@@ -95,19 +95,21 @@ statements :
 	;
 
 statement :
-	VAR IDENTIFIER reftype															{ $$ = make_ni_ast_node_variable_declaration(convert_location(@1, @3), $2, $3, NULL); free($2); }
-	| VAR IDENTIFIER reftype EQUALS expr											{ $$ = make_ni_ast_node_variable_declaration(convert_location(@1, @5), $2, $3, $5); free($2); }
+	KEYWORD_VAR IDENTIFIER reftype													{ $$ = make_ni_ast_node_variable_declaration(convert_location(@1, @3), $2, $3, NULL); free($2); }
+	| KEYWORD_VAR IDENTIFIER reftype EQUALS expr									{ $$ = make_ni_ast_node_variable_declaration(convert_location(@1, @5), $2, $3, $5); free($2); }
 	| IDENTIFIER EQUALS expr														{ $$ = make_ni_ast_node_variable_assignment(convert_location(@1, @3), $1, $3); free($1); }
 	| expr																			{ $$ = $1; }
-	| RET expr																		{ $$ = make_ni_ast_node_function_return(convert_location(@1, @2), $2); }
-	| RET 																			{ $$ = make_ni_ast_node_function_return(convert_location(@1, @1), NULL); }
+	| KEYWORD_RET expr																{ $$ = make_ni_ast_node_function_return(convert_location(@1, @2), $2); }
+	| KEYWORD_RET 																	{ $$ = make_ni_ast_node_function_return(convert_location(@1, @1), NULL); }
+	| KEYWORD_IF expr block															{ $$ = make_ni_ast_node_if(convert_location(@1, @3), $2, $3, NULL); }
+	| KEYWORD_IF expr block KEYWORD_ELSE block										{ $$ = make_ni_ast_node_if(convert_location(@1, @5), $2, $3, $5); }
 	;
 
 expr :
 	const_value																		{ $$ = $1; }
 	| IDENTIFIER																	{ $$ = make_ni_ast_node_variable_lookup(convert_location(@1, @1), $1); free($1); }
-	| IDENTIFIER OPENPAR CLOSEPAR													{ $$ = make_ni_ast_node_function_call(convert_location(@1, @3), $1, NULL); free($1); }
-	| IDENTIFIER OPENPAR call_args CLOSEPAR											{ $$ = make_ni_ast_node_function_call(convert_location(@1, @4), $1, $3); free($1); }
+	| IDENTIFIER OPEN_PAR CLOSE_PAR													{ $$ = make_ni_ast_node_function_call(convert_location(@1, @3), $1, NULL); free($1); }
+	| IDENTIFIER OPEN_PAR call_args CLOSE_PAR										{ $$ = make_ni_ast_node_function_call(convert_location(@1, @4), $1, $3); free($1); }
 	| expr ADD expr																	{ $$ = make_ni_ast_node_bin_op(convert_location(@1, @3), NI_AST_OPERATOR_ADD, $1, $3); }
 	| expr SUBTRACT expr															{ $$ = make_ni_ast_node_bin_op(convert_location(@1, @3), NI_AST_OPERATOR_SUBTRACT, $1, $3); }
 	| expr MULTIPLY expr															{ $$ = make_ni_ast_node_bin_op(convert_location(@1, @3), NI_AST_OPERATOR_MULTIPLY, $1, $3); }
@@ -119,7 +121,7 @@ expr :
 	| expr LESS_THAN_OR_EQUALS expr													{ $$ = make_ni_ast_node_bin_op(convert_location(@1, @3), NI_AST_OPERATOR_LESS_THAN_OR_EQUALS, $1, $3); }
 	| expr AND expr																	{ $$ = make_ni_ast_node_bin_op(convert_location(@1, @3), NI_AST_OPERATOR_AND, $1, $3); }
 	| expr OR expr																	{ $$ = make_ni_ast_node_bin_op(convert_location(@1, @3), NI_AST_OPERATOR_OR, $1, $3); }
-	| OPENPAR expr CLOSEPAR															{ $$ = $2; }
+	| OPEN_PAR expr CLOSE_PAR														{ $$ = $2; }
 	;
 
 reftype :

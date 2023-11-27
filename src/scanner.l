@@ -21,15 +21,15 @@ float [+-]?[0-9]+\.[0-9]+
 identifier [_a-zA-Z][_a-zA-Z0-9]{0,31}
 %%
 "var" {
-	return VAR;
+	return KEYWORD_VAR;
 }
 
 "fun" {
-	return FUN;
+	return KEYWORD_FUN;
 }
 
 "ret" {
-	return RET;
+	return KEYWORD_RET;
 }
 
 "int8" {
@@ -125,19 +125,19 @@ identifier [_a-zA-Z][_a-zA-Z0-9]{0,31}
 }
 
 "(" {
-	return OPENPAR;
+	return OPEN_PAR;
 }
 
 ")" {
-	return CLOSEPAR;
+	return CLOSE_PAR;
 }
 
 "{" {
-	return OPENCUR;
+	return OPEN_CUR;
 }
 
 "}" {
-	return CLOSECUR;
+	return CLOSE_CUR;
 }
 
 "," {
@@ -178,6 +178,14 @@ identifier [_a-zA-Z][_a-zA-Z0-9]{0,31}
 
 "const" {
 	return KEYWORD_CONST;
+}
+
+"if" {
+	return KEYWORD_IF;
+}
+
+"else" {
+	return KEYWORD_ELSE;
 }
 
 [ \t\r]+ { /* ignore whitespace */ }

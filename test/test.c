@@ -97,11 +97,15 @@ int main(int argc, char *argv[], char **envp) {
   char *inputPath = argv[1];
 
   check_bin(inputPath, "test_bin.ni");
+
   check_success(inputPath, "parse_passes.ni");
   check_success(inputPath, "operator_passes.ni");
   check_success(inputPath, "type_assign_passes.ni");
-  check_failure(inputPath, "parse_failure.ni", "syntax error");
   check_success(inputPath, "validation_passes.ni");
+  check_success(inputPath, "if_passes.ni");
+  check_success(inputPath, "if_else_passes.ni");
+
+  check_failure(inputPath, "parse_failure.ni", "syntax error");
   check_failure(inputPath, "validation_arg_dup.ni",
                 "argument 'i' already defined");
   check_failure(inputPath, "validation_arg_mismatch.ni",
@@ -125,6 +129,8 @@ int main(int argc, char *argv[], char **envp) {
                 "variable 'a' already defined");
   check_failure(inputPath, "validation_var_redefined2.ni",
                 "variable 'a' already defined");
+  check_failure(inputPath, "if_condition_not_bool.ni",
+                "condition should return bool");
 
   fprintf(stderr, "\"%s\" is unknown\n", inputPath);
   return 1;

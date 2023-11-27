@@ -96,3 +96,18 @@ fun timesten(a int) int {
 }
 ```
 
+### Control flow
+
+if
+
+```
+fun greaterThanTwo(a int) bool {
+    var result bool
+    if a > 2 {
+        result = true
+    } else {
+        result = false
+    }
+    return result
+}
+```
