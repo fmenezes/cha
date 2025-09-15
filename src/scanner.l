@@ -120,6 +120,10 @@ identifier [_a-zA-Z][_a-zA-Z0-9]{0,31}
 	return MULTIPLY;
 }
 
+"/" {
+	return DIVIDE;
+}
+
 "=" {
 	return EQUALS;
 }

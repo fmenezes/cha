@@ -376,6 +376,7 @@ int cha_validate_node_bin_op(cha_ast_node *ast_node) {
   case CHA_AST_OPERATOR_ADD:      // +
   case CHA_AST_OPERATOR_SUBTRACT: // -
   case CHA_AST_OPERATOR_MULTIPLY: // *
+  case CHA_AST_OPERATOR_DIVIDE:   // /
     ast_node->_result_type = make_cha_ast_type(
         ast_node->location,
         convert_arithmetic_op

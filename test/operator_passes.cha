@@ -3,7 +3,10 @@ fun test() {
   var b int
   var c bool
   a = 10
-  b = 11
+  b = a - 1
+  b = a * 2
+  b = a / 2
+  b = a + 1
   
   c = a > b
   c = a < b
