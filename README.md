@@ -1,6 +1,6 @@
-[![build](https://github.com/fmenezes/ni/actions/workflows/build.yml/badge.svg)](https://github.com/fmenezes/ni/actions/workflows/build.yml)
+[![build](https://github.com/fmenezes/cha/actions/workflows/build.yml/badge.svg)](https://github.com/fmenezes/cha/actions/workflows/build.yml)
 
-# ni
+# cha
 
 This is a new ahead of time compiled programing language from the ground up.
 
@@ -24,31 +24,31 @@ cmake ..
 cmake --build .
 ```
 
-### Compile ni programs
+### Compile cha programs
 
-To compile ni programs you can simply run:
+To compile cha programs you can simply run:
 
 * To generate Assembly Code
 ```
-ni -s output.s examples/test.ni
+cha -s output.s examples/test.cha
 ```
 
 * To generate Object File
 ```
-ni -c output.o examples/test.ni
+cha -c output.o examples/test.cha
 ```
 
 * To generate LLVM Intermediate Representation Code
 ```
-ni -ll output.ll examples/test.ni
+cha -ll output.ll examples/test.cha
 ```
 
 * To generate Binary File
 ```
-ni -o output examples/test.ni
+cha -o output examples/test.cha
 ```
 
-## Ni Programming Language
+## cha Programming Language
 
 ### Built-in types
 

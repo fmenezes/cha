@@ -1,5 +1,5 @@
-cmake_minimum_required(VERSION 3.2.0)
-project(ni VERSION 0.0.1 LANGUAGES CXX C)
+cmake_minimum_required(VERSION 3.5.0)
+project(cha VERSION 0.0.1 LANGUAGES CXX C)
 
 add_definitions(-DCMAKE_PROJECT_NAME="${CMAKE_PROJECT_NAME}" -DCMAKE_PROJECT_VERSION="${CMAKE_PROJECT_VERSION}")
 
@@ -8,7 +8,7 @@ enable_testing()
 
 find_package(FLEX REQUIRED)
 find_package(BISON REQUIRED)
-find_package(LLVM 15 REQUIRED CONFIG)
+find_package(LLVM 21.1.1 REQUIRED CONFIG)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
@@ -206,25 +206,25 @@ llvm_map_components_to_libnames(LLVM_LIBS
     # demangle
 )
 
-add_executable(ni ${SRC} ${BISON_parser_OUTPUTS} ${FLEX_scanner_OUTPUTS})
+add_executable(cha ${SRC} ${BISON_parser_OUTPUTS} ${FLEX_scanner_OUTPUTS})
 
-target_link_libraries(ni ${LLVM_LIBS})
+target_link_libraries(cha ${LLVM_LIBS})
 
 file(GLOB_RECURSE TEST_SRC
     CONFIGURE_DEPENDS
-    "test/*.ni"
-    "test/**/*.ni"
+    "test/*.cha"
+    "test/**/*.cha"
 )
 
 add_executable(
-    ni_test
+    cha_test
     test/test.c
 )
 
 FOREACH(test ${TEST_SRC})
     GET_FILENAME_COMPONENT(TName ${test} NAME_WE)
     GET_FILENAME_COMPONENT(TPath ${test} DIRECTORY)
-    ADD_TEST(NAME ${TName} COMMAND ni_test "${TPath}/${TName}.ni")
+    ADD_TEST(NAME ${TName} COMMAND cha_test "${TPath}/${TName}.cha")
     SET_PROPERTY(TEST ${TName} PROPERTY ENVIRONMENT "PATH=${CMAKE_CURRENT_BINARY_DIR}:$ENV{PATH}")
 ENDFOREACH(test)
 

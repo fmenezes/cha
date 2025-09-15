@@ -22,7 +22,7 @@ typedef struct symbol_entry symbol_entry;
 typedef struct symbol_value symbol_value;
 
 symbol_table *make_symbol_table(int size, symbol_table *parent);
-int insert_symbol_table(symbol_table *table, const char *key, ni_ast_node *node,
+int insert_symbol_table(symbol_table *table, const char *key, cha_ast_node *node,
                         LLVMValueRef ref, LLVMTypeRef type);
 symbol_value *get_symbol_table(symbol_table *table, const char *key);
 void free_symbol_table(symbol_table *table);
@@ -46,7 +46,7 @@ struct symbol_table {
 };
 
 struct symbol_value {
-  ni_ast_node *node;
+  cha_ast_node *node;
   LLVMValueRef ref;
   LLVMTypeRef type;
 };

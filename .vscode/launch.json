@@ -9,7 +9,7 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceRoot}/build/ni",
-            "args": [ "-ll", "${workspaceRoot}/build/test.ll", "${workspaceRoot}/test/operator_passes.ni" ],
+            "args": [ "-ll", "${workspaceRoot}/build/test.ll", "${workspaceRoot}/test/operator_passes.cha" ],
             "cwd": "${workspaceRoot}/build"
         },
         {
@@ -17,8 +17,8 @@
             "type": "cppdbg",
             "request": "launch",
             "environment": [{"name":"PATH","value":"${workspaceRoot}/build:${env:PATH}"}],
-            "program": "${workspaceRoot}/build/ni_test",
-            "args": [ "test_bin.ni" ],
+            "program": "${workspaceRoot}/build/cha_test",
+            "args": [ "test_bin.cha" ],
             "cwd": "${workspaceRoot}/test"
         }
     ]

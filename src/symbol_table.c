@@ -24,7 +24,7 @@ symbol_table *make_symbol_table(int size, symbol_table *parent) {
   return table;
 }
 
-int insert_symbol_table(symbol_table *table, const char *key, ni_ast_node *node,
+int insert_symbol_table(symbol_table *table, const char *key, cha_ast_node *node,
                         LLVMValueRef ref, LLVMTypeRef type) {
   int index = hash_function(key) % table->size;
   symbol_entry *entry = table->entries[index].head;

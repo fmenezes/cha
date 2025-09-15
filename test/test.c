@@ -19,7 +19,7 @@ void check_failure(const char *file, const char *expected_file,
 
   char cmd[1000];
   char *got_msg = NULL;
-  sprintf(cmd, "ni -ll out.ll %s 2>&1", file);
+  sprintf(cmd, "cha -ll out.ll %s 2>&1", file);
   int ret = run_process(cmd, &got_msg);
   cleanup();
   if (ret == 0) {
@@ -57,7 +57,7 @@ void check_success(const char *file, const char *expected_file) {
   }
 
   char cmd[1000];
-  sprintf(cmd, "ni -ll out.ll %s 2>&1", file);
+  sprintf(cmd, "cha -ll out.ll %s 2>&1", file);
   char *got_msg = NULL;
   int ret = run_process(cmd, &got_msg);
   cleanup();
@@ -77,7 +77,7 @@ void check_bin(const char *file, const char *expected_file) {
   }
 
   char cmd[1000];
-  sprintf(cmd, "ni -o out %s 2>&1", file);
+  sprintf(cmd, "cha -o out %s 2>&1", file);
   int ret = system(cmd);
   if (ret != 0) {
     fprintf(stderr, "\"%s\" returned %d expected 0\n", cmd, ret);
@@ -96,40 +96,40 @@ int main(int argc, char *argv[], char **envp) {
 
   char *inputPath = argv[1];
 
-  check_bin(inputPath, "test_bin.ni");
+  check_bin(inputPath, "test_bin.cha");
 
-  check_success(inputPath, "parse_passes.ni");
-  check_success(inputPath, "operator_passes.ni");
-  check_success(inputPath, "type_assign_passes.ni");
-  check_success(inputPath, "validation_passes.ni");
-  check_success(inputPath, "if_passes.ni");
-  check_success(inputPath, "if_else_passes.ni");
+  check_success(inputPath, "parse_passes.cha");
+  check_success(inputPath, "operator_passes.cha");
+  check_success(inputPath, "type_assign_passes.cha");
+  check_success(inputPath, "validation_passes.cha");
+  check_success(inputPath, "if_passes.cha");
+  check_success(inputPath, "if_else_passes.cha");
 
-  check_failure(inputPath, "parse_failure.ni", "syntax error");
-  check_failure(inputPath, "validation_arg_dup.ni",
+  check_failure(inputPath, "parse_failure.cha", "syntax error");
+  check_failure(inputPath, "validation_arg_dup.cha",
                 "argument 'i' already defined");
-  check_failure(inputPath, "validation_arg_mismatch.ni",
+  check_failure(inputPath, "validation_arg_mismatch.cha",
                 "function 'test' expects no arguments");
-  check_failure(inputPath, "validation_arg_mismatch2.ni",
+  check_failure(inputPath, "validation_arg_mismatch2.cha",
                 "function 'test' expects arguments");
-  check_failure(inputPath, "validation_arg_mismatch3.ni",
+  check_failure(inputPath, "validation_arg_mismatch3.cha",
                 "type mismatch expects 'uint8' passed 'int'");
-  check_failure(inputPath, "validation_dup_function.ni",
+  check_failure(inputPath, "validation_dup_function.cha",
                 "'test' already defined");
-  check_failure(inputPath, "validation_function_not_found.ni",
+  check_failure(inputPath, "validation_function_not_found.cha",
                 "function 'test' not found");
-  check_failure(inputPath, "validation_ret_mismatch.ni",
+  check_failure(inputPath, "validation_ret_mismatch.cha",
                 "return type mismatch expects 'int' passed 'uint8'");
-  check_failure(inputPath, "validation_type_mismatch.ni",
+  check_failure(inputPath, "validation_type_mismatch.cha",
                 "type mismatch expects 'int' passed 'uint8'");
-  check_failure(inputPath, "validation_type_mismatch2.ni",
+  check_failure(inputPath, "validation_type_mismatch2.cha",
                 "incompatible types found for operation: 'int', 'uint8'");
-  check_failure(inputPath, "validation_var_not_found.ni", "'a' not found");
-  check_failure(inputPath, "validation_var_redefined.ni",
+  check_failure(inputPath, "validation_var_not_found.cha", "'a' not found");
+  check_failure(inputPath, "validation_var_redefined.cha",
                 "variable 'a' already defined");
-  check_failure(inputPath, "validation_var_redefined2.ni",
+  check_failure(inputPath, "validation_var_redefined2.cha",
                 "variable 'a' already defined");
-  check_failure(inputPath, "if_condition_not_bool.ni",
+  check_failure(inputPath, "if_condition_not_bool.cha",
                 "condition should return bool");
 
   fprintf(stderr, "\"%s\" is unknown\n", inputPath);

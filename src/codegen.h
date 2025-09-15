@@ -1,18 +1,18 @@
-#ifndef __NI_CODEGEN_H__
-#define __NI_CODEGEN_H__
+#ifndef __CHA_CODEGEN_H__
+#define __CHA_CODEGEN_H__
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#include "ni/ni.h"
+#include "cha/cha.h"
 #include <stdio.h>
 
-int ni_ast_codegen(ni_ast_node_list *ast, ni_compile_format format,
+int cha_ast_codegen(cha_ast_node_list *ast, cha_compile_format format,
                    const char *file_path);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif // __NI_CODEGEN_H__
+#endif // __CHA_CODEGEN_H__
