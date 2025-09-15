@@ -20,9 +20,9 @@ int cha_validate_node_call(cha_ast_node *ast_node);
 int cha_validate_node_ret(cha_ast_node *ast_node);
 int cha_validate_node_if(cha_ast_node *ast_node);
 int cha_check_type_assignment(cha_ast_node *ast_node,
-                             const cha_ast_type *ast_type);
+                              const cha_ast_type *ast_type);
 void cha_set_type_on_const(cha_ast_node *ast_node,
-                          cha_ast_internal_type internal_type);
+                           cha_ast_internal_type internal_type);
 void cha_validate_create_stack_frame();
 void cha_validate_release_stack_frame();
 
@@ -248,7 +248,8 @@ int cha_validate_node_fun(cha_ast_node *ast_node) {
   cha_validate_create_stack_frame();
   fun = ast_node;
 
-  int ret = cha_validate_node_list(ast_node->function_declaration.argument_list);
+  int ret =
+      cha_validate_node_list(ast_node->function_declaration.argument_list);
 
   if (cha_validate_node_list(ast_node->function_declaration.block) != 0) {
     ret = 1;
@@ -309,7 +310,7 @@ int cha_validate_node_var_assign(cha_ast_node *ast_node) {
   }
 
   if (cha_check_type_assignment(ast_node->variable_assignment.value,
-                               v->node->variable_declaration.type) != 0) {
+                                v->node->variable_declaration.type) != 0) {
     char expected_type[TYPE_STR_LEN];
     char got_type[TYPE_STR_LEN];
     type_str(expected_type, v->node->variable_declaration.type);
@@ -381,9 +382,9 @@ int cha_validate_node_bin_op(cha_ast_node *ast_node) {
             [ast_node->bin_op.left->_result_type->internal_type]
             [ast_node->bin_op.right->_result_type->internal_type]);
     cha_set_type_on_const(ast_node->bin_op.left,
-                         ast_node->_result_type->internal_type);
+                          ast_node->_result_type->internal_type);
     cha_set_type_on_const(ast_node->bin_op.right,
-                         ast_node->_result_type->internal_type);
+                          ast_node->_result_type->internal_type);
 
     break;
   case CHA_AST_OPERATOR_GREATER_THAN:           // >
@@ -400,9 +401,9 @@ int cha_validate_node_bin_op(cha_ast_node *ast_node) {
           make_cha_ast_type(ast_node->location, CHA_AST_INTERNAL_TYPE_BOOL);
     }
     cha_set_type_on_const(ast_node->bin_op.left,
-                         ast_node->bin_op.right->_result_type->internal_type);
+                          ast_node->bin_op.right->_result_type->internal_type);
     cha_set_type_on_const(ast_node->bin_op.right,
-                         ast_node->bin_op.left->_result_type->internal_type);
+                          ast_node->bin_op.left->_result_type->internal_type);
     break;
   case CHA_AST_OPERATOR_EQUALS_EQUALS: // ==
   case CHA_AST_OPERATOR_NOT_EQUALS:    // !=
@@ -416,9 +417,9 @@ int cha_validate_node_bin_op(cha_ast_node *ast_node) {
           make_cha_ast_type(ast_node->location, CHA_AST_INTERNAL_TYPE_BOOL);
     }
     cha_set_type_on_const(ast_node->bin_op.left,
-                         ast_node->bin_op.right->_result_type->internal_type);
+                          ast_node->bin_op.right->_result_type->internal_type);
     cha_set_type_on_const(ast_node->bin_op.right,
-                         ast_node->bin_op.left->_result_type->internal_type);
+                          ast_node->bin_op.left->_result_type->internal_type);
     break;
   case CHA_AST_OPERATOR_AND: // &&
   case CHA_AST_OPERATOR_OR:  // ||
@@ -546,7 +547,7 @@ int cha_validate_node_ret(cha_ast_node *ast_node) {
   }
 
   if (cha_check_type_assignment(ast_node->function_return.value,
-                               fun->function_declaration.return_type) != 0) {
+                                fun->function_declaration.return_type) != 0) {
     char expected_type[TYPE_STR_LEN];
     char got_type[TYPE_STR_LEN];
     type_str(expected_type, fun->function_declaration.return_type);
@@ -659,7 +660,7 @@ void type_str(char *out, const cha_ast_type *ast_type) {
 }
 
 int cha_check_type_assignment(cha_ast_node *ast_node,
-                             const cha_ast_type *ast_type) {
+                              const cha_ast_type *ast_type) {
 
   if (convert_assign[ast_node->_result_type->internal_type]
                     [ast_type->internal_type] != 0) {
@@ -671,8 +672,9 @@ int cha_check_type_assignment(cha_ast_node *ast_node,
 }
 
 void cha_set_type_on_const(cha_ast_node *ast_node,
-                          cha_ast_internal_type internal_type) {
-  if (ast_node->_result_type->internal_type == CHA_AST_INTERNAL_TYPE_CONST_INT ||
+                           cha_ast_internal_type internal_type) {
+  if (ast_node->_result_type->internal_type ==
+          CHA_AST_INTERNAL_TYPE_CONST_INT ||
       ast_node->_result_type->internal_type ==
           CHA_AST_INTERNAL_TYPE_CONST_UINT ||
       ast_node->_result_type->internal_type ==

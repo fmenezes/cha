@@ -13,7 +13,7 @@ typedef enum cha_compile_format {
 } cha_compile_format;
 
 int cha_compile(const char *file, cha_compile_format format,
-               const char *output_file);
+                const char *output_file);
 
 #ifdef __cplusplus
 }

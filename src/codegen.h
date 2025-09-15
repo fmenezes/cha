@@ -9,7 +9,7 @@ extern "C" {
 #include <stdio.h>
 
 int cha_ast_codegen(cha_ast_node_list *ast, cha_compile_format format,
-                   const char *file_path);
+                    const char *file_path);
 
 #ifdef __cplusplus
 }

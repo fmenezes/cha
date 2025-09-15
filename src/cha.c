@@ -6,7 +6,7 @@
 #include "validate.h"
 
 int cha_compile(const char *file, cha_compile_format format,
-               const char *output_file) {
+                const char *output_file) {
   cha_ast_node_list *ast;
   int ret = cha_parse(file, &ast);
   if (ret != 0) {

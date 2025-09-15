@@ -426,7 +426,7 @@ int cha_ast_codegen_node_fun(cha_ast_node *ast_node) {
 }
 
 int cha_ast_codegen(cha_ast_node_list *ast, cha_compile_format format,
-                   const char *file_path) {
+                    const char *file_path) {
   int ret = initialize_modules("nic");
   if (ret != 0) {
     free_modules();
