@@ -4,7 +4,7 @@
 #include "ast.h"
 #include "log.h"
 
-void log_validation_error(ni_ast_location loc, const char *format, ...) {
+void log_validation_error(cha_ast_location loc, const char *format, ...) {
   fprintf(stderr, "[error] %s:%d:%d", loc.file, loc.line_begin,
           loc.column_begin);
   if (loc.line_begin != loc.line_end) {

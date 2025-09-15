@@ -7,7 +7,7 @@ extern "C" {
 
 #include "ast.h"
 
-void log_validation_error(ni_ast_location loc, const char *format, ...);
+void log_validation_error(cha_ast_location loc, const char *format, ...);
 void log_error(const char *format, ...);
 
 #ifdef __cplusplus

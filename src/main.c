@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "ni/ni.h"
+#include "cha/cha.h"
 
 int main(int argc, char *argv[]) {
   if (argc == 2 && strcmp(argv[1], "--version") == 0) {
@@ -24,19 +24,19 @@ int main(int argc, char *argv[]) {
   char *outputfile = argv[2];
   char *inputfile = argv[3];
 
-  ni_compile_format compile_format;
+  cha_compile_format compile_format;
   if (strcmp(format, "-s") == 0) {
-    compile_format = NI_COMPILE_FORMAT_ASSEMBLY_FILE;
+    compile_format = CHA_COMPILE_FORMAT_ASSEMBLY_FILE;
   } else if (strcmp(format, "-c") == 0) {
-    compile_format = NI_COMPILE_FORMAT_OBJECT_FILE;
+    compile_format = CHA_COMPILE_FORMAT_OBJECT_FILE;
   } else if (strcmp(format, "-ll") == 0) {
-    compile_format = NI_COMPILE_FORMAT_LLVM_IR;
+    compile_format = CHA_COMPILE_FORMAT_LLVM_IR;
   } else if (strcmp(format, "-o") == 0) {
-    compile_format = NI_COMPILE_FORMAT_BINARY_FILE;
+    compile_format = CHA_COMPILE_FORMAT_BINARY_FILE;
   } else {
     fprintf(stderr, "invalid format: %s\n", format);
     return 1;
   }
 
-  return ni_compile(inputfile, compile_format, outputfile);
+  return cha_compile(inputfile, compile_format, outputfile);
 }

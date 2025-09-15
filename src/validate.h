@@ -1,5 +1,5 @@
-#ifndef __NI_VALIDATE_H__
-#define __NI_VALIDATE_H__
+#ifndef __CHA_VALIDATE_H__
+#define __CHA_VALIDATE_H__
 
 #ifdef __cplusplus
 extern "C" {
@@ -9,11 +9,11 @@ extern "C" {
 
 #define TYPE_STR_LEN 30
 
-int ni_validate(ni_ast_node_list *ast);
-void type_str(char *out, const ni_ast_type *ast_type);
+int cha_validate(cha_ast_node_list *ast);
+void type_str(char *out, const cha_ast_type *ast_type);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif // __NI_VALIDATE_H__
+#endif // __CHA_VALIDATE_H__

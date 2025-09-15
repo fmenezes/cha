@@ -13,5 +13,5 @@ RUN cd /app/build && ctest --output-on-failure
 
 FROM ubuntu
 RUN apt-get update && apt-get install build-essential -y
-COPY --from=builder /app/build/ni /usr/local/bin/ni
-CMD [ "/usr/local/bin/ni", "--version" ]
+COPY --from=builder /app/build/cha /usr/local/bin/cha
+CMD [ "/usr/local/bin/cha", "--version" ]

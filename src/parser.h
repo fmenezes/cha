@@ -1,5 +1,5 @@
-#ifndef __NI_PARSER_H__
-#define __NI_PARSER_H__
+#ifndef __CHA_PARSER_H__
+#define __CHA_PARSER_H__
 
 #ifdef __cplusplus
 extern "C" {
@@ -9,10 +9,10 @@ extern "C" {
 
 #include "ast.h"
 
-int ni_parse(const char *file, ni_ast_node_list **out);
+int cha_parse(const char *file, cha_ast_node_list **out);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif // __NI_PARSER_H__
+#endif // __CHA_PARSER_H__

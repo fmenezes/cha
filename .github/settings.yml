@@ -1,9 +1,9 @@
 # These settings are synced to GitHub by https://probot.github.io/apps/settings/
 
 repository:
-  name: ni
-  description: ni programming language
-  homepage: https://github.com/fmenezes/ni
+  name: cha
+  description: cha programming language
+  homepage: https://github.com/fmenezes/cha
   private: true
   is_template : false
   has_issues: true

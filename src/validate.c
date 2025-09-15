@@ -6,163 +6,163 @@
 #include "symbol_table.h"
 #include "validate.h"
 
-int ni_validate_top_level(ni_ast_node_list *ast);
-int ni_validate_node_list(ni_ast_node_list *ast);
-int ni_validate_node(ni_ast_node *ast_node);
-int ni_validate_node_fun(ni_ast_node *ast_node);
-int ni_validate_node_const(ni_ast_node *ast_node);
-int ni_validate_node_var(ni_ast_node *ast_node);
-int ni_validate_node_arg(ni_ast_node *ast_node);
-int ni_validate_node_var_assign(ni_ast_node *ast_node);
-int ni_validate_node_var_lookup(ni_ast_node *ast_node);
-int ni_validate_node_bin_op(ni_ast_node *ast_node);
-int ni_validate_node_call(ni_ast_node *ast_node);
-int ni_validate_node_ret(ni_ast_node *ast_node);
-int ni_validate_node_if(ni_ast_node *ast_node);
-int ni_check_type_assignment(ni_ast_node *ast_node,
-                             const ni_ast_type *ast_type);
-void ni_set_type_on_const(ni_ast_node *ast_node,
-                          ni_ast_internal_type internal_type);
-void ni_validate_create_stack_frame();
-void ni_validate_release_stack_frame();
+int cha_validate_top_level(cha_ast_node_list *ast);
+int cha_validate_node_list(cha_ast_node_list *ast);
+int cha_validate_node(cha_ast_node *ast_node);
+int cha_validate_node_fun(cha_ast_node *ast_node);
+int cha_validate_node_const(cha_ast_node *ast_node);
+int cha_validate_node_var(cha_ast_node *ast_node);
+int cha_validate_node_arg(cha_ast_node *ast_node);
+int cha_validate_node_var_assign(cha_ast_node *ast_node);
+int cha_validate_node_var_lookup(cha_ast_node *ast_node);
+int cha_validate_node_bin_op(cha_ast_node *ast_node);
+int cha_validate_node_call(cha_ast_node *ast_node);
+int cha_validate_node_ret(cha_ast_node *ast_node);
+int cha_validate_node_if(cha_ast_node *ast_node);
+int cha_check_type_assignment(cha_ast_node *ast_node,
+                              const cha_ast_type *ast_type);
+void cha_set_type_on_const(cha_ast_node *ast_node,
+                           cha_ast_internal_type internal_type);
+void cha_validate_create_stack_frame();
+void cha_validate_release_stack_frame();
 
 symbol_table *validate_symbol_table = NULL;
-ni_ast_node *fun = NULL;
+cha_ast_node *fun = NULL;
 
 // clang-format off
-ni_ast_internal_type convert_arithmetic_op[19][19] = { // + - *
-/*                                       NI_AST_INTERNAL_TYPE_CONST_INT     NI_AST_INTERNAL_TYPE_INT           NI_AST_INTERNAL_TYPE_INT8          NI_AST_INTERNAL_TYPE_INT16         NI_AST_INTERNAL_TYPE_INT32         NI_AST_INTERNAL_TYPE_INT64         NI_AST_INTERNAL_TYPE_INT128        NI_AST_INTERNAL_TYPE_CONST_UINT    NI_AST_INTERNAL_TYPE_UINT          NI_AST_INTERNAL_TYPE_UINT8         NI_AST_INTERNAL_TYPE_UINT16        NI_AST_INTERNAL_TYPE_UINT32        NI_AST_INTERNAL_TYPE_UINT64        NI_AST_INTERNAL_TYPE_UINT128       NI_AST_INTERNAL_TYPE_CONST_FLOAT   NI_AST_INTERNAL_TYPE_FLOAT16       NI_AST_INTERNAL_TYPE_FLOAT32       NI_AST_INTERNAL_TYPE_FLOAT64       NI_AST_INTERNAL_TYPE_BOOL          */
-/* NI_AST_INTERNAL_TYPE_CONST_INT   */ { NI_AST_INTERNAL_TYPE_CONST_INT   , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_INT8        , NI_AST_INTERNAL_TYPE_INT16       , NI_AST_INTERNAL_TYPE_INT32       , NI_AST_INTERNAL_TYPE_INT64       , NI_AST_INTERNAL_TYPE_INT128     ,  NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF         }, 
-/* NI_AST_INTERNAL_TYPE_INT         */ { NI_AST_INTERNAL_TYPE_INT         , NI_AST_INTERNAL_TYPE_INT         , NI_AST_INTERNAL_TYPE_INT         , NI_AST_INTERNAL_TYPE_INT         , NI_AST_INTERNAL_TYPE_INT         , NI_AST_INTERNAL_TYPE_INT         , NI_AST_INTERNAL_TYPE_UNDEF      ,  NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF         }, 
-/* NI_AST_INTERNAL_TYPE_INT8        */ { NI_AST_INTERNAL_TYPE_INT8        , NI_AST_INTERNAL_TYPE_INT         , NI_AST_INTERNAL_TYPE_INT8        , NI_AST_INTERNAL_TYPE_INT16       , NI_AST_INTERNAL_TYPE_INT32       , NI_AST_INTERNAL_TYPE_INT64       , NI_AST_INTERNAL_TYPE_INT128     ,  NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF         }, 
-/* NI_AST_INTERNAL_TYPE_INT16       */ { NI_AST_INTERNAL_TYPE_INT16       , NI_AST_INTERNAL_TYPE_INT         , NI_AST_INTERNAL_TYPE_INT16       , NI_AST_INTERNAL_TYPE_INT16       , NI_AST_INTERNAL_TYPE_INT32       , NI_AST_INTERNAL_TYPE_INT64       , NI_AST_INTERNAL_TYPE_INT128     ,  NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF         }, 
-/* NI_AST_INTERNAL_TYPE_INT32       */ { NI_AST_INTERNAL_TYPE_INT32       , NI_AST_INTERNAL_TYPE_INT         , NI_AST_INTERNAL_TYPE_INT32       , NI_AST_INTERNAL_TYPE_INT32       , NI_AST_INTERNAL_TYPE_INT32       , NI_AST_INTERNAL_TYPE_INT64       , NI_AST_INTERNAL_TYPE_INT128     ,  NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF         }, 
-/* NI_AST_INTERNAL_TYPE_INT64       */ { NI_AST_INTERNAL_TYPE_INT64       , NI_AST_INTERNAL_TYPE_INT         , NI_AST_INTERNAL_TYPE_INT64       , NI_AST_INTERNAL_TYPE_INT64       , NI_AST_INTERNAL_TYPE_INT64       , NI_AST_INTERNAL_TYPE_INT64       , NI_AST_INTERNAL_TYPE_INT128     ,  NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF         }, 
-/* NI_AST_INTERNAL_TYPE_INT128      */ { NI_AST_INTERNAL_TYPE_INT128      , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_INT128      , NI_AST_INTERNAL_TYPE_INT128      , NI_AST_INTERNAL_TYPE_INT128      , NI_AST_INTERNAL_TYPE_INT128      , NI_AST_INTERNAL_TYPE_INT128     ,  NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF         }, 
-/* NI_AST_INTERNAL_TYPE_CONST_UINT  */ { NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF      ,  NI_AST_INTERNAL_TYPE_CONST_UINT  , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UINT8       , NI_AST_INTERNAL_TYPE_UINT16      , NI_AST_INTERNAL_TYPE_UINT32      , NI_AST_INTERNAL_TYPE_UINT64      , NI_AST_INTERNAL_TYPE_UINT128     , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF         }, 
-/* NI_AST_INTERNAL_TYPE_UINT        */ { NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF      ,  NI_AST_INTERNAL_TYPE_UINT        , NI_AST_INTERNAL_TYPE_UINT        , NI_AST_INTERNAL_TYPE_UINT        , NI_AST_INTERNAL_TYPE_UINT        , NI_AST_INTERNAL_TYPE_UINT        , NI_AST_INTERNAL_TYPE_UINT        , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF         }, 
-/* NI_AST_INTERNAL_TYPE_UINT8       */ { NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF      ,  NI_AST_INTERNAL_TYPE_UINT8       , NI_AST_INTERNAL_TYPE_UINT        , NI_AST_INTERNAL_TYPE_UINT8       , NI_AST_INTERNAL_TYPE_UINT16      , NI_AST_INTERNAL_TYPE_UINT32      , NI_AST_INTERNAL_TYPE_UINT64      , NI_AST_INTERNAL_TYPE_UINT128     , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF         }, 
-/* NI_AST_INTERNAL_TYPE_UINT16      */ { NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF      ,  NI_AST_INTERNAL_TYPE_UINT16      , NI_AST_INTERNAL_TYPE_UINT        , NI_AST_INTERNAL_TYPE_UINT16      , NI_AST_INTERNAL_TYPE_UINT16      , NI_AST_INTERNAL_TYPE_UINT32      , NI_AST_INTERNAL_TYPE_UINT64      , NI_AST_INTERNAL_TYPE_UINT128     , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF         }, 
-/* NI_AST_INTERNAL_TYPE_UINT32      */ { NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF      ,  NI_AST_INTERNAL_TYPE_UINT32      , NI_AST_INTERNAL_TYPE_UINT        , NI_AST_INTERNAL_TYPE_UINT32      , NI_AST_INTERNAL_TYPE_UINT32      , NI_AST_INTERNAL_TYPE_UINT32      , NI_AST_INTERNAL_TYPE_UINT64      , NI_AST_INTERNAL_TYPE_UINT128     , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF         }, 
-/* NI_AST_INTERNAL_TYPE_UINT64      */ { NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF      ,  NI_AST_INTERNAL_TYPE_UINT64      , NI_AST_INTERNAL_TYPE_UINT        , NI_AST_INTERNAL_TYPE_UINT64      , NI_AST_INTERNAL_TYPE_UINT64      , NI_AST_INTERNAL_TYPE_UINT64      , NI_AST_INTERNAL_TYPE_UINT64      , NI_AST_INTERNAL_TYPE_UINT128     , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF         }, 
-/* NI_AST_INTERNAL_TYPE_UINT128     */ { NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF      ,  NI_AST_INTERNAL_TYPE_UINT128     , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UINT128     , NI_AST_INTERNAL_TYPE_UINT128     , NI_AST_INTERNAL_TYPE_UINT128     , NI_AST_INTERNAL_TYPE_UINT128     , NI_AST_INTERNAL_TYPE_UINT128     , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF         }, 
-/* NI_AST_INTERNAL_TYPE_CONST_FLOAT */ { NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF      ,  NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_CONST_FLOAT , NI_AST_INTERNAL_TYPE_FLOAT16     , NI_AST_INTERNAL_TYPE_FLOAT32     , NI_AST_INTERNAL_TYPE_FLOAT64     , NI_AST_INTERNAL_TYPE_UNDEF         }, 
-/* NI_AST_INTERNAL_TYPE_FLOAT16     */ { NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF      ,  NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_FLOAT16     , NI_AST_INTERNAL_TYPE_FLOAT16     , NI_AST_INTERNAL_TYPE_FLOAT32     , NI_AST_INTERNAL_TYPE_FLOAT64     , NI_AST_INTERNAL_TYPE_UNDEF         }, 
-/* NI_AST_INTERNAL_TYPE_FLOAT32     */ { NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF      ,  NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_FLOAT32     , NI_AST_INTERNAL_TYPE_FLOAT32     , NI_AST_INTERNAL_TYPE_FLOAT32     , NI_AST_INTERNAL_TYPE_FLOAT64     , NI_AST_INTERNAL_TYPE_UNDEF         }, 
-/* NI_AST_INTERNAL_TYPE_FLOAT64     */ { NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF      ,  NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_FLOAT64     , NI_AST_INTERNAL_TYPE_FLOAT64     , NI_AST_INTERNAL_TYPE_FLOAT64     , NI_AST_INTERNAL_TYPE_FLOAT64     , NI_AST_INTERNAL_TYPE_UNDEF         }, 
-/* NI_AST_INTERNAL_TYPE_BOOL        */ { NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF      ,  NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_UNDEF       , NI_AST_INTERNAL_TYPE_BOOL          }, 
+cha_ast_internal_type convert_arithmetic_op[19][19] = { // + - *
+/*                                       CHA_AST_INTERNAL_TYPE_CONST_INT     CHA_AST_INTERNAL_TYPE_INT           CHA_AST_INTERNAL_TYPE_INT8          CHA_AST_INTERNAL_TYPE_INT16         CHA_AST_INTERNAL_TYPE_INT32         CHA_AST_INTERNAL_TYPE_INT64         CHA_AST_INTERNAL_TYPE_INT128        CHA_AST_INTERNAL_TYPE_CONST_UINT    CHA_AST_INTERNAL_TYPE_UINT          CHA_AST_INTERNAL_TYPE_UINT8         CHA_AST_INTERNAL_TYPE_UINT16        CHA_AST_INTERNAL_TYPE_UINT32        CHA_AST_INTERNAL_TYPE_UINT64        CHA_AST_INTERNAL_TYPE_UINT128       CHA_AST_INTERNAL_TYPE_CONST_FLOAT   CHA_AST_INTERNAL_TYPE_FLOAT16       CHA_AST_INTERNAL_TYPE_FLOAT32       CHA_AST_INTERNAL_TYPE_FLOAT64       CHA_AST_INTERNAL_TYPE_BOOL          */
+/* CHA_AST_INTERNAL_TYPE_CONST_INT   */ { CHA_AST_INTERNAL_TYPE_CONST_INT   , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_INT8        , CHA_AST_INTERNAL_TYPE_INT16       , CHA_AST_INTERNAL_TYPE_INT32       , CHA_AST_INTERNAL_TYPE_INT64       , CHA_AST_INTERNAL_TYPE_INT128     ,  CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF         }, 
+/* CHA_AST_INTERNAL_TYPE_INT         */ { CHA_AST_INTERNAL_TYPE_INT         , CHA_AST_INTERNAL_TYPE_INT         , CHA_AST_INTERNAL_TYPE_INT         , CHA_AST_INTERNAL_TYPE_INT         , CHA_AST_INTERNAL_TYPE_INT         , CHA_AST_INTERNAL_TYPE_INT         , CHA_AST_INTERNAL_TYPE_UNDEF      ,  CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF         }, 
+/* CHA_AST_INTERNAL_TYPE_INT8        */ { CHA_AST_INTERNAL_TYPE_INT8        , CHA_AST_INTERNAL_TYPE_INT         , CHA_AST_INTERNAL_TYPE_INT8        , CHA_AST_INTERNAL_TYPE_INT16       , CHA_AST_INTERNAL_TYPE_INT32       , CHA_AST_INTERNAL_TYPE_INT64       , CHA_AST_INTERNAL_TYPE_INT128     ,  CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF         }, 
+/* CHA_AST_INTERNAL_TYPE_INT16       */ { CHA_AST_INTERNAL_TYPE_INT16       , CHA_AST_INTERNAL_TYPE_INT         , CHA_AST_INTERNAL_TYPE_INT16       , CHA_AST_INTERNAL_TYPE_INT16       , CHA_AST_INTERNAL_TYPE_INT32       , CHA_AST_INTERNAL_TYPE_INT64       , CHA_AST_INTERNAL_TYPE_INT128     ,  CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF         }, 
+/* CHA_AST_INTERNAL_TYPE_INT32       */ { CHA_AST_INTERNAL_TYPE_INT32       , CHA_AST_INTERNAL_TYPE_INT         , CHA_AST_INTERNAL_TYPE_INT32       , CHA_AST_INTERNAL_TYPE_INT32       , CHA_AST_INTERNAL_TYPE_INT32       , CHA_AST_INTERNAL_TYPE_INT64       , CHA_AST_INTERNAL_TYPE_INT128     ,  CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF         }, 
+/* CHA_AST_INTERNAL_TYPE_INT64       */ { CHA_AST_INTERNAL_TYPE_INT64       , CHA_AST_INTERNAL_TYPE_INT         , CHA_AST_INTERNAL_TYPE_INT64       , CHA_AST_INTERNAL_TYPE_INT64       , CHA_AST_INTERNAL_TYPE_INT64       , CHA_AST_INTERNAL_TYPE_INT64       , CHA_AST_INTERNAL_TYPE_INT128     ,  CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF         }, 
+/* CHA_AST_INTERNAL_TYPE_INT128      */ { CHA_AST_INTERNAL_TYPE_INT128      , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_INT128      , CHA_AST_INTERNAL_TYPE_INT128      , CHA_AST_INTERNAL_TYPE_INT128      , CHA_AST_INTERNAL_TYPE_INT128      , CHA_AST_INTERNAL_TYPE_INT128     ,  CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF         }, 
+/* CHA_AST_INTERNAL_TYPE_CONST_UINT  */ { CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF      ,  CHA_AST_INTERNAL_TYPE_CONST_UINT  , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UINT8       , CHA_AST_INTERNAL_TYPE_UINT16      , CHA_AST_INTERNAL_TYPE_UINT32      , CHA_AST_INTERNAL_TYPE_UINT64      , CHA_AST_INTERNAL_TYPE_UINT128     , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF         }, 
+/* CHA_AST_INTERNAL_TYPE_UINT        */ { CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF      ,  CHA_AST_INTERNAL_TYPE_UINT        , CHA_AST_INTERNAL_TYPE_UINT        , CHA_AST_INTERNAL_TYPE_UINT        , CHA_AST_INTERNAL_TYPE_UINT        , CHA_AST_INTERNAL_TYPE_UINT        , CHA_AST_INTERNAL_TYPE_UINT        , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF         }, 
+/* CHA_AST_INTERNAL_TYPE_UINT8       */ { CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF      ,  CHA_AST_INTERNAL_TYPE_UINT8       , CHA_AST_INTERNAL_TYPE_UINT        , CHA_AST_INTERNAL_TYPE_UINT8       , CHA_AST_INTERNAL_TYPE_UINT16      , CHA_AST_INTERNAL_TYPE_UINT32      , CHA_AST_INTERNAL_TYPE_UINT64      , CHA_AST_INTERNAL_TYPE_UINT128     , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF         }, 
+/* CHA_AST_INTERNAL_TYPE_UINT16      */ { CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF      ,  CHA_AST_INTERNAL_TYPE_UINT16      , CHA_AST_INTERNAL_TYPE_UINT        , CHA_AST_INTERNAL_TYPE_UINT16      , CHA_AST_INTERNAL_TYPE_UINT16      , CHA_AST_INTERNAL_TYPE_UINT32      , CHA_AST_INTERNAL_TYPE_UINT64      , CHA_AST_INTERNAL_TYPE_UINT128     , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF         }, 
+/* CHA_AST_INTERNAL_TYPE_UINT32      */ { CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF      ,  CHA_AST_INTERNAL_TYPE_UINT32      , CHA_AST_INTERNAL_TYPE_UINT        , CHA_AST_INTERNAL_TYPE_UINT32      , CHA_AST_INTERNAL_TYPE_UINT32      , CHA_AST_INTERNAL_TYPE_UINT32      , CHA_AST_INTERNAL_TYPE_UINT64      , CHA_AST_INTERNAL_TYPE_UINT128     , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF         }, 
+/* CHA_AST_INTERNAL_TYPE_UINT64      */ { CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF      ,  CHA_AST_INTERNAL_TYPE_UINT64      , CHA_AST_INTERNAL_TYPE_UINT        , CHA_AST_INTERNAL_TYPE_UINT64      , CHA_AST_INTERNAL_TYPE_UINT64      , CHA_AST_INTERNAL_TYPE_UINT64      , CHA_AST_INTERNAL_TYPE_UINT64      , CHA_AST_INTERNAL_TYPE_UINT128     , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF         }, 
+/* CHA_AST_INTERNAL_TYPE_UINT128     */ { CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF      ,  CHA_AST_INTERNAL_TYPE_UINT128     , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UINT128     , CHA_AST_INTERNAL_TYPE_UINT128     , CHA_AST_INTERNAL_TYPE_UINT128     , CHA_AST_INTERNAL_TYPE_UINT128     , CHA_AST_INTERNAL_TYPE_UINT128     , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF         }, 
+/* CHA_AST_INTERNAL_TYPE_CONST_FLOAT */ { CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF      ,  CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_CONST_FLOAT , CHA_AST_INTERNAL_TYPE_FLOAT16     , CHA_AST_INTERNAL_TYPE_FLOAT32     , CHA_AST_INTERNAL_TYPE_FLOAT64     , CHA_AST_INTERNAL_TYPE_UNDEF         }, 
+/* CHA_AST_INTERNAL_TYPE_FLOAT16     */ { CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF      ,  CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_FLOAT16     , CHA_AST_INTERNAL_TYPE_FLOAT16     , CHA_AST_INTERNAL_TYPE_FLOAT32     , CHA_AST_INTERNAL_TYPE_FLOAT64     , CHA_AST_INTERNAL_TYPE_UNDEF         }, 
+/* CHA_AST_INTERNAL_TYPE_FLOAT32     */ { CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF      ,  CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_FLOAT32     , CHA_AST_INTERNAL_TYPE_FLOAT32     , CHA_AST_INTERNAL_TYPE_FLOAT32     , CHA_AST_INTERNAL_TYPE_FLOAT64     , CHA_AST_INTERNAL_TYPE_UNDEF         }, 
+/* CHA_AST_INTERNAL_TYPE_FLOAT64     */ { CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF      ,  CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_FLOAT64     , CHA_AST_INTERNAL_TYPE_FLOAT64     , CHA_AST_INTERNAL_TYPE_FLOAT64     , CHA_AST_INTERNAL_TYPE_FLOAT64     , CHA_AST_INTERNAL_TYPE_UNDEF         }, 
+/* CHA_AST_INTERNAL_TYPE_BOOL        */ { CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF      ,  CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_UNDEF       , CHA_AST_INTERNAL_TYPE_BOOL          }, 
 };
 
 int convert_assign[19][19] = { // a = b
-/*                               INTO -> NI_AST_INTERNAL_TYPE_CONST_INT     NI_AST_INTERNAL_TYPE_INT           NI_AST_INTERNAL_TYPE_INT8          NI_AST_INTERNAL_TYPE_INT16         NI_AST_INTERNAL_TYPE_INT32         NI_AST_INTERNAL_TYPE_INT64         NI_AST_INTERNAL_TYPE_INT128        NI_AST_INTERNAL_TYPE_CONST_UINT    NI_AST_INTERNAL_TYPE_UINT          NI_AST_INTERNAL_TYPE_UINT8         NI_AST_INTERNAL_TYPE_UINT16        NI_AST_INTERNAL_TYPE_UINT32        NI_AST_INTERNAL_TYPE_UINT64        NI_AST_INTERNAL_TYPE_UINT128       NI_AST_INTERNAL_TYPE_CONST_FLOAT   NI_AST_INTERNAL_TYPE_FLOAT16       NI_AST_INTERNAL_TYPE_FLOAT32       NI_AST_INTERNAL_TYPE_FLOAT64      NI_AST_INTERNAL_TYPE_BOOL     */
+/*                               INTO -> CHA_AST_INTERNAL_TYPE_CONST_INT     CHA_AST_INTERNAL_TYPE_INT           CHA_AST_INTERNAL_TYPE_INT8          CHA_AST_INTERNAL_TYPE_INT16         CHA_AST_INTERNAL_TYPE_INT32         CHA_AST_INTERNAL_TYPE_INT64         CHA_AST_INTERNAL_TYPE_INT128        CHA_AST_INTERNAL_TYPE_CONST_UINT    CHA_AST_INTERNAL_TYPE_UINT          CHA_AST_INTERNAL_TYPE_UINT8         CHA_AST_INTERNAL_TYPE_UINT16        CHA_AST_INTERNAL_TYPE_UINT32        CHA_AST_INTERNAL_TYPE_UINT64        CHA_AST_INTERNAL_TYPE_UINT128       CHA_AST_INTERNAL_TYPE_CONST_FLOAT   CHA_AST_INTERNAL_TYPE_FLOAT16       CHA_AST_INTERNAL_TYPE_FLOAT32       CHA_AST_INTERNAL_TYPE_FLOAT64      CHA_AST_INTERNAL_TYPE_BOOL     */
 /*              FROM                */
-/* NI_AST_INTERNAL_TYPE_CONST_INT   */ { 1,                                 0,                                 0,                                 0,                                 0,                                 0,                                 0,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                1,                                },
-/* NI_AST_INTERNAL_TYPE_INT         */ { 1,                                 0,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                1,                                },
-/* NI_AST_INTERNAL_TYPE_INT8        */ { 1,                                 1,                                 0,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                1,                                },
-/* NI_AST_INTERNAL_TYPE_INT16       */ { 1,                                 1,                                 1,                                 0,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                1,                                },
-/* NI_AST_INTERNAL_TYPE_INT32       */ { 1,                                 1,                                 1,                                 1,                                 0,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                1,                                },
-/* NI_AST_INTERNAL_TYPE_INT64       */ { 1,                                 1,                                 1,                                 1,                                 1,                                 0,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                1,                                },
-/* NI_AST_INTERNAL_TYPE_INT128      */ { 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 0,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                1,                                },
-/* NI_AST_INTERNAL_TYPE_CONST_UINT  */ { 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 0,                                 0,                                 0,                                 0,                                 0,                                 0,                                 1,                                 1,                                 1,                                 1,                                1,                                },
-/* NI_AST_INTERNAL_TYPE_UINT        */ { 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 0,                                 0,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                1,                                },
-/* NI_AST_INTERNAL_TYPE_UINT8       */ { 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 0,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                1,                                },
-/* NI_AST_INTERNAL_TYPE_UINT16      */ { 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 0,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                1,                                },
-/* NI_AST_INTERNAL_TYPE_UINT32      */ { 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 0,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                1,                                },
-/* NI_AST_INTERNAL_TYPE_UINT64      */ { 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 0,                                 1,                                 1,                                 1,                                 1,                                 1,                                1,                                },
-/* NI_AST_INTERNAL_TYPE_UINT128     */ { 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 0,                                 1,                                 1,                                 1,                                 1,                                1,                                },
-/* NI_AST_INTERNAL_TYPE_CONST_FLOAT */ { 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 0,                                 0,                                 0,                                1,                                },
-/* NI_AST_INTERNAL_TYPE_FLOAT16     */ { 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 0,                                 1,                                 1,                                1,                                },
-/* NI_AST_INTERNAL_TYPE_FLOAT32     */ { 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 0,                                 1,                                1,                                },
-/* NI_AST_INTERNAL_TYPE_FLOAT64     */ { 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 0,                                1,                                },
-/* NI_AST_INTERNAL_TYPE_BOOL        */ { 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 0,                                0,                                },
+/* CHA_AST_INTERNAL_TYPE_CONST_INT   */ { 1,                                 0,                                 0,                                 0,                                 0,                                 0,                                 0,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                1,                                },
+/* CHA_AST_INTERNAL_TYPE_INT         */ { 1,                                 0,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                1,                                },
+/* CHA_AST_INTERNAL_TYPE_INT8        */ { 1,                                 1,                                 0,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                1,                                },
+/* CHA_AST_INTERNAL_TYPE_INT16       */ { 1,                                 1,                                 1,                                 0,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                1,                                },
+/* CHA_AST_INTERNAL_TYPE_INT32       */ { 1,                                 1,                                 1,                                 1,                                 0,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                1,                                },
+/* CHA_AST_INTERNAL_TYPE_INT64       */ { 1,                                 1,                                 1,                                 1,                                 1,                                 0,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                1,                                },
+/* CHA_AST_INTERNAL_TYPE_INT128      */ { 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 0,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                1,                                },
+/* CHA_AST_INTERNAL_TYPE_CONST_UINT  */ { 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 0,                                 0,                                 0,                                 0,                                 0,                                 0,                                 1,                                 1,                                 1,                                 1,                                1,                                },
+/* CHA_AST_INTERNAL_TYPE_UINT        */ { 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 0,                                 0,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                1,                                },
+/* CHA_AST_INTERNAL_TYPE_UINT8       */ { 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 0,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                1,                                },
+/* CHA_AST_INTERNAL_TYPE_UINT16      */ { 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 0,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                1,                                },
+/* CHA_AST_INTERNAL_TYPE_UINT32      */ { 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 0,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                1,                                },
+/* CHA_AST_INTERNAL_TYPE_UINT64      */ { 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 0,                                 1,                                 1,                                 1,                                 1,                                 1,                                1,                                },
+/* CHA_AST_INTERNAL_TYPE_UINT128     */ { 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 0,                                 1,                                 1,                                 1,                                 1,                                1,                                },
+/* CHA_AST_INTERNAL_TYPE_CONST_FLOAT */ { 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 0,                                 0,                                 0,                                1,                                },
+/* CHA_AST_INTERNAL_TYPE_FLOAT16     */ { 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 0,                                 1,                                 1,                                1,                                },
+/* CHA_AST_INTERNAL_TYPE_FLOAT32     */ { 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 0,                                 1,                                1,                                },
+/* CHA_AST_INTERNAL_TYPE_FLOAT64     */ { 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 0,                                1,                                },
+/* CHA_AST_INTERNAL_TYPE_BOOL        */ { 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 0,                                0,                                },
 };
 
 int convert_num_comparison_op[19][19] = { // <= < > =>
-/*                                       NI_AST_INTERNAL_TYPE_CONST_INT     NI_AST_INTERNAL_TYPE_INT           NI_AST_INTERNAL_TYPE_INT8          NI_AST_INTERNAL_TYPE_INT16         NI_AST_INTERNAL_TYPE_INT32         NI_AST_INTERNAL_TYPE_INT64         NI_AST_INTERNAL_TYPE_INT128        NI_AST_INTERNAL_TYPE_CONST_UINT    NI_AST_INTERNAL_TYPE_UINT          NI_AST_INTERNAL_TYPE_UINT8         NI_AST_INTERNAL_TYPE_UINT16        NI_AST_INTERNAL_TYPE_UINT32        NI_AST_INTERNAL_TYPE_UINT64        NI_AST_INTERNAL_TYPE_UINT128       NI_AST_INTERNAL_TYPE_CONST_FLOAT   NI_AST_INTERNAL_TYPE_FLOAT16       NI_AST_INTERNAL_TYPE_FLOAT32       NI_AST_INTERNAL_TYPE_FLOAT64      NI_AST_INTERNAL_TYPE_BOOL     */
-/* NI_AST_INTERNAL_TYPE_CONST_INT   */ { 0,                                 0,                                 0,                                 0,                                 0,                                 0,                                 0,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                1,                                },
-/* NI_AST_INTERNAL_TYPE_INT         */ { 0,                                 0,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                1,                                },
-/* NI_AST_INTERNAL_TYPE_INT8        */ { 0,                                 1,                                 0,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                1,                                },
-/* NI_AST_INTERNAL_TYPE_INT16       */ { 0,                                 1,                                 1,                                 0,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                1,                                },
-/* NI_AST_INTERNAL_TYPE_INT32       */ { 0,                                 1,                                 1,                                 1,                                 0,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                1,                                },
-/* NI_AST_INTERNAL_TYPE_INT64       */ { 0,                                 1,                                 1,                                 1,                                 1,                                 0,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                1,                                },
-/* NI_AST_INTERNAL_TYPE_INT128      */ { 0,                                 1,                                 1,                                 1,                                 1,                                 1,                                 0,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                1,                                },
-/* NI_AST_INTERNAL_TYPE_CONST_UINT  */ { 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 0,                                 0,                                 0,                                 0,                                 0,                                 0,                                 0,                                 1,                                 1,                                 1,                                 1,                                1,                                },
-/* NI_AST_INTERNAL_TYPE_UINT        */ { 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 0,                                 0,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                1,                                },
-/* NI_AST_INTERNAL_TYPE_UINT8       */ { 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 0,                                 1,                                 0,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                1,                                },
-/* NI_AST_INTERNAL_TYPE_UINT16      */ { 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 0,                                 1,                                 1,                                 0,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                1,                                },
-/* NI_AST_INTERNAL_TYPE_UINT32      */ { 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 0,                                 1,                                 1,                                 1,                                 0,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                1,                                },
-/* NI_AST_INTERNAL_TYPE_UINT64      */ { 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 0,                                 1,                                 1,                                 1,                                 1,                                 0,                                 1,                                 1,                                 1,                                 1,                                 1,                                1,                                },
-/* NI_AST_INTERNAL_TYPE_UINT128     */ { 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 0,                                 1,                                 1,                                 1,                                 1,                                 1,                                 0,                                 1,                                 1,                                 1,                                 1,                                1,                                },
-/* NI_AST_INTERNAL_TYPE_CONST_FLOAT */ { 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 0,                                 0,                                 0,                                 0,                                1,                                },
-/* NI_AST_INTERNAL_TYPE_FLOAT16     */ { 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 0,                                 0,                                 1,                                 1,                                1,                                },
-/* NI_AST_INTERNAL_TYPE_FLOAT32     */ { 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 0,                                 1,                                 1,                                 1,                                1,                                },
-/* NI_AST_INTERNAL_TYPE_FLOAT64     */ { 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 0,                                 1,                                 1,                                 0,                                1,                                },
-/* NI_AST_INTERNAL_TYPE_BOOL        */ { 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                1,                                },
+/*                                       CHA_AST_INTERNAL_TYPE_CONST_INT     CHA_AST_INTERNAL_TYPE_INT           CHA_AST_INTERNAL_TYPE_INT8          CHA_AST_INTERNAL_TYPE_INT16         CHA_AST_INTERNAL_TYPE_INT32         CHA_AST_INTERNAL_TYPE_INT64         CHA_AST_INTERNAL_TYPE_INT128        CHA_AST_INTERNAL_TYPE_CONST_UINT    CHA_AST_INTERNAL_TYPE_UINT          CHA_AST_INTERNAL_TYPE_UINT8         CHA_AST_INTERNAL_TYPE_UINT16        CHA_AST_INTERNAL_TYPE_UINT32        CHA_AST_INTERNAL_TYPE_UINT64        CHA_AST_INTERNAL_TYPE_UINT128       CHA_AST_INTERNAL_TYPE_CONST_FLOAT   CHA_AST_INTERNAL_TYPE_FLOAT16       CHA_AST_INTERNAL_TYPE_FLOAT32       CHA_AST_INTERNAL_TYPE_FLOAT64      CHA_AST_INTERNAL_TYPE_BOOL     */
+/* CHA_AST_INTERNAL_TYPE_CONST_INT   */ { 0,                                 0,                                 0,                                 0,                                 0,                                 0,                                 0,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                1,                                },
+/* CHA_AST_INTERNAL_TYPE_INT         */ { 0,                                 0,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                1,                                },
+/* CHA_AST_INTERNAL_TYPE_INT8        */ { 0,                                 1,                                 0,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                1,                                },
+/* CHA_AST_INTERNAL_TYPE_INT16       */ { 0,                                 1,                                 1,                                 0,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                1,                                },
+/* CHA_AST_INTERNAL_TYPE_INT32       */ { 0,                                 1,                                 1,                                 1,                                 0,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                1,                                },
+/* CHA_AST_INTERNAL_TYPE_INT64       */ { 0,                                 1,                                 1,                                 1,                                 1,                                 0,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                1,                                },
+/* CHA_AST_INTERNAL_TYPE_INT128      */ { 0,                                 1,                                 1,                                 1,                                 1,                                 1,                                 0,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                1,                                },
+/* CHA_AST_INTERNAL_TYPE_CONST_UINT  */ { 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 0,                                 0,                                 0,                                 0,                                 0,                                 0,                                 0,                                 1,                                 1,                                 1,                                 1,                                1,                                },
+/* CHA_AST_INTERNAL_TYPE_UINT        */ { 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 0,                                 0,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                1,                                },
+/* CHA_AST_INTERNAL_TYPE_UINT8       */ { 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 0,                                 1,                                 0,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                1,                                },
+/* CHA_AST_INTERNAL_TYPE_UINT16      */ { 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 0,                                 1,                                 1,                                 0,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                1,                                },
+/* CHA_AST_INTERNAL_TYPE_UINT32      */ { 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 0,                                 1,                                 1,                                 1,                                 0,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                1,                                },
+/* CHA_AST_INTERNAL_TYPE_UINT64      */ { 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 0,                                 1,                                 1,                                 1,                                 1,                                 0,                                 1,                                 1,                                 1,                                 1,                                 1,                                1,                                },
+/* CHA_AST_INTERNAL_TYPE_UINT128     */ { 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 0,                                 1,                                 1,                                 1,                                 1,                                 1,                                 0,                                 1,                                 1,                                 1,                                 1,                                1,                                },
+/* CHA_AST_INTERNAL_TYPE_CONST_FLOAT */ { 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 0,                                 0,                                 0,                                 0,                                1,                                },
+/* CHA_AST_INTERNAL_TYPE_FLOAT16     */ { 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 0,                                 0,                                 1,                                 1,                                1,                                },
+/* CHA_AST_INTERNAL_TYPE_FLOAT32     */ { 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 0,                                 1,                                 1,                                 1,                                1,                                },
+/* CHA_AST_INTERNAL_TYPE_FLOAT64     */ { 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 0,                                 1,                                 1,                                 0,                                1,                                },
+/* CHA_AST_INTERNAL_TYPE_BOOL        */ { 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                1,                                },
 };
 
 int convert_equals_comparison_op[19][19] = { // == !=
-/*                                       NI_AST_INTERNAL_TYPE_CONST_INT     NI_AST_INTERNAL_TYPE_INT           NI_AST_INTERNAL_TYPE_INT8          NI_AST_INTERNAL_TYPE_INT16         NI_AST_INTERNAL_TYPE_INT32         NI_AST_INTERNAL_TYPE_INT64         NI_AST_INTERNAL_TYPE_INT128        NI_AST_INTERNAL_TYPE_CONST_UINT    NI_AST_INTERNAL_TYPE_UINT          NI_AST_INTERNAL_TYPE_UINT8         NI_AST_INTERNAL_TYPE_UINT16        NI_AST_INTERNAL_TYPE_UINT32        NI_AST_INTERNAL_TYPE_UINT64        NI_AST_INTERNAL_TYPE_UINT128       NI_AST_INTERNAL_TYPE_CONST_FLOAT   NI_AST_INTERNAL_TYPE_FLOAT16       NI_AST_INTERNAL_TYPE_FLOAT32       NI_AST_INTERNAL_TYPE_FLOAT64      NI_AST_INTERNAL_TYPE_BOOL     */
-/* NI_AST_INTERNAL_TYPE_CONST_INT   */ { 0,                                 0,                                 0,                                 0,                                 0,                                 0,                                 0,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                1,                                },
-/* NI_AST_INTERNAL_TYPE_INT         */ { 0,                                 0,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                1,                                },
-/* NI_AST_INTERNAL_TYPE_INT8        */ { 0,                                 1,                                 0,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                1,                                },
-/* NI_AST_INTERNAL_TYPE_INT16       */ { 0,                                 1,                                 1,                                 0,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                1,                                },
-/* NI_AST_INTERNAL_TYPE_INT32       */ { 0,                                 1,                                 1,                                 1,                                 0,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                1,                                },
-/* NI_AST_INTERNAL_TYPE_INT64       */ { 0,                                 1,                                 1,                                 1,                                 1,                                 0,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                1,                                },
-/* NI_AST_INTERNAL_TYPE_INT128      */ { 0,                                 1,                                 1,                                 1,                                 1,                                 1,                                 0,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                1,                                },
-/* NI_AST_INTERNAL_TYPE_CONST_UINT  */ { 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 0,                                 0,                                 0,                                 0,                                 0,                                 0,                                 0,                                 1,                                 1,                                 1,                                 1,                                1,                                },
-/* NI_AST_INTERNAL_TYPE_UINT        */ { 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 0,                                 0,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                1,                                },
-/* NI_AST_INTERNAL_TYPE_UINT8       */ { 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 0,                                 1,                                 0,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                1,                                },
-/* NI_AST_INTERNAL_TYPE_UINT16      */ { 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 0,                                 1,                                 1,                                 0,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                1,                                },
-/* NI_AST_INTERNAL_TYPE_UINT32      */ { 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 0,                                 1,                                 1,                                 1,                                 0,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                1,                                },
-/* NI_AST_INTERNAL_TYPE_UINT64      */ { 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 0,                                 1,                                 1,                                 1,                                 1,                                 0,                                 1,                                 1,                                 1,                                 1,                                 1,                                1,                                },
-/* NI_AST_INTERNAL_TYPE_UINT128     */ { 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 0,                                 1,                                 1,                                 1,                                 1,                                 1,                                 0,                                 1,                                 1,                                 1,                                 1,                                1,                                },
-/* NI_AST_INTERNAL_TYPE_CONST_FLOAT */ { 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 0,                                 0,                                 0,                                 0,                                1,                                },
-/* NI_AST_INTERNAL_TYPE_FLOAT16     */ { 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 0,                                 0,                                 1,                                 1,                                1,                                },
-/* NI_AST_INTERNAL_TYPE_FLOAT32     */ { 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 0,                                 1,                                 1,                                 1,                                1,                                },
-/* NI_AST_INTERNAL_TYPE_FLOAT64     */ { 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 0,                                 1,                                 1,                                 0,                                1,                                },
-/* NI_AST_INTERNAL_TYPE_BOOL        */ { 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                0,                                },
+/*                                       CHA_AST_INTERNAL_TYPE_CONST_INT     CHA_AST_INTERNAL_TYPE_INT           CHA_AST_INTERNAL_TYPE_INT8          CHA_AST_INTERNAL_TYPE_INT16         CHA_AST_INTERNAL_TYPE_INT32         CHA_AST_INTERNAL_TYPE_INT64         CHA_AST_INTERNAL_TYPE_INT128        CHA_AST_INTERNAL_TYPE_CONST_UINT    CHA_AST_INTERNAL_TYPE_UINT          CHA_AST_INTERNAL_TYPE_UINT8         CHA_AST_INTERNAL_TYPE_UINT16        CHA_AST_INTERNAL_TYPE_UINT32        CHA_AST_INTERNAL_TYPE_UINT64        CHA_AST_INTERNAL_TYPE_UINT128       CHA_AST_INTERNAL_TYPE_CONST_FLOAT   CHA_AST_INTERNAL_TYPE_FLOAT16       CHA_AST_INTERNAL_TYPE_FLOAT32       CHA_AST_INTERNAL_TYPE_FLOAT64      CHA_AST_INTERNAL_TYPE_BOOL     */
+/* CHA_AST_INTERNAL_TYPE_CONST_INT   */ { 0,                                 0,                                 0,                                 0,                                 0,                                 0,                                 0,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                1,                                },
+/* CHA_AST_INTERNAL_TYPE_INT         */ { 0,                                 0,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                1,                                },
+/* CHA_AST_INTERNAL_TYPE_INT8        */ { 0,                                 1,                                 0,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                1,                                },
+/* CHA_AST_INTERNAL_TYPE_INT16       */ { 0,                                 1,                                 1,                                 0,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                1,                                },
+/* CHA_AST_INTERNAL_TYPE_INT32       */ { 0,                                 1,                                 1,                                 1,                                 0,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                1,                                },
+/* CHA_AST_INTERNAL_TYPE_INT64       */ { 0,                                 1,                                 1,                                 1,                                 1,                                 0,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                1,                                },
+/* CHA_AST_INTERNAL_TYPE_INT128      */ { 0,                                 1,                                 1,                                 1,                                 1,                                 1,                                 0,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                1,                                },
+/* CHA_AST_INTERNAL_TYPE_CONST_UINT  */ { 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 0,                                 0,                                 0,                                 0,                                 0,                                 0,                                 0,                                 1,                                 1,                                 1,                                 1,                                1,                                },
+/* CHA_AST_INTERNAL_TYPE_UINT        */ { 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 0,                                 0,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                1,                                },
+/* CHA_AST_INTERNAL_TYPE_UINT8       */ { 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 0,                                 1,                                 0,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                1,                                },
+/* CHA_AST_INTERNAL_TYPE_UINT16      */ { 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 0,                                 1,                                 1,                                 0,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                1,                                },
+/* CHA_AST_INTERNAL_TYPE_UINT32      */ { 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 0,                                 1,                                 1,                                 1,                                 0,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                1,                                },
+/* CHA_AST_INTERNAL_TYPE_UINT64      */ { 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 0,                                 1,                                 1,                                 1,                                 1,                                 0,                                 1,                                 1,                                 1,                                 1,                                 1,                                1,                                },
+/* CHA_AST_INTERNAL_TYPE_UINT128     */ { 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 0,                                 1,                                 1,                                 1,                                 1,                                 1,                                 0,                                 1,                                 1,                                 1,                                 1,                                1,                                },
+/* CHA_AST_INTERNAL_TYPE_CONST_FLOAT */ { 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 0,                                 0,                                 0,                                 0,                                1,                                },
+/* CHA_AST_INTERNAL_TYPE_FLOAT16     */ { 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 0,                                 0,                                 1,                                 1,                                1,                                },
+/* CHA_AST_INTERNAL_TYPE_FLOAT32     */ { 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 0,                                 1,                                 1,                                 1,                                1,                                },
+/* CHA_AST_INTERNAL_TYPE_FLOAT64     */ { 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 0,                                 1,                                 1,                                 0,                                1,                                },
+/* CHA_AST_INTERNAL_TYPE_BOOL        */ { 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                0,                                },
 };
 
 int convert_bool_comparison_op[19][19] = { // && ||
-/*                                       NI_AST_INTERNAL_TYPE_CONST_INT     NI_AST_INTERNAL_TYPE_INT           NI_AST_INTERNAL_TYPE_INT8          NI_AST_INTERNAL_TYPE_INT16         NI_AST_INTERNAL_TYPE_INT32         NI_AST_INTERNAL_TYPE_INT64         NI_AST_INTERNAL_TYPE_INT128        NI_AST_INTERNAL_TYPE_CONST_UINT    NI_AST_INTERNAL_TYPE_UINT          NI_AST_INTERNAL_TYPE_UINT8         NI_AST_INTERNAL_TYPE_UINT16        NI_AST_INTERNAL_TYPE_UINT32        NI_AST_INTERNAL_TYPE_UINT64        NI_AST_INTERNAL_TYPE_UINT128       NI_AST_INTERNAL_TYPE_CONST_FLOAT   NI_AST_INTERNAL_TYPE_FLOAT16       NI_AST_INTERNAL_TYPE_FLOAT32       NI_AST_INTERNAL_TYPE_FLOAT64      NI_AST_INTERNAL_TYPE_BOOL     */
-/* NI_AST_INTERNAL_TYPE_CONST_INT   */ { 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                1,                                },
-/* NI_AST_INTERNAL_TYPE_INT         */ { 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                1,                                },
-/* NI_AST_INTERNAL_TYPE_INT8        */ { 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                1,                                },
-/* NI_AST_INTERNAL_TYPE_INT16       */ { 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                1,                                },
-/* NI_AST_INTERNAL_TYPE_INT32       */ { 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                1,                                },
-/* NI_AST_INTERNAL_TYPE_INT64       */ { 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                1,                                },
-/* NI_AST_INTERNAL_TYPE_INT128      */ { 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                1,                                },
-/* NI_AST_INTERNAL_TYPE_CONST_UINT  */ { 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                1,                                },
-/* NI_AST_INTERNAL_TYPE_UINT        */ { 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                1,                                },
-/* NI_AST_INTERNAL_TYPE_UINT8       */ { 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                1,                                },
-/* NI_AST_INTERNAL_TYPE_UINT16      */ { 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                1,                                },
-/* NI_AST_INTERNAL_TYPE_UINT32      */ { 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                1,                                },
-/* NI_AST_INTERNAL_TYPE_UINT64      */ { 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                1,                                },
-/* NI_AST_INTERNAL_TYPE_UINT128     */ { 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                1,                                },
-/* NI_AST_INTERNAL_TYPE_CONST_FLOAT */ { 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                1,                                },
-/* NI_AST_INTERNAL_TYPE_FLOAT16     */ { 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                1,                                },
-/* NI_AST_INTERNAL_TYPE_FLOAT32     */ { 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                1,                                },
-/* NI_AST_INTERNAL_TYPE_FLOAT64     */ { 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                1,                                },
-/* NI_AST_INTERNAL_TYPE_BOOL        */ { 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                0,                                },
+/*                                       CHA_AST_INTERNAL_TYPE_CONST_INT     CHA_AST_INTERNAL_TYPE_INT           CHA_AST_INTERNAL_TYPE_INT8          CHA_AST_INTERNAL_TYPE_INT16         CHA_AST_INTERNAL_TYPE_INT32         CHA_AST_INTERNAL_TYPE_INT64         CHA_AST_INTERNAL_TYPE_INT128        CHA_AST_INTERNAL_TYPE_CONST_UINT    CHA_AST_INTERNAL_TYPE_UINT          CHA_AST_INTERNAL_TYPE_UINT8         CHA_AST_INTERNAL_TYPE_UINT16        CHA_AST_INTERNAL_TYPE_UINT32        CHA_AST_INTERNAL_TYPE_UINT64        CHA_AST_INTERNAL_TYPE_UINT128       CHA_AST_INTERNAL_TYPE_CONST_FLOAT   CHA_AST_INTERNAL_TYPE_FLOAT16       CHA_AST_INTERNAL_TYPE_FLOAT32       CHA_AST_INTERNAL_TYPE_FLOAT64      CHA_AST_INTERNAL_TYPE_BOOL     */
+/* CHA_AST_INTERNAL_TYPE_CONST_INT   */ { 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                1,                                },
+/* CHA_AST_INTERNAL_TYPE_INT         */ { 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                1,                                },
+/* CHA_AST_INTERNAL_TYPE_INT8        */ { 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                1,                                },
+/* CHA_AST_INTERNAL_TYPE_INT16       */ { 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                1,                                },
+/* CHA_AST_INTERNAL_TYPE_INT32       */ { 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                1,                                },
+/* CHA_AST_INTERNAL_TYPE_INT64       */ { 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                1,                                },
+/* CHA_AST_INTERNAL_TYPE_INT128      */ { 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                1,                                },
+/* CHA_AST_INTERNAL_TYPE_CONST_UINT  */ { 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                1,                                },
+/* CHA_AST_INTERNAL_TYPE_UINT        */ { 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                1,                                },
+/* CHA_AST_INTERNAL_TYPE_UINT8       */ { 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                1,                                },
+/* CHA_AST_INTERNAL_TYPE_UINT16      */ { 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                1,                                },
+/* CHA_AST_INTERNAL_TYPE_UINT32      */ { 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                1,                                },
+/* CHA_AST_INTERNAL_TYPE_UINT64      */ { 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                1,                                },
+/* CHA_AST_INTERNAL_TYPE_UINT128     */ { 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                1,                                },
+/* CHA_AST_INTERNAL_TYPE_CONST_FLOAT */ { 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                1,                                },
+/* CHA_AST_INTERNAL_TYPE_FLOAT16     */ { 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                1,                                },
+/* CHA_AST_INTERNAL_TYPE_FLOAT32     */ { 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                1,                                },
+/* CHA_AST_INTERNAL_TYPE_FLOAT64     */ { 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                1,                                },
+/* CHA_AST_INTERNAL_TYPE_BOOL        */ { 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                 1,                                0,                                },
 };
 
 // clang-format on
 
-int ni_validate(ni_ast_node_list *ast) {
+int cha_validate(cha_ast_node_list *ast) {
   validate_symbol_table = make_symbol_table(SYMBOL_TABLE_SIZE, NULL);
 
-  int ret = ni_validate_top_level(ast);
+  int ret = cha_validate_top_level(ast);
 
   free_all_symbol_tables(validate_symbol_table);
   return ret;
 }
 
-int ni_validate_top_level(ni_ast_node_list *ast) {
+int cha_validate_top_level(cha_ast_node_list *ast) {
   int ret = 0;
-  ni_ast_node_list_entry *ast_current_node = ast->head;
+  cha_ast_node_list_entry *ast_current_node = ast->head;
   while (ast_current_node != NULL) {
     switch (ast_current_node->node->node_type) {
-    case NI_AST_NODE_TYPE_FUNCTION_DECLARATION:
+    case CHA_AST_NODE_TYPE_FUNCTION_DECLARATION:
       if (insert_symbol_table(
               validate_symbol_table,
               ast_current_node->node->function_declaration.identifier,
@@ -173,7 +173,7 @@ int ni_validate_top_level(ni_ast_node_list *ast) {
             ast_current_node->node->function_declaration.identifier);
       }
       break;
-    case NI_AST_NODE_TYPE_CONSTANT_DECLARATION:
+    case CHA_AST_NODE_TYPE_CONSTANT_DECLARATION:
       break; // validate later
     default:
       ret = 1;
@@ -187,7 +187,7 @@ int ni_validate_top_level(ni_ast_node_list *ast) {
 
   ast_current_node = ast->head;
   while (ast_current_node != NULL) {
-    if (ni_validate_node(ast_current_node->node) != 0) {
+    if (cha_validate_node(ast_current_node->node) != 0) {
       ret = 1;
     }
     ast_current_node = ast_current_node->next;
@@ -195,15 +195,15 @@ int ni_validate_top_level(ni_ast_node_list *ast) {
   return ret;
 }
 
-int ni_validate_node_list(ni_ast_node_list *ast) {
+int cha_validate_node_list(cha_ast_node_list *ast) {
   if (ast == NULL) {
     return 0;
   }
 
   int ret = 0;
-  ni_ast_node_list_entry *ast_current_node = ast->head;
+  cha_ast_node_list_entry *ast_current_node = ast->head;
   while (ast_current_node != NULL) {
-    if (ni_validate_node(ast_current_node->node) != 0) {
+    if (cha_validate_node(ast_current_node->node) != 0) {
       ret = 1;
     }
     ast_current_node = ast_current_node->next;
@@ -211,57 +211,58 @@ int ni_validate_node_list(ni_ast_node_list *ast) {
   return ret;
 }
 
-int ni_validate_node(ni_ast_node *ast_node) {
+int cha_validate_node(cha_ast_node *ast_node) {
   if (ast_node == NULL) {
     return 0;
   }
 
   switch (ast_node->node_type) {
-  case NI_AST_NODE_TYPE_FUNCTION_DECLARATION:
-    return ni_validate_node_fun(ast_node);
-  case NI_AST_NODE_TYPE_CONSTANT_DECLARATION:
-    return ni_validate_node_const(ast_node);
-  case NI_AST_NODE_TYPE_BLOCK:
-    return ni_validate_node_list(ast_node->block);
-  case NI_AST_NODE_TYPE_VARIABLE_DECLARATION:
-    return ni_validate_node_var(ast_node);
-  case NI_AST_NODE_TYPE_BIN_OP:
-    return ni_validate_node_bin_op(ast_node);
-  case NI_AST_NODE_TYPE_VARIABLE_ASSIGNMENT:
-    return ni_validate_node_var_assign(ast_node);
-  case NI_AST_NODE_TYPE_VARIABLE_LOOKUP:
-    return ni_validate_node_var_lookup(ast_node);
-  case NI_AST_NODE_TYPE_FUNCTION_CALL:
-    return ni_validate_node_call(ast_node);
-  case NI_AST_NODE_TYPE_FUNCTION_RETURN:
-    return ni_validate_node_ret(ast_node);
-  case NI_AST_NODE_TYPE_ARGUMENT:
-    return ni_validate_node_arg(ast_node);
-  case NI_AST_NODE_TYPE_IF:
-    return ni_validate_node_if(ast_node);
+  case CHA_AST_NODE_TYPE_FUNCTION_DECLARATION:
+    return cha_validate_node_fun(ast_node);
+  case CHA_AST_NODE_TYPE_CONSTANT_DECLARATION:
+    return cha_validate_node_const(ast_node);
+  case CHA_AST_NODE_TYPE_BLOCK:
+    return cha_validate_node_list(ast_node->block);
+  case CHA_AST_NODE_TYPE_VARIABLE_DECLARATION:
+    return cha_validate_node_var(ast_node);
+  case CHA_AST_NODE_TYPE_BIN_OP:
+    return cha_validate_node_bin_op(ast_node);
+  case CHA_AST_NODE_TYPE_VARIABLE_ASSIGNMENT:
+    return cha_validate_node_var_assign(ast_node);
+  case CHA_AST_NODE_TYPE_VARIABLE_LOOKUP:
+    return cha_validate_node_var_lookup(ast_node);
+  case CHA_AST_NODE_TYPE_FUNCTION_CALL:
+    return cha_validate_node_call(ast_node);
+  case CHA_AST_NODE_TYPE_FUNCTION_RETURN:
+    return cha_validate_node_ret(ast_node);
+  case CHA_AST_NODE_TYPE_ARGUMENT:
+    return cha_validate_node_arg(ast_node);
+  case CHA_AST_NODE_TYPE_IF:
+    return cha_validate_node_if(ast_node);
   default:
     return 0; // no validation
   }
 }
 
-int ni_validate_node_fun(ni_ast_node *ast_node) {
-  ni_validate_create_stack_frame();
+int cha_validate_node_fun(cha_ast_node *ast_node) {
+  cha_validate_create_stack_frame();
   fun = ast_node;
 
-  int ret = ni_validate_node_list(ast_node->function_declaration.argument_list);
+  int ret =
+      cha_validate_node_list(ast_node->function_declaration.argument_list);
 
-  if (ni_validate_node_list(ast_node->function_declaration.block) != 0) {
+  if (cha_validate_node_list(ast_node->function_declaration.block) != 0) {
     ret = 1;
   }
 
   fun = NULL;
 
-  ni_validate_release_stack_frame();
+  cha_validate_release_stack_frame();
   return ret;
 }
 
-int ni_validate_node_var(ni_ast_node *ast_node) {
-  if (ni_validate_node(ast_node->variable_declaration.value) != 0) {
+int cha_validate_node_var(cha_ast_node *ast_node) {
+  if (cha_validate_node(ast_node->variable_declaration.value) != 0) {
     return 1;
   }
   if (insert_symbol_table(validate_symbol_table,
@@ -274,7 +275,7 @@ int ni_validate_node_var(ni_ast_node *ast_node) {
   return 0;
 }
 
-int ni_validate_node_const(ni_ast_node *ast_node) {
+int cha_validate_node_const(cha_ast_node *ast_node) {
   if (insert_symbol_table(validate_symbol_table,
                           ast_node->constant_declaration.identifier, ast_node,
                           NULL, NULL) != 0) {
@@ -285,7 +286,7 @@ int ni_validate_node_const(ni_ast_node *ast_node) {
   return 0;
 }
 
-int ni_validate_node_arg(ni_ast_node *ast_node) {
+int cha_validate_node_arg(cha_ast_node *ast_node) {
   if (insert_symbol_table(validate_symbol_table, ast_node->argument.identifier,
                           ast_node, NULL, NULL) != 0) {
     log_validation_error(ast_node->location, "argument '%s' already defined",
@@ -295,7 +296,7 @@ int ni_validate_node_arg(ni_ast_node *ast_node) {
   return 0;
 }
 
-int ni_validate_node_var_assign(ni_ast_node *ast_node) {
+int cha_validate_node_var_assign(cha_ast_node *ast_node) {
   symbol_value *v = get_symbol_table(validate_symbol_table,
                                      ast_node->variable_assignment.identifier);
   if (v == NULL) {
@@ -304,12 +305,12 @@ int ni_validate_node_var_assign(ni_ast_node *ast_node) {
     return 1;
   }
 
-  if (ni_validate_node(ast_node->variable_assignment.value) != 0) {
+  if (cha_validate_node(ast_node->variable_assignment.value) != 0) {
     return 1;
   }
 
-  if (ni_check_type_assignment(ast_node->variable_assignment.value,
-                               v->node->variable_declaration.type) != 0) {
+  if (cha_check_type_assignment(ast_node->variable_assignment.value,
+                                v->node->variable_declaration.type) != 0) {
     char expected_type[TYPE_STR_LEN];
     char got_type[TYPE_STR_LEN];
     type_str(expected_type, v->node->variable_declaration.type);
@@ -323,7 +324,7 @@ int ni_validate_node_var_assign(ni_ast_node *ast_node) {
   return 0;
 }
 
-int ni_validate_node_var_lookup(ni_ast_node *ast_node) {
+int cha_validate_node_var_lookup(cha_ast_node *ast_node) {
   symbol_value *v = get_symbol_table(validate_symbol_table,
                                      ast_node->variable_lookup.identifier);
   if (v == NULL) {
@@ -332,20 +333,20 @@ int ni_validate_node_var_lookup(ni_ast_node *ast_node) {
     return 1;
   }
   switch (v->node->node_type) {
-  case NI_AST_NODE_TYPE_CONSTANT_DECLARATION: // replace lookup with value
+  case CHA_AST_NODE_TYPE_CONSTANT_DECLARATION: // replace lookup with value
     free(ast_node->variable_lookup.identifier);
     ast_node->node_type = v->node->constant_declaration.value->node_type;
-    ast_node->_result_type = make_ni_ast_type(
+    ast_node->_result_type = make_cha_ast_type(
         ast_node->location,
         v->node->constant_declaration.value->_result_type->internal_type);
     switch (ast_node->node_type) {
-    case NI_AST_NODE_TYPE_CONSTANT_UINT:
-    case NI_AST_NODE_TYPE_CONSTANT_INT:
-    case NI_AST_NODE_TYPE_CONSTANT_FLOAT:
+    case CHA_AST_NODE_TYPE_CONSTANT_UINT:
+    case CHA_AST_NODE_TYPE_CONSTANT_INT:
+    case CHA_AST_NODE_TYPE_CONSTANT_FLOAT:
       ast_node->const_value =
           strdup(v->node->constant_declaration.value->const_value);
       break;
-    case NI_AST_NODE_TYPE_CONSTANT_BOOL:
+    case CHA_AST_NODE_TYPE_CONSTANT_BOOL:
       ast_node->const_bool = v->node->constant_declaration.value->const_bool;
       break;
     default:
@@ -353,8 +354,8 @@ int ni_validate_node_var_lookup(ni_ast_node *ast_node) {
       break;
     }
     break;
-  case NI_AST_NODE_TYPE_VARIABLE_DECLARATION: // copy type
-    ast_node->_result_type = make_ni_ast_type(
+  case CHA_AST_NODE_TYPE_VARIABLE_DECLARATION: // copy type
+    ast_node->_result_type = make_cha_ast_type(
         ast_node->location, v->node->variable_declaration.type->internal_type);
     break;
   default:
@@ -364,76 +365,76 @@ int ni_validate_node_var_lookup(ni_ast_node *ast_node) {
   return 0;
 }
 
-int ni_validate_node_bin_op(ni_ast_node *ast_node) {
-  int ret_left = ni_validate_node(ast_node->bin_op.left);
-  int ret_right = ni_validate_node(ast_node->bin_op.right);
+int cha_validate_node_bin_op(cha_ast_node *ast_node) {
+  int ret_left = cha_validate_node(ast_node->bin_op.left);
+  int ret_right = cha_validate_node(ast_node->bin_op.right);
   if (ret_left != 0 || ret_right != 0) {
     return 1;
   }
 
   switch (ast_node->bin_op.op) {
-  case NI_AST_OPERATOR_ADD:      // +
-  case NI_AST_OPERATOR_SUBTRACT: // -
-  case NI_AST_OPERATOR_MULTIPLY: // *
-    ast_node->_result_type = make_ni_ast_type(
+  case CHA_AST_OPERATOR_ADD:      // +
+  case CHA_AST_OPERATOR_SUBTRACT: // -
+  case CHA_AST_OPERATOR_MULTIPLY: // *
+    ast_node->_result_type = make_cha_ast_type(
         ast_node->location,
         convert_arithmetic_op
             [ast_node->bin_op.left->_result_type->internal_type]
             [ast_node->bin_op.right->_result_type->internal_type]);
-    ni_set_type_on_const(ast_node->bin_op.left,
-                         ast_node->_result_type->internal_type);
-    ni_set_type_on_const(ast_node->bin_op.right,
-                         ast_node->_result_type->internal_type);
+    cha_set_type_on_const(ast_node->bin_op.left,
+                          ast_node->_result_type->internal_type);
+    cha_set_type_on_const(ast_node->bin_op.right,
+                          ast_node->_result_type->internal_type);
 
     break;
-  case NI_AST_OPERATOR_GREATER_THAN:           // >
-  case NI_AST_OPERATOR_GREATER_THAN_OR_EQUALS: // >=
-  case NI_AST_OPERATOR_LESS_THAN:              // <
-  case NI_AST_OPERATOR_LESS_THAN_OR_EQUALS:    // <=
+  case CHA_AST_OPERATOR_GREATER_THAN:           // >
+  case CHA_AST_OPERATOR_GREATER_THAN_OR_EQUALS: // >=
+  case CHA_AST_OPERATOR_LESS_THAN:              // <
+  case CHA_AST_OPERATOR_LESS_THAN_OR_EQUALS:    // <=
     if (convert_num_comparison_op
             [ast_node->bin_op.left->_result_type->internal_type]
             [ast_node->bin_op.right->_result_type->internal_type] == 1) {
       ast_node->_result_type =
-          make_ni_ast_type(ast_node->location, NI_AST_INTERNAL_TYPE_UNDEF);
+          make_cha_ast_type(ast_node->location, CHA_AST_INTERNAL_TYPE_UNDEF);
     } else {
       ast_node->_result_type =
-          make_ni_ast_type(ast_node->location, NI_AST_INTERNAL_TYPE_BOOL);
+          make_cha_ast_type(ast_node->location, CHA_AST_INTERNAL_TYPE_BOOL);
     }
-    ni_set_type_on_const(ast_node->bin_op.left,
-                         ast_node->bin_op.right->_result_type->internal_type);
-    ni_set_type_on_const(ast_node->bin_op.right,
-                         ast_node->bin_op.left->_result_type->internal_type);
+    cha_set_type_on_const(ast_node->bin_op.left,
+                          ast_node->bin_op.right->_result_type->internal_type);
+    cha_set_type_on_const(ast_node->bin_op.right,
+                          ast_node->bin_op.left->_result_type->internal_type);
     break;
-  case NI_AST_OPERATOR_EQUALS_EQUALS: // ==
-  case NI_AST_OPERATOR_NOT_EQUALS:    // !=
+  case CHA_AST_OPERATOR_EQUALS_EQUALS: // ==
+  case CHA_AST_OPERATOR_NOT_EQUALS:    // !=
     if (convert_equals_comparison_op
             [ast_node->bin_op.left->_result_type->internal_type]
             [ast_node->bin_op.right->_result_type->internal_type] == 1) {
       ast_node->_result_type =
-          make_ni_ast_type(ast_node->location, NI_AST_INTERNAL_TYPE_UNDEF);
+          make_cha_ast_type(ast_node->location, CHA_AST_INTERNAL_TYPE_UNDEF);
     } else {
       ast_node->_result_type =
-          make_ni_ast_type(ast_node->location, NI_AST_INTERNAL_TYPE_BOOL);
+          make_cha_ast_type(ast_node->location, CHA_AST_INTERNAL_TYPE_BOOL);
     }
-    ni_set_type_on_const(ast_node->bin_op.left,
-                         ast_node->bin_op.right->_result_type->internal_type);
-    ni_set_type_on_const(ast_node->bin_op.right,
-                         ast_node->bin_op.left->_result_type->internal_type);
+    cha_set_type_on_const(ast_node->bin_op.left,
+                          ast_node->bin_op.right->_result_type->internal_type);
+    cha_set_type_on_const(ast_node->bin_op.right,
+                          ast_node->bin_op.left->_result_type->internal_type);
     break;
-  case NI_AST_OPERATOR_AND: // &&
-  case NI_AST_OPERATOR_OR:  // ||
+  case CHA_AST_OPERATOR_AND: // &&
+  case CHA_AST_OPERATOR_OR:  // ||
     if (convert_bool_comparison_op
             [ast_node->bin_op.left->_result_type->internal_type]
             [ast_node->bin_op.right->_result_type->internal_type] == 1) {
       ast_node->_result_type =
-          make_ni_ast_type(ast_node->location, NI_AST_INTERNAL_TYPE_UNDEF);
+          make_cha_ast_type(ast_node->location, CHA_AST_INTERNAL_TYPE_UNDEF);
     } else {
       ast_node->_result_type =
-          make_ni_ast_type(ast_node->location, NI_AST_INTERNAL_TYPE_BOOL);
+          make_cha_ast_type(ast_node->location, CHA_AST_INTERNAL_TYPE_BOOL);
     }
     break;
   }
-  if (ast_node->_result_type->internal_type == NI_AST_INTERNAL_TYPE_UNDEF) {
+  if (ast_node->_result_type->internal_type == CHA_AST_INTERNAL_TYPE_UNDEF) {
     char ltype[TYPE_STR_LEN];
     char rtype[TYPE_STR_LEN];
     type_str(ltype, ast_node->bin_op.left->_result_type);
@@ -449,7 +450,7 @@ int ni_validate_node_bin_op(ni_ast_node *ast_node) {
   return 0;
 }
 
-int ni_validate_node_call(ni_ast_node *ast_node) {
+int cha_validate_node_call(cha_ast_node *ast_node) {
   symbol_value *callee_fun = get_symbol_table(
       validate_symbol_table, ast_node->function_call.identifier);
 
@@ -460,7 +461,7 @@ int ni_validate_node_call(ni_ast_node *ast_node) {
   }
 
   if (callee_fun->node->function_declaration.return_type != NULL) {
-    ast_node->_result_type = make_ni_ast_type(
+    ast_node->_result_type = make_cha_ast_type(
         ast_node->location,
         callee_fun->node->function_declaration.return_type->internal_type);
   }
@@ -497,15 +498,15 @@ int ni_validate_node_call(ni_ast_node *ast_node) {
     return 1;
   }
 
-  ni_ast_node_list_entry *arg = ast_node->function_call.argument_list->head;
-  ni_ast_node_list_entry *def_arg =
+  cha_ast_node_list_entry *arg = ast_node->function_call.argument_list->head;
+  cha_ast_node_list_entry *def_arg =
       callee_fun->node->function_declaration.argument_list->head;
   int ret = 0;
   while (arg != NULL) {
-    if (ni_validate_node(arg->node) != 0) {
+    if (cha_validate_node(arg->node) != 0) {
       ret = 1;
     }
-    if (ni_check_type_assignment(arg->node, def_arg->node->argument.type) !=
+    if (cha_check_type_assignment(arg->node, def_arg->node->argument.type) !=
         0) {
       char expected_type[TYPE_STR_LEN];
       char got_type[TYPE_STR_LEN];
@@ -523,8 +524,8 @@ int ni_validate_node_call(ni_ast_node *ast_node) {
   return ret;
 }
 
-int ni_validate_node_ret(ni_ast_node *ast_node) {
-  if (ni_validate_node(ast_node->function_return.value) != 0) {
+int cha_validate_node_ret(cha_ast_node *ast_node) {
+  if (cha_validate_node(ast_node->function_return.value) != 0) {
     return 1;
   }
 
@@ -545,8 +546,8 @@ int ni_validate_node_ret(ni_ast_node *ast_node) {
     return 1;
   }
 
-  if (ni_check_type_assignment(ast_node->function_return.value,
-                               fun->function_declaration.return_type) != 0) {
+  if (cha_check_type_assignment(ast_node->function_return.value,
+                                fun->function_declaration.return_type) != 0) {
     char expected_type[TYPE_STR_LEN];
     char got_type[TYPE_STR_LEN];
     type_str(expected_type, fun->function_declaration.return_type);
@@ -560,32 +561,32 @@ int ni_validate_node_ret(ni_ast_node *ast_node) {
   return 0;
 }
 
-int ni_validate_node_if(ni_ast_node *ast_node) {
-  if (ni_validate_node(ast_node->if_block.condition) != 0) {
+int cha_validate_node_if(cha_ast_node *ast_node) {
+  if (cha_validate_node(ast_node->if_block.condition) != 0) {
     return 1;
   }
   if (ast_node->if_block.condition->_result_type->internal_type !=
-      NI_AST_INTERNAL_TYPE_BOOL) {
+      CHA_AST_INTERNAL_TYPE_BOOL) {
     log_validation_error(ast_node->if_block.condition->location,
                          "condition should return bool");
     return 1;
   }
-  ni_validate_create_stack_frame();
-  if (ni_validate_node_list(ast_node->if_block.block) != 0) {
-    ni_validate_release_stack_frame();
+  cha_validate_create_stack_frame();
+  if (cha_validate_node_list(ast_node->if_block.block) != 0) {
+    cha_validate_release_stack_frame();
     return 1;
   }
-  ni_validate_release_stack_frame();
-  ni_validate_create_stack_frame();
-  if (ni_validate_node_list(ast_node->if_block.else_block) != 0) {
-    ni_validate_release_stack_frame();
+  cha_validate_release_stack_frame();
+  cha_validate_create_stack_frame();
+  if (cha_validate_node_list(ast_node->if_block.else_block) != 0) {
+    cha_validate_release_stack_frame();
     return 1;
   }
-  ni_validate_release_stack_frame();
+  cha_validate_release_stack_frame();
   return 0;
 }
 
-void type_str(char *out, const ni_ast_type *ast_type) {
+void type_str(char *out, const cha_ast_type *ast_type) {
   if (out == NULL) {
     return;
   }
@@ -594,101 +595,102 @@ void type_str(char *out, const ni_ast_type *ast_type) {
     sprintf(out, "void");
   } else {
     switch (ast_type->internal_type) {
-    case NI_AST_INTERNAL_TYPE_UNDEF:
+    case CHA_AST_INTERNAL_TYPE_UNDEF:
       sprintf(out, "undefined");
       break;
-    case NI_AST_INTERNAL_TYPE_CONST_INT:
+    case CHA_AST_INTERNAL_TYPE_CONST_INT:
       sprintf(out, "c_int");
       break;
-    case NI_AST_INTERNAL_TYPE_CONST_UINT:
+    case CHA_AST_INTERNAL_TYPE_CONST_UINT:
       sprintf(out, "c_uint");
       break;
-    case NI_AST_INTERNAL_TYPE_INT8:
+    case CHA_AST_INTERNAL_TYPE_INT8:
       sprintf(out, "int8");
       break;
-    case NI_AST_INTERNAL_TYPE_UINT8:
+    case CHA_AST_INTERNAL_TYPE_UINT8:
       sprintf(out, "uint8");
       break;
-    case NI_AST_INTERNAL_TYPE_INT16:
+    case CHA_AST_INTERNAL_TYPE_INT16:
       sprintf(out, "int16");
       break;
-    case NI_AST_INTERNAL_TYPE_UINT16:
+    case CHA_AST_INTERNAL_TYPE_UINT16:
       sprintf(out, "uint16");
       break;
-    case NI_AST_INTERNAL_TYPE_INT32:
+    case CHA_AST_INTERNAL_TYPE_INT32:
       sprintf(out, "int32");
       break;
-    case NI_AST_INTERNAL_TYPE_UINT32:
+    case CHA_AST_INTERNAL_TYPE_UINT32:
       sprintf(out, "uint32");
       break;
-    case NI_AST_INTERNAL_TYPE_INT64:
+    case CHA_AST_INTERNAL_TYPE_INT64:
       sprintf(out, "int64");
       break;
-    case NI_AST_INTERNAL_TYPE_UINT64:
+    case CHA_AST_INTERNAL_TYPE_UINT64:
       sprintf(out, "uint64");
       break;
-    case NI_AST_INTERNAL_TYPE_INT128:
+    case CHA_AST_INTERNAL_TYPE_INT128:
       sprintf(out, "int128");
       break;
-    case NI_AST_INTERNAL_TYPE_UINT128:
+    case CHA_AST_INTERNAL_TYPE_UINT128:
       sprintf(out, "uint128");
       break;
-    case NI_AST_INTERNAL_TYPE_CONST_FLOAT:
+    case CHA_AST_INTERNAL_TYPE_CONST_FLOAT:
       sprintf(out, "float");
       break;
-    case NI_AST_INTERNAL_TYPE_FLOAT16:
+    case CHA_AST_INTERNAL_TYPE_FLOAT16:
       sprintf(out, "float16");
       break;
-    case NI_AST_INTERNAL_TYPE_FLOAT32:
+    case CHA_AST_INTERNAL_TYPE_FLOAT32:
       sprintf(out, "float32");
       break;
-    case NI_AST_INTERNAL_TYPE_FLOAT64:
+    case CHA_AST_INTERNAL_TYPE_FLOAT64:
       sprintf(out, "float64");
       break;
-    case NI_AST_INTERNAL_TYPE_INT:
+    case CHA_AST_INTERNAL_TYPE_INT:
       sprintf(out, "int");
       break;
-    case NI_AST_INTERNAL_TYPE_UINT:
+    case CHA_AST_INTERNAL_TYPE_UINT:
       sprintf(out, "uint");
       break;
-    case NI_AST_INTERNAL_TYPE_BOOL:
+    case CHA_AST_INTERNAL_TYPE_BOOL:
       sprintf(out, "bool");
       break;
     }
   }
 }
 
-int ni_check_type_assignment(ni_ast_node *ast_node,
-                             const ni_ast_type *ast_type) {
+int cha_check_type_assignment(cha_ast_node *ast_node,
+                              const cha_ast_type *ast_type) {
 
   if (convert_assign[ast_node->_result_type->internal_type]
                     [ast_type->internal_type] != 0) {
     return 1;
   }
-  ni_set_type_on_const(ast_node, ast_type->internal_type);
+  cha_set_type_on_const(ast_node, ast_type->internal_type);
 
   return 0;
 }
 
-void ni_set_type_on_const(ni_ast_node *ast_node,
-                          ni_ast_internal_type internal_type) {
-  if (ast_node->_result_type->internal_type == NI_AST_INTERNAL_TYPE_CONST_INT ||
+void cha_set_type_on_const(cha_ast_node *ast_node,
+                           cha_ast_internal_type internal_type) {
+  if (ast_node->_result_type->internal_type ==
+          CHA_AST_INTERNAL_TYPE_CONST_INT ||
       ast_node->_result_type->internal_type ==
-          NI_AST_INTERNAL_TYPE_CONST_UINT ||
+          CHA_AST_INTERNAL_TYPE_CONST_UINT ||
       ast_node->_result_type->internal_type ==
-          NI_AST_INTERNAL_TYPE_CONST_FLOAT) {
+          CHA_AST_INTERNAL_TYPE_CONST_FLOAT) {
     ast_node->_result_type =
-        make_ni_ast_type(ast_node->location, internal_type);
+        make_cha_ast_type(ast_node->location, internal_type);
   }
 }
 
-void ni_validate_create_stack_frame() {
+void cha_validate_create_stack_frame() {
   symbol_table *new_table =
       make_symbol_table(SYMBOL_TABLE_SIZE, validate_symbol_table);
   validate_symbol_table = new_table;
 }
 
-void ni_validate_release_stack_frame() {
+void cha_validate_release_stack_frame() {
   symbol_table *new_table = validate_symbol_table;
   validate_symbol_table = validate_symbol_table->parent;
   free_symbol_table(new_table);

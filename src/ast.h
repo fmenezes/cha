@@ -1,5 +1,5 @@
-#ifndef __NI_AST_H__
-#define __NI_AST_H__
+#ifndef __CHA_AST_H__
+#define __CHA_AST_H__
 
 #ifdef __cplusplus
 extern "C" {
@@ -7,208 +7,210 @@ extern "C" {
 
 #include <stdio.h>
 
-typedef struct ni_ast_location {
+typedef struct cha_ast_location {
   char file[500];
   int line_begin;
   int column_begin;
   int line_end;
   int column_end;
-} ni_ast_location;
+} cha_ast_location;
 
-typedef enum ni_ast_internal_type {
-  NI_AST_INTERNAL_TYPE_UNDEF = -1,
-  NI_AST_INTERNAL_TYPE_CONST_INT,
-  NI_AST_INTERNAL_TYPE_INT,
-  NI_AST_INTERNAL_TYPE_INT8,
-  NI_AST_INTERNAL_TYPE_INT16,
-  NI_AST_INTERNAL_TYPE_INT32,
-  NI_AST_INTERNAL_TYPE_INT64,
-  NI_AST_INTERNAL_TYPE_INT128,
-  NI_AST_INTERNAL_TYPE_CONST_UINT,
-  NI_AST_INTERNAL_TYPE_UINT,
-  NI_AST_INTERNAL_TYPE_UINT8,
-  NI_AST_INTERNAL_TYPE_UINT16,
-  NI_AST_INTERNAL_TYPE_UINT32,
-  NI_AST_INTERNAL_TYPE_UINT64,
-  NI_AST_INTERNAL_TYPE_UINT128,
-  NI_AST_INTERNAL_TYPE_CONST_FLOAT,
-  NI_AST_INTERNAL_TYPE_FLOAT16,
-  NI_AST_INTERNAL_TYPE_FLOAT32,
-  NI_AST_INTERNAL_TYPE_FLOAT64,
-  NI_AST_INTERNAL_TYPE_BOOL,
-} ni_ast_internal_type;
+typedef enum cha_ast_internal_type {
+  CHA_AST_INTERNAL_TYPE_UNDEF = -1,
+  CHA_AST_INTERNAL_TYPE_CONST_INT,
+  CHA_AST_INTERNAL_TYPE_INT,
+  CHA_AST_INTERNAL_TYPE_INT8,
+  CHA_AST_INTERNAL_TYPE_INT16,
+  CHA_AST_INTERNAL_TYPE_INT32,
+  CHA_AST_INTERNAL_TYPE_INT64,
+  CHA_AST_INTERNAL_TYPE_INT128,
+  CHA_AST_INTERNAL_TYPE_CONST_UINT,
+  CHA_AST_INTERNAL_TYPE_UINT,
+  CHA_AST_INTERNAL_TYPE_UINT8,
+  CHA_AST_INTERNAL_TYPE_UINT16,
+  CHA_AST_INTERNAL_TYPE_UINT32,
+  CHA_AST_INTERNAL_TYPE_UINT64,
+  CHA_AST_INTERNAL_TYPE_UINT128,
+  CHA_AST_INTERNAL_TYPE_CONST_FLOAT,
+  CHA_AST_INTERNAL_TYPE_FLOAT16,
+  CHA_AST_INTERNAL_TYPE_FLOAT32,
+  CHA_AST_INTERNAL_TYPE_FLOAT64,
+  CHA_AST_INTERNAL_TYPE_BOOL,
+} cha_ast_internal_type;
 
-typedef enum ni_ast_node_type {
-  NI_AST_NODE_TYPE_CONSTANT_INT,
-  NI_AST_NODE_TYPE_CONSTANT_UINT,
-  NI_AST_NODE_TYPE_CONSTANT_FLOAT,
-  NI_AST_NODE_TYPE_CONSTANT_BOOL,
-  NI_AST_NODE_TYPE_BIN_OP,
-  NI_AST_NODE_TYPE_CONSTANT_DECLARATION,
-  NI_AST_NODE_TYPE_VARIABLE_DECLARATION,
-  NI_AST_NODE_TYPE_VARIABLE_ASSIGNMENT,
-  NI_AST_NODE_TYPE_VARIABLE_LOOKUP,
-  NI_AST_NODE_TYPE_ARGUMENT,
-  NI_AST_NODE_TYPE_BLOCK,
-  NI_AST_NODE_TYPE_FUNCTION_DECLARATION,
-  NI_AST_NODE_TYPE_FUNCTION_CALL,
-  NI_AST_NODE_TYPE_FUNCTION_RETURN,
-  NI_AST_NODE_TYPE_IF,
-} ni_ast_node_type;
+typedef enum cha_ast_node_type {
+  CHA_AST_NODE_TYPE_CONSTANT_INT,
+  CHA_AST_NODE_TYPE_CONSTANT_UINT,
+  CHA_AST_NODE_TYPE_CONSTANT_FLOAT,
+  CHA_AST_NODE_TYPE_CONSTANT_BOOL,
+  CHA_AST_NODE_TYPE_BIN_OP,
+  CHA_AST_NODE_TYPE_CONSTANT_DECLARATION,
+  CHA_AST_NODE_TYPE_VARIABLE_DECLARATION,
+  CHA_AST_NODE_TYPE_VARIABLE_ASSIGNMENT,
+  CHA_AST_NODE_TYPE_VARIABLE_LOOKUP,
+  CHA_AST_NODE_TYPE_ARGUMENT,
+  CHA_AST_NODE_TYPE_BLOCK,
+  CHA_AST_NODE_TYPE_FUNCTION_DECLARATION,
+  CHA_AST_NODE_TYPE_FUNCTION_CALL,
+  CHA_AST_NODE_TYPE_FUNCTION_RETURN,
+  CHA_AST_NODE_TYPE_IF,
+} cha_ast_node_type;
 
-typedef enum ni_ast_operator {
-  NI_AST_OPERATOR_ADD,
-  NI_AST_OPERATOR_SUBTRACT,
-  NI_AST_OPERATOR_MULTIPLY,
-  NI_AST_OPERATOR_EQUALS_EQUALS,
-  NI_AST_OPERATOR_NOT_EQUALS,
-  NI_AST_OPERATOR_GREATER_THAN,
-  NI_AST_OPERATOR_GREATER_THAN_OR_EQUALS,
-  NI_AST_OPERATOR_LESS_THAN,
-  NI_AST_OPERATOR_LESS_THAN_OR_EQUALS,
-  NI_AST_OPERATOR_AND,
-  NI_AST_OPERATOR_OR,
-} ni_ast_operator;
+typedef enum cha_ast_operator {
+  CHA_AST_OPERATOR_ADD,
+  CHA_AST_OPERATOR_SUBTRACT,
+  CHA_AST_OPERATOR_MULTIPLY,
+  CHA_AST_OPERATOR_EQUALS_EQUALS,
+  CHA_AST_OPERATOR_NOT_EQUALS,
+  CHA_AST_OPERATOR_GREATER_THAN,
+  CHA_AST_OPERATOR_GREATER_THAN_OR_EQUALS,
+  CHA_AST_OPERATOR_LESS_THAN,
+  CHA_AST_OPERATOR_LESS_THAN_OR_EQUALS,
+  CHA_AST_OPERATOR_AND,
+  CHA_AST_OPERATOR_OR,
+} cha_ast_operator;
 
-typedef struct ni_ast_node_list ni_ast_node_list;
-typedef struct ni_ast_node ni_ast_node;
-typedef struct ni_ast_node_list_entry ni_ast_node_list_entry;
-typedef struct ni_ast_type ni_ast_type;
+typedef struct cha_ast_node_list cha_ast_node_list;
+typedef struct cha_ast_node cha_ast_node;
+typedef struct cha_ast_node_list_entry cha_ast_node_list_entry;
+typedef struct cha_ast_type cha_ast_type;
 
-struct ni_ast_node {
-  ni_ast_node_type node_type;
-  ni_ast_location location;
-  ni_ast_type *_result_type;
+struct cha_ast_node {
+  cha_ast_node_type node_type;
+  cha_ast_location location;
+  cha_ast_type *_result_type;
   union {
     char *const_value;
     short const_bool;
     struct {
-      ni_ast_operator op;
-      ni_ast_node *left;
-      ni_ast_node *right;
+      cha_ast_operator op;
+      cha_ast_node *left;
+      cha_ast_node *right;
     } bin_op;
     struct {
       char *identifier;
-      ni_ast_node *value;
+      cha_ast_node *value;
     } constant_declaration;
     struct {
       char *identifier;
-      ni_ast_type *type;
-      ni_ast_node *value;
+      cha_ast_type *type;
+      cha_ast_node *value;
     } variable_declaration;
     struct {
       char *identifier;
-      ni_ast_node *value;
+      cha_ast_node *value;
     } variable_assignment;
     struct {
       char *identifier;
     } variable_lookup;
     struct {
       char *identifier;
-      ni_ast_type *type;
+      cha_ast_type *type;
     } argument;
-    ni_ast_node_list *block;
+    cha_ast_node_list *block;
     struct {
       char *identifier;
-      ni_ast_type *return_type;
-      ni_ast_node_list *argument_list;
-      ni_ast_node_list *block;
+      cha_ast_type *return_type;
+      cha_ast_node_list *argument_list;
+      cha_ast_node_list *block;
     } function_declaration;
     struct {
       char *identifier;
-      ni_ast_node_list *argument_list;
+      cha_ast_node_list *argument_list;
     } function_call;
     struct {
-      ni_ast_node *value;
+      cha_ast_node *value;
     } function_return;
     struct {
-      ni_ast_node *condition;
-      ni_ast_node_list *block;
-      ni_ast_node_list *else_block;
+      cha_ast_node *condition;
+      cha_ast_node_list *block;
+      cha_ast_node_list *else_block;
     } if_block;
   };
 };
 
-struct ni_ast_node_list_entry {
-  ni_ast_node *node;
-  ni_ast_node_list_entry *next;
+struct cha_ast_node_list_entry {
+  cha_ast_node *node;
+  cha_ast_node_list_entry *next;
 };
 
-struct ni_ast_node_list {
+struct cha_ast_node_list {
   unsigned int count;
-  ni_ast_node_list_entry *head;
-  ni_ast_node_list_entry *tail;
+  cha_ast_node_list_entry *head;
+  cha_ast_node_list_entry *tail;
 };
 
-struct ni_ast_type {
-  ni_ast_internal_type internal_type;
-  ni_ast_location location;
+struct cha_ast_type {
+  cha_ast_internal_type internal_type;
+  cha_ast_location location;
 };
 
-ni_ast_node *make_ni_ast_node_constant_integer(ni_ast_location loc,
+cha_ast_node *make_cha_ast_node_constant_integer(cha_ast_location loc,
+                                                 const char *value);
+cha_ast_node *make_cha_ast_node_constant_unsigned_integer(cha_ast_location loc,
+                                                          const char *value);
+cha_ast_node *make_cha_ast_node_constant_float(cha_ast_location loc,
                                                const char *value);
-ni_ast_node *make_ni_ast_node_constant_unsigned_integer(ni_ast_location loc,
-                                                        const char *value);
-ni_ast_node *make_ni_ast_node_constant_float(ni_ast_location loc,
-                                             const char *value);
-ni_ast_node *make_ni_ast_node_constant_true(ni_ast_location loc);
-ni_ast_node *make_ni_ast_node_constant_false(ni_ast_location loc);
-ni_ast_type *make_ni_ast_type(ni_ast_location loc,
-                              ni_ast_internal_type internal_type);
-ni_ast_type *make_ni_ast_type_int(ni_ast_location loc);
-ni_ast_type *make_ni_ast_type_uint(ni_ast_location loc);
-ni_ast_type *make_ni_ast_type_int8(ni_ast_location loc);
-ni_ast_type *make_ni_ast_type_uint8(ni_ast_location loc);
-ni_ast_type *make_ni_ast_type_int16(ni_ast_location loc);
-ni_ast_type *make_ni_ast_type_uint16(ni_ast_location loc);
-ni_ast_type *make_ni_ast_type_int32(ni_ast_location loc);
-ni_ast_type *make_ni_ast_type_uint32(ni_ast_location loc);
-ni_ast_type *make_ni_ast_type_int64(ni_ast_location loc);
-ni_ast_type *make_ni_ast_type_uint64(ni_ast_location loc);
-ni_ast_type *make_ni_ast_type_int128(ni_ast_location loc);
-ni_ast_type *make_ni_ast_type_uint128(ni_ast_location loc);
-ni_ast_type *make_ni_ast_type_float16(ni_ast_location loc);
-ni_ast_type *make_ni_ast_type_float32(ni_ast_location loc);
-ni_ast_type *make_ni_ast_type_float64(ni_ast_location loc);
-ni_ast_type *make_ni_ast_type_bool(ni_ast_location loc);
-ni_ast_node *make_ni_ast_node_bin_op(ni_ast_location loc, ni_ast_operator op,
-                                     ni_ast_node *left, ni_ast_node *right);
-ni_ast_node *make_ni_ast_node_variable_declaration(ni_ast_location loc,
-                                                   const char *identifier,
-                                                   ni_ast_type *type,
-                                                   ni_ast_node *value);
-ni_ast_node *make_ni_ast_node_variable_assignment(ni_ast_location loc,
-                                                  const char *identifier,
-                                                  ni_ast_node *value);
-ni_ast_node *make_ni_ast_node_variable_lookup(ni_ast_location loc,
-                                              const char *identifier);
-ni_ast_node *make_ni_ast_node_argument(ni_ast_location loc,
-                                       const char *identifier,
-                                       ni_ast_type *type);
-ni_ast_node *make_ni_ast_node_block(ni_ast_location loc,
-                                    ni_ast_node_list *block);
-ni_ast_node *make_ni_ast_node_function_declaration(
-    ni_ast_location loc, const char *identifier, ni_ast_type *return_type,
-    ni_ast_node_list *argument_list, ni_ast_node_list *block);
-ni_ast_node *make_ni_ast_node_constant_declaration(ni_ast_location loc,
-                                                   const char *identifier,
-                                                   ni_ast_node *value);
-ni_ast_node *make_ni_ast_node_function_call(ni_ast_location loc,
-                                            const char *identifier,
-                                            ni_ast_node_list *argument_list);
-ni_ast_node *make_ni_ast_node_function_return(ni_ast_location loc,
-                                              ni_ast_node *value);
-ni_ast_node *make_ni_ast_node_if(ni_ast_location loc, ni_ast_node *condition,
-                                 ni_ast_node_list *block,
-                                 ni_ast_node_list *else_block);
-ni_ast_node_list *make_ni_ast_node_list(ni_ast_node *head);
-void ni_ast_node_list_append(ni_ast_node_list *list, ni_ast_node *next);
+cha_ast_node *make_cha_ast_node_constant_true(cha_ast_location loc);
+cha_ast_node *make_cha_ast_node_constant_false(cha_ast_location loc);
+cha_ast_type *make_cha_ast_type(cha_ast_location loc,
+                                cha_ast_internal_type internal_type);
+cha_ast_type *make_cha_ast_type_int(cha_ast_location loc);
+cha_ast_type *make_cha_ast_type_uint(cha_ast_location loc);
+cha_ast_type *make_cha_ast_type_int8(cha_ast_location loc);
+cha_ast_type *make_cha_ast_type_uint8(cha_ast_location loc);
+cha_ast_type *make_cha_ast_type_int16(cha_ast_location loc);
+cha_ast_type *make_cha_ast_type_uint16(cha_ast_location loc);
+cha_ast_type *make_cha_ast_type_int32(cha_ast_location loc);
+cha_ast_type *make_cha_ast_type_uint32(cha_ast_location loc);
+cha_ast_type *make_cha_ast_type_int64(cha_ast_location loc);
+cha_ast_type *make_cha_ast_type_uint64(cha_ast_location loc);
+cha_ast_type *make_cha_ast_type_int128(cha_ast_location loc);
+cha_ast_type *make_cha_ast_type_uint128(cha_ast_location loc);
+cha_ast_type *make_cha_ast_type_float16(cha_ast_location loc);
+cha_ast_type *make_cha_ast_type_float32(cha_ast_location loc);
+cha_ast_type *make_cha_ast_type_float64(cha_ast_location loc);
+cha_ast_type *make_cha_ast_type_bool(cha_ast_location loc);
+cha_ast_node *make_cha_ast_node_bin_op(cha_ast_location loc,
+                                       cha_ast_operator op, cha_ast_node *left,
+                                       cha_ast_node *right);
+cha_ast_node *make_cha_ast_node_variable_declaration(cha_ast_location loc,
+                                                     const char *identifier,
+                                                     cha_ast_type *type,
+                                                     cha_ast_node *value);
+cha_ast_node *make_cha_ast_node_variable_assignment(cha_ast_location loc,
+                                                    const char *identifier,
+                                                    cha_ast_node *value);
+cha_ast_node *make_cha_ast_node_variable_lookup(cha_ast_location loc,
+                                                const char *identifier);
+cha_ast_node *make_cha_ast_node_argument(cha_ast_location loc,
+                                         const char *identifier,
+                                         cha_ast_type *type);
+cha_ast_node *make_cha_ast_node_block(cha_ast_location loc,
+                                      cha_ast_node_list *block);
+cha_ast_node *make_cha_ast_node_function_declaration(
+    cha_ast_location loc, const char *identifier, cha_ast_type *return_type,
+    cha_ast_node_list *argument_list, cha_ast_node_list *block);
+cha_ast_node *make_cha_ast_node_constant_declaration(cha_ast_location loc,
+                                                     const char *identifier,
+                                                     cha_ast_node *value);
+cha_ast_node *make_cha_ast_node_function_call(cha_ast_location loc,
+                                              const char *identifier,
+                                              cha_ast_node_list *argument_list);
+cha_ast_node *make_cha_ast_node_function_return(cha_ast_location loc,
+                                                cha_ast_node *value);
+cha_ast_node *make_cha_ast_node_if(cha_ast_location loc,
+                                   cha_ast_node *condition,
+                                   cha_ast_node_list *block,
+                                   cha_ast_node_list *else_block);
+cha_ast_node_list *make_cha_ast_node_list(cha_ast_node *head);
+void cha_ast_node_list_append(cha_ast_node_list *list, cha_ast_node *next);
 
-void free_ni_ast_node(ni_ast_node *node);
-void free_ni_ast_node_list(ni_ast_node_list *list);
+void free_cha_ast_node(cha_ast_node *node);
+void free_cha_ast_node_list(cha_ast_node_list *list);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif // __NI_AST_H__
+#endif // __CHA_AST_H__
