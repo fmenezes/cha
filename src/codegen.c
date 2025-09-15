@@ -184,6 +184,15 @@ int cha_ast_codegen_node_bin_op(cha_ast_node *ast_node) {
           LLVMBuildMul(builder, left_operand, right_operand, "mul");
     }
     break;
+  case CHA_AST_OPERATOR_DIVIDE:
+    if (float_type(ast_node->bin_op.left->_result_type) == 0) {
+      return_operand =
+          LLVMBuildFDiv(builder, left_operand, right_operand, "div");
+    } else {
+      return_operand =
+          LLVMBuildUDiv(builder, left_operand, right_operand, "div");
+    }
+    break;
   case CHA_AST_OPERATOR_EQUALS_EQUALS:
     if (float_type(ast_node->bin_op.left->_result_type) == 0) {
       return_operand = LLVMBuildFCmp(builder, LLVMRealOEQ, left_operand,
