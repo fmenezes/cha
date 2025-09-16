@@ -31,7 +31,7 @@ cha_ast_location convert_location(YYLTYPE start, YYLTYPE end);
   cha_ast_node_list* list;
 }
 
-%token KEYWORD_FUN OPEN_PAR CLOSE_PAR OPEN_CUR CLOSE_CUR COMMA KEYWORD_VAR EQUALS KEYWORD_RET ADD SUBTRACT MULTIPLY DIVIDE REFTYPE_INT8 REFTYPE_UINT8 REFTYPE_INT16 REFTYPE_UINT16 REFTYPE_INT32 REFTYPE_UINT32 REFTYPE_INT64 REFTYPE_UINT64 REFTYPE_INT128 REFTYPE_UINT128 REFTYPE_INT REFTYPE_UINT REFTYPE_FLOAT16 REFTYPE_FLOAT32 REFTYPE_FLOAT64 REFTYPE_BOOL BOOL_TRUE BOOL_FALSE EQUALS_EQUALS NOT_EQUALS GREATER_THAN GREATER_THAN_OR_EQUALS LESS_THAN LESS_THAN_OR_EQUALS AND OR KEYWORD_CONST KEYWORD_IF KEYWORD_ELSE
+%token KEYWORD_FUN OPEN_PAR CLOSE_PAR OPEN_CUR CLOSE_CUR COMMA KEYWORD_VAR EQUALS KEYWORD_RET ADD SUBTRACT MULTIPLY DIVIDE REFTYPE_INT8 REFTYPE_UINT8 REFTYPE_INT16 REFTYPE_UINT16 REFTYPE_INT32 REFTYPE_UINT32 REFTYPE_INT64 REFTYPE_UINT64 REFTYPE_INT REFTYPE_UINT REFTYPE_FLOAT16 REFTYPE_FLOAT32 REFTYPE_FLOAT64 REFTYPE_BOOL BOOL_TRUE BOOL_FALSE EQUALS_EQUALS NOT_EQUALS GREATER_THAN GREATER_THAN_OR_EQUALS LESS_THAN LESS_THAN_OR_EQUALS AND OR KEYWORD_CONST KEYWORD_IF KEYWORD_ELSE
 %token <str> IDENTIFIER INTEGER UINTEGER FLOAT
 
 %nterm <list> top_level block def_args call_args statements
@@ -136,8 +136,6 @@ reftype :
 	| REFTYPE_UINT32																{ $$ = make_cha_ast_type_uint32(convert_location(@1, @1)); }
 	| REFTYPE_INT64																	{ $$ = make_cha_ast_type_int64(convert_location(@1, @1)); }
 	| REFTYPE_UINT64																{ $$ = make_cha_ast_type_uint64(convert_location(@1, @1)); }
-	| REFTYPE_INT128																{ $$ = make_cha_ast_type_int128(convert_location(@1, @1)); }
-	| REFTYPE_UINT128																{ $$ = make_cha_ast_type_uint128(convert_location(@1, @1)); }
 	| REFTYPE_FLOAT16																{ $$ = make_cha_ast_type_float16(convert_location(@1, @1)); }
 	| REFTYPE_FLOAT32																{ $$ = make_cha_ast_type_float32(convert_location(@1, @1)); }
 	| REFTYPE_FLOAT64																{ $$ = make_cha_ast_type_float64(convert_location(@1, @1)); }
@@ -147,7 +145,19 @@ reftype :
 const_value :
 	INTEGER																			{ $$ = make_cha_ast_node_constant_integer(convert_location(@1, @1), $1); }
 	| UINTEGER																		{ $$ = make_cha_ast_node_constant_unsigned_integer(convert_location(@1, @1), $1); }
+<<<<<<< HEAD
 	| FLOAT																			{ $$ = make_cha_ast_node_constant_float(convert_location(@1, @1), $1); }
+=======
+	| FLOAT																			{ 
+																						char *endptr;
+																						double value = strtod($1, &endptr);
+																						if (*endptr != '\0' || endptr == $1) {
+																							yyerror("Invalid floating-point number");
+																							YYERROR;
+																						}
+																						$$ = make_cha_ast_node_constant_float(convert_location(@1, @1), value);
+																					}
+>>>>>>> 4fcd1f8 (remove int128 type)
 	| BOOL_TRUE																		{ $$ = make_cha_ast_node_constant_true(convert_location(@1, @1)); }
 	| BOOL_FALSE																	{ $$ = make_cha_ast_node_constant_false(convert_location(@1, @1)); }
 	;

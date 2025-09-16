@@ -23,14 +23,12 @@ typedef enum cha_ast_internal_type {
   CHA_AST_INTERNAL_TYPE_INT16,
   CHA_AST_INTERNAL_TYPE_INT32,
   CHA_AST_INTERNAL_TYPE_INT64,
-  CHA_AST_INTERNAL_TYPE_INT128,
   CHA_AST_INTERNAL_TYPE_CONST_UINT,
   CHA_AST_INTERNAL_TYPE_UINT,
   CHA_AST_INTERNAL_TYPE_UINT8,
   CHA_AST_INTERNAL_TYPE_UINT16,
   CHA_AST_INTERNAL_TYPE_UINT32,
   CHA_AST_INTERNAL_TYPE_UINT64,
-  CHA_AST_INTERNAL_TYPE_UINT128,
   CHA_AST_INTERNAL_TYPE_CONST_FLOAT,
   CHA_AST_INTERNAL_TYPE_FLOAT16,
   CHA_AST_INTERNAL_TYPE_FLOAT32,
@@ -166,8 +164,6 @@ cha_ast_type *make_cha_ast_type_int32(cha_ast_location loc);
 cha_ast_type *make_cha_ast_type_uint32(cha_ast_location loc);
 cha_ast_type *make_cha_ast_type_int64(cha_ast_location loc);
 cha_ast_type *make_cha_ast_type_uint64(cha_ast_location loc);
-cha_ast_type *make_cha_ast_type_int128(cha_ast_location loc);
-cha_ast_type *make_cha_ast_type_uint128(cha_ast_location loc);
 cha_ast_type *make_cha_ast_type_float16(cha_ast_location loc);
 cha_ast_type *make_cha_ast_type_float32(cha_ast_location loc);
 cha_ast_type *make_cha_ast_type_float64(cha_ast_location loc);
