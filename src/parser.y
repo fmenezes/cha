@@ -145,7 +145,7 @@ reftype :
 const_value :
 	INTEGER																			{ $$ = make_cha_ast_node_constant_integer(convert_location(@1, @1), $1); }
 	| UINTEGER																		{ $$ = make_cha_ast_node_constant_unsigned_integer(convert_location(@1, @1), $1); }
-	| FLOAT																			{ $$ = make_cha_ast_node_constant_float(convert_location(@1, @1), $1); }
+	| FLOAT																			{ $$ = make_cha_ast_node_constant_float(convert_location(@1, @1), atof($1)); }
 	| BOOL_TRUE																		{ $$ = make_cha_ast_node_constant_true(convert_location(@1, @1)); }
 	| BOOL_FALSE																	{ $$ = make_cha_ast_node_constant_false(convert_location(@1, @1)); }
 	;

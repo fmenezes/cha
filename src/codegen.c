@@ -130,7 +130,7 @@ int cha_ast_codegen_node_constant_number(cha_ast_node *ast_node) {
 int cha_ast_codegen_node_constant_float(cha_ast_node *ast_node) {
   LLVMTypeRef t = make_type(ast_node->_result_type);
 
-  return_operand = LLVMConstRealOfString(t, ast_node->const_value);
+  return_operand = LLVMConstReal(t, ast_node->const_float);
   return 0;
 }
 
