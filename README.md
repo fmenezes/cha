@@ -1,4 +1,6 @@
 [![build](https://github.com/fmenezes/cha/actions/workflows/build.yml/badge.svg)](https://github.com/fmenezes/cha/actions/workflows/build.yml)
+[![coverage](https://github.com/fmenezes/cha/actions/workflows/coverage.yml/badge.svg)](https://github.com/fmenezes/cha/actions/workflows/coverage.yml)
+[![Coverage Status](https://coveralls.io/repos/github/fmenezes/cha/badge.svg?branch=main)](https://coveralls.io/github/fmenezes/cha?branch=main)
 
 # cha
 
