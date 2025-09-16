@@ -184,8 +184,7 @@ cha_ast_node *make_cha_ast_node_variable_assignment(cha_ast_location loc,
                                                     cha_ast_node *value);
 cha_ast_node *make_cha_ast_node_variable_lookup(cha_ast_location loc,
                                                 char *identifier);
-cha_ast_node *make_cha_ast_node_argument(cha_ast_location loc,
-                                         char *identifier,
+cha_ast_node *make_cha_ast_node_argument(cha_ast_location loc, char *identifier,
                                          cha_ast_type *type);
 cha_ast_node *make_cha_ast_node_block(cha_ast_location loc,
                                       cha_ast_node_list *block);

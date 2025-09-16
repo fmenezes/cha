@@ -216,8 +216,7 @@ cha_ast_node *make_cha_ast_node_variable_lookup(cha_ast_location loc,
   return node;
 }
 
-cha_ast_node *make_cha_ast_node_argument(cha_ast_location loc,
-                                         char *identifier,
+cha_ast_node *make_cha_ast_node_argument(cha_ast_location loc, char *identifier,
                                          cha_ast_type *type) {
   cha_ast_node *node = malloc(sizeof(cha_ast_node));
   node->node_type = CHA_AST_NODE_TYPE_ARGUMENT;
