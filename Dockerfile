@@ -1,7 +1,7 @@
 FROM ubuntu as builder
 ENV DEBIAN_FRONTEND=noninteractive
 ENV TZ=Etc/UTC
-RUN apt-get update && apt-get install lsb-release wget software-properties-common gnupg build-essential flex wget bison cmake zlib1g-dev -y && wget https://apt.llvm.org/llvm.sh && chmod +x llvm.sh && ./llvm.sh 15 all && rm llvm.sh && apt-get install -y bolt-15
+RUN apt-get update && apt-get install lsb-release wget software-properties-common gnupg build-essential flex wget bison cmake zlib1g-dev libzstd-dev -y && wget https://apt.llvm.org/llvm.sh && chmod +x llvm.sh && ./llvm.sh 21 all && rm llvm.sh
 WORKDIR /app
 COPY CMakeLists.txt /app/
 COPY src src
@@ -14,4 +14,5 @@ RUN cd /app/build && ctest --output-on-failure
 FROM ubuntu
 RUN apt-get update && apt-get install build-essential -y
 COPY --from=builder /app/build/cha /usr/local/bin/cha
-CMD [ "/usr/local/bin/cha", "--version" ]
+ENTRYPOINT [ "/usr/local/bin/cha" ]
+CMD [ "--version" ]
