@@ -76,14 +76,6 @@ identifier [_a-zA-Z][_a-zA-Z0-9]{0,31}
 	return REFTYPE_UINT64;
 }
 
-"int128" {
-	return REFTYPE_INT128;
-}
-
-"uint128" {
-	return REFTYPE_UINT128;
-}
-
 "float16" {
 	return REFTYPE_FLOAT16;
 }

@@ -600,7 +600,6 @@ int signed_type(const cha_ast_type *ast_type) {
   case CHA_AST_INTERNAL_TYPE_UINT16:
   case CHA_AST_INTERNAL_TYPE_UINT32:
   case CHA_AST_INTERNAL_TYPE_UINT64:
-  case CHA_AST_INTERNAL_TYPE_UINT128:
     return 1;
   default:
     return 0;
@@ -696,9 +695,6 @@ LLVMTypeRef make_type(cha_ast_type *ast_type) {
   case CHA_AST_INTERNAL_TYPE_INT64:
   case CHA_AST_INTERNAL_TYPE_UINT64:
     return LLVMInt64TypeInContext(context);
-  case CHA_AST_INTERNAL_TYPE_INT128:
-  case CHA_AST_INTERNAL_TYPE_UINT128:
-    return LLVMInt128TypeInContext(context);
   case CHA_AST_INTERNAL_TYPE_FLOAT16:
     return LLVMHalfTypeInContext(context);
   case CHA_AST_INTERNAL_TYPE_CONST_FLOAT:

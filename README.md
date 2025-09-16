@@ -54,8 +54,8 @@ cha -o output examples/test.cha
 
 | Types | Values |
 | --- | --- |
-| int, int8, int16, int32, int64, int128 | 1, 10000, -14, 0x2A
-| uint, uint8, uint16, uint32, uint64, uint128 | 0, 1, 10000, 0x2A
+| int, int8, int16, int32, int64 | 1, 10000, -14, 0x2A
+| uint, uint8, uint16, uint32, uint64 | 0, 1, 10000, 0x2A
 | float16, float32, float64 | 0.34, 1234.55, -23.67 |
 | bool | true, false |
 
