@@ -53,3 +53,16 @@ jobs:
         run: |
           cd build
           ctest --output-on-failure
+  docker:
+    name: docker
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Build Docker Image
+        run: |
+          docker build -t cha .
+      - name: Test Docker Image
+        run: |
+          docker run --rm cha
