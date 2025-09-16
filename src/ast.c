@@ -27,13 +27,13 @@ cha_ast_node *make_cha_ast_node_constant_unsigned_integer(cha_ast_location loc,
 }
 
 cha_ast_node *make_cha_ast_node_constant_float(cha_ast_location loc,
-                                               char *value) {
+                                               double value) {
   cha_ast_node *node = malloc(sizeof(cha_ast_node));
   node->node_type = CHA_AST_NODE_TYPE_CONSTANT_FLOAT;
   node->location = loc;
   node->_result_type =
       make_cha_ast_type(loc, CHA_AST_INTERNAL_TYPE_CONST_FLOAT);
-  node->const_value = value;
+  node->const_float = value;
   return node;
 }
 
@@ -310,7 +310,6 @@ void free_cha_ast_node(cha_ast_node *node) {
   switch (node->node_type) {
   case CHA_AST_NODE_TYPE_CONSTANT_INT:
   case CHA_AST_NODE_TYPE_CONSTANT_UINT:
-  case CHA_AST_NODE_TYPE_CONSTANT_FLOAT:
     free(node->const_value);
     break;
   case CHA_AST_NODE_TYPE_BIN_OP:
@@ -353,6 +352,7 @@ void free_cha_ast_node(cha_ast_node *node) {
     free_cha_ast_node(node->function_return.value);
     break;
   case CHA_AST_NODE_TYPE_CONSTANT_BOOL:
+  case CHA_AST_NODE_TYPE_CONSTANT_FLOAT:
     // nothing to free
     break;
   }

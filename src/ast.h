@@ -82,6 +82,7 @@ struct cha_ast_node {
   cha_ast_type *_result_type;
   union {
     char *const_value;
+    double const_float;
     short const_bool;
     struct {
       cha_ast_operator op;
@@ -151,7 +152,7 @@ cha_ast_node *make_cha_ast_node_constant_integer(cha_ast_location loc,
 cha_ast_node *make_cha_ast_node_constant_unsigned_integer(cha_ast_location loc,
                                                           char *value);
 cha_ast_node *make_cha_ast_node_constant_float(cha_ast_location loc,
-                                               char *value);
+                                               double value);
 cha_ast_node *make_cha_ast_node_constant_true(cha_ast_location loc);
 cha_ast_node *make_cha_ast_node_constant_false(cha_ast_location loc);
 cha_ast_type *make_cha_ast_type(cha_ast_location loc,
