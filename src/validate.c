@@ -32,115 +32,133 @@ cha_ast_node *fun = NULL;
 
 // Type classification and conversion helpers
 static inline bool is_signed_int(cha_ast_internal_type type) {
-    return type >= CHA_AST_INTERNAL_TYPE_CONST_INT && 
-           type <= CHA_AST_INTERNAL_TYPE_INT64;
+  return type >= CHA_AST_INTERNAL_TYPE_CONST_INT &&
+         type <= CHA_AST_INTERNAL_TYPE_INT64;
 }
 
 static inline bool is_unsigned_int(cha_ast_internal_type type) {
-    return type >= CHA_AST_INTERNAL_TYPE_CONST_UINT && 
-           type <= CHA_AST_INTERNAL_TYPE_UINT64;
+  return type >= CHA_AST_INTERNAL_TYPE_CONST_UINT &&
+         type <= CHA_AST_INTERNAL_TYPE_UINT64;
 }
 
 static bool is_float(cha_ast_internal_type type) {
-    return (type == CHA_AST_INTERNAL_TYPE_FLOAT16 ||
-            type == CHA_AST_INTERNAL_TYPE_FLOAT32 ||
-            type == CHA_AST_INTERNAL_TYPE_FLOAT64 ||
-            type == CHA_AST_INTERNAL_TYPE_CONST_FLOAT);
+  return (type == CHA_AST_INTERNAL_TYPE_FLOAT16 ||
+          type == CHA_AST_INTERNAL_TYPE_FLOAT32 ||
+          type == CHA_AST_INTERNAL_TYPE_FLOAT64 ||
+          type == CHA_AST_INTERNAL_TYPE_CONST_FLOAT);
 }
 
 static bool is_numeric(cha_ast_internal_type type) {
-    return is_signed_int(type) || is_unsigned_int(type) || is_float(type);
+  return is_signed_int(type) || is_unsigned_int(type) || is_float(type);
 }
 
-
-
 // Main arithmetic conversion function
-static cha_ast_internal_type cha_convert_arithmetic_types(cha_ast_internal_type left, cha_ast_internal_type right) {
-    if (is_float(left) && is_float(right)) {
-        return (left > right) ? left : right;
-    }
-    
-    if (is_signed_int(left) && is_signed_int(right)) {
-        return (left > right) ? left : right;
-    }
-    
-    if (is_unsigned_int(left) && is_unsigned_int(right)) {
-        return (left > right) ? left : right;
-    }
-    
-    return CHA_AST_INTERNAL_TYPE_UNDEF;  // Default: incompatible types
+static cha_ast_internal_type
+cha_convert_arithmetic_types(cha_ast_internal_type left,
+                             cha_ast_internal_type right) {
+  if (is_float(left) && is_float(right)) {
+    return (left > right) ? left : right;
+  }
+
+  if (is_signed_int(left) && is_signed_int(right)) {
+    return (left > right) ? left : right;
+  }
+
+  if (is_unsigned_int(left) && is_unsigned_int(right)) {
+    return (left > right) ? left : right;
+  }
+
+  return CHA_AST_INTERNAL_TYPE_UNDEF; // Default: incompatible types
 }
 
 // Assignment compatibility check
-static int cha_check_assignment_compatibility(cha_ast_internal_type from, cha_ast_internal_type to) {
-    // Assignment is more permissive than arithmetic operations
-    if (from == CHA_AST_INTERNAL_TYPE_UNDEF || to == CHA_AST_INTERNAL_TYPE_UNDEF) {
-        return 1; // Error
-    }
-    
-    // Same type assignments (except for non-assignable types)
-    if (from == to) {
-        return (from == CHA_AST_INTERNAL_TYPE_CONST_INT || 
-                from == CHA_AST_INTERNAL_TYPE_CONST_UINT || 
-                from == CHA_AST_INTERNAL_TYPE_CONST_FLOAT) ? 1 : 0;
-    }
-    
-    // Constants can be assigned to their corresponding types
-    if (from == CHA_AST_INTERNAL_TYPE_CONST_INT && is_signed_int(to)) return 0;
-    if (from == CHA_AST_INTERNAL_TYPE_CONST_UINT && is_unsigned_int(to)) return 0;
-    if (from == CHA_AST_INTERNAL_TYPE_CONST_FLOAT && is_float(to)) return 0;
-    
-    // Bool assignments are very restrictive
-    if (to == CHA_AST_INTERNAL_TYPE_BOOL) {
-        return (from == CHA_AST_INTERNAL_TYPE_BOOL) ? 0 : 1;
-    }
-    
-    // Check for compatible type ranges
-    if (is_numeric(from) && is_numeric(to)) {
-        // Allow if they're the same category (signed->signed, unsigned->unsigned)
-        if (is_signed_int(from) && is_signed_int(to)) return 0;
-        if (is_unsigned_int(from) && is_unsigned_int(to)) return 0;
-        if (is_float(from) && is_float(to)) return 0;
-        
-        // Otherwise, mixed sign/type assignments are not allowed
-        return 1;
-    }
-    
-    // Otherwise, incompatible types
+static int cha_check_assignment_compatibility(cha_ast_internal_type from,
+                                              cha_ast_internal_type to) {
+  // Assignment is more permissive than arithmetic operations
+  if (from == CHA_AST_INTERNAL_TYPE_UNDEF ||
+      to == CHA_AST_INTERNAL_TYPE_UNDEF) {
+    return 1; // Error
+  }
+
+  // Same type assignments (except for non-assignable types)
+  if (from == to) {
+    return (from == CHA_AST_INTERNAL_TYPE_CONST_INT ||
+            from == CHA_AST_INTERNAL_TYPE_CONST_UINT ||
+            from == CHA_AST_INTERNAL_TYPE_CONST_FLOAT)
+               ? 1
+               : 0;
+  }
+
+  // Constants can be assigned to their corresponding types
+  if (from == CHA_AST_INTERNAL_TYPE_CONST_INT && is_signed_int(to))
+    return 0;
+  if (from == CHA_AST_INTERNAL_TYPE_CONST_UINT && is_unsigned_int(to))
+    return 0;
+  if (from == CHA_AST_INTERNAL_TYPE_CONST_FLOAT && is_float(to))
+    return 0;
+
+  // Bool assignments are very restrictive
+  if (to == CHA_AST_INTERNAL_TYPE_BOOL) {
+    return (from == CHA_AST_INTERNAL_TYPE_BOOL) ? 0 : 1;
+  }
+
+  // Check for compatible type ranges
+  if (is_numeric(from) && is_numeric(to)) {
+    // Allow if they're the same category (signed->signed, unsigned->unsigned)
+    if (is_signed_int(from) && is_signed_int(to))
+      return 0;
+    if (is_unsigned_int(from) && is_unsigned_int(to))
+      return 0;
+    if (is_float(from) && is_float(to))
+      return 0;
+
+    // Otherwise, mixed sign/type assignments are not allowed
     return 1;
+  }
+
+  // Otherwise, incompatible types
+  return 1;
 }
 
 // Numeric comparison compatibility (returns 0 if compatible, 1 if error)
-static int cha_check_numeric_comparison_compatibility(cha_ast_internal_type left, cha_ast_internal_type right) {
-    if (left == CHA_AST_INTERNAL_TYPE_UNDEF || right == CHA_AST_INTERNAL_TYPE_UNDEF) {
-        return 1;
-    }
-    
-    // Same type comparisons
-    if (left == right) {
-        return (left == CHA_AST_INTERNAL_TYPE_CONST_INT || 
-                left == CHA_AST_INTERNAL_TYPE_CONST_UINT || 
-                left == CHA_AST_INTERNAL_TYPE_CONST_FLOAT) ? 1 : 0;
-    }
-    
-    // Numeric types can be compared
-    if ((is_signed_int(left) || is_unsigned_int(left) || is_float(left)) &&
-        (is_signed_int(right) || is_unsigned_int(right) || is_float(right))) {
-        return 0;
-    }
-    
-    // Bool can be compared with bool  
-    if (left == CHA_AST_INTERNAL_TYPE_BOOL && right == CHA_AST_INTERNAL_TYPE_BOOL) {
-        return 0;
-    }
-    
-    return 1; // Incompatible
+static int
+cha_check_numeric_comparison_compatibility(cha_ast_internal_type left,
+                                           cha_ast_internal_type right) {
+  if (left == CHA_AST_INTERNAL_TYPE_UNDEF ||
+      right == CHA_AST_INTERNAL_TYPE_UNDEF) {
+    return 1;
+  }
+
+  // Same type comparisons
+  if (left == right) {
+    return (left == CHA_AST_INTERNAL_TYPE_CONST_INT ||
+            left == CHA_AST_INTERNAL_TYPE_CONST_UINT ||
+            left == CHA_AST_INTERNAL_TYPE_CONST_FLOAT)
+               ? 1
+               : 0;
+  }
+
+  // Numeric types can be compared
+  if ((is_signed_int(left) || is_unsigned_int(left) || is_float(left)) &&
+      (is_signed_int(right) || is_unsigned_int(right) || is_float(right))) {
+    return 0;
+  }
+
+  // Bool can be compared with bool
+  if (left == CHA_AST_INTERNAL_TYPE_BOOL &&
+      right == CHA_AST_INTERNAL_TYPE_BOOL) {
+    return 0;
+  }
+
+  return 1; // Incompatible
 }
 
-// Equality comparison compatibility (returns 0 if compatible, 1 if error)  
-static int cha_check_equality_comparison_compatibility(cha_ast_internal_type left, cha_ast_internal_type right) {
-    // Equality is similar to numeric comparison but slightly more permissive
-    return cha_check_numeric_comparison_compatibility(left, right);
+// Equality comparison compatibility (returns 0 if compatible, 1 if error)
+static int
+cha_check_equality_comparison_compatibility(cha_ast_internal_type left,
+                                            cha_ast_internal_type right) {
+  // Equality is similar to numeric comparison but slightly more permissive
+  return cha_check_numeric_comparison_compatibility(left, right);
 }
 
 // clang-format on
@@ -421,8 +439,10 @@ int cha_validate_node_bin_op(cha_ast_node *ast_node) {
   case CHA_AST_OPERATOR_AND: // &&
   case CHA_AST_OPERATOR_OR:  // ||
     // Boolean operators require both operands to be boolean
-    if (ast_node->bin_op.left->_result_type->internal_type != CHA_AST_INTERNAL_TYPE_BOOL ||
-        ast_node->bin_op.right->_result_type->internal_type != CHA_AST_INTERNAL_TYPE_BOOL) {
+    if (ast_node->bin_op.left->_result_type->internal_type !=
+            CHA_AST_INTERNAL_TYPE_BOOL ||
+        ast_node->bin_op.right->_result_type->internal_type !=
+            CHA_AST_INTERNAL_TYPE_BOOL) {
       ast_node->_result_type =
           make_cha_ast_type(ast_node->location, CHA_AST_INTERNAL_TYPE_UNDEF);
     } else {

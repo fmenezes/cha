@@ -125,8 +125,6 @@ cha_ast_type *make_cha_ast_type_uint64(cha_ast_location loc) {
   return t;
 }
 
-
-
 cha_ast_type *make_cha_ast_type_float16(cha_ast_location loc) {
   cha_ast_type *t = malloc(sizeof(cha_ast_type));
   t->internal_type = CHA_AST_INTERNAL_TYPE_FLOAT16;
