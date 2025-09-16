@@ -39,7 +39,7 @@ cha_ast_location convert_location(YYLTYPE start, YYLTYPE end);
 %nterm <type> reftype
 
 %left ADD SUBTRACT
-%left MULTIPLY
+%left MULTIPLY DIVIDE
 
 %start parse
 
@@ -60,14 +60,14 @@ instruction :
 	;
 
 const_definition :
-	KEYWORD_CONST IDENTIFIER EQUALS const_value										{ $$ = make_cha_ast_node_constant_declaration(convert_location(@1, @4), $2, $4); free($2); }
+	KEYWORD_CONST IDENTIFIER EQUALS const_value										{ $$ = make_cha_ast_node_constant_declaration(convert_location(@1, @4), $2, $4); }
 	;
 
 function :
-	KEYWORD_FUN IDENTIFIER OPEN_PAR CLOSE_PAR block									{ $$ = make_cha_ast_node_function_declaration(convert_location(@1, @5), $2, NULL, NULL, $5); free($2); }
-	| KEYWORD_FUN IDENTIFIER OPEN_PAR def_args CLOSE_PAR block						{ $$ = make_cha_ast_node_function_declaration(convert_location(@1, @6), $2, NULL, $4, $6); free($2); }
-	| KEYWORD_FUN IDENTIFIER OPEN_PAR CLOSE_PAR reftype block						{ $$ = make_cha_ast_node_function_declaration(convert_location(@1, @6), $2, $5, NULL, $6); free($2); }
-	| KEYWORD_FUN IDENTIFIER OPEN_PAR def_args CLOSE_PAR reftype block				{ $$ = make_cha_ast_node_function_declaration(convert_location(@1, @7), $2, $6, $4, $7); free($2); }
+	KEYWORD_FUN IDENTIFIER OPEN_PAR CLOSE_PAR block									{ $$ = make_cha_ast_node_function_declaration(convert_location(@1, @5), $2, NULL, NULL, $5); }
+	| KEYWORD_FUN IDENTIFIER OPEN_PAR def_args CLOSE_PAR block						{ $$ = make_cha_ast_node_function_declaration(convert_location(@1, @6), $2, NULL, $4, $6); }
+	| KEYWORD_FUN IDENTIFIER OPEN_PAR CLOSE_PAR reftype block						{ $$ = make_cha_ast_node_function_declaration(convert_location(@1, @6), $2, $5, NULL, $6); }
+	| KEYWORD_FUN IDENTIFIER OPEN_PAR def_args CLOSE_PAR reftype block				{ $$ = make_cha_ast_node_function_declaration(convert_location(@1, @7), $2, $6, $4, $7); }
 	;
 
 block :
@@ -76,7 +76,7 @@ block :
 	;
 
 arg :
-	IDENTIFIER reftype																{ $$ = make_cha_ast_node_argument(convert_location(@1, @2), $1, $2); free($1); }
+	IDENTIFIER reftype																{ $$ = make_cha_ast_node_argument(convert_location(@1, @2), $1, $2); }
 	;
 
 def_args :
@@ -95,9 +95,9 @@ statements :
 	;
 
 statement :
-	KEYWORD_VAR IDENTIFIER reftype													{ $$ = make_cha_ast_node_variable_declaration(convert_location(@1, @3), $2, $3, NULL); free($2); }
-	| KEYWORD_VAR IDENTIFIER reftype EQUALS expr									{ $$ = make_cha_ast_node_variable_declaration(convert_location(@1, @5), $2, $3, $5); free($2); }
-	| IDENTIFIER EQUALS expr														{ $$ = make_cha_ast_node_variable_assignment(convert_location(@1, @3), $1, $3); free($1); }
+	KEYWORD_VAR IDENTIFIER reftype													{ $$ = make_cha_ast_node_variable_declaration(convert_location(@1, @3), $2, $3, NULL); }
+	| KEYWORD_VAR IDENTIFIER reftype EQUALS expr									{ $$ = make_cha_ast_node_variable_declaration(convert_location(@1, @5), $2, $3, $5); }
+	| IDENTIFIER EQUALS expr														{ $$ = make_cha_ast_node_variable_assignment(convert_location(@1, @3), $1, $3); }
 	| expr																			{ $$ = $1; }
 	| KEYWORD_RET expr																{ $$ = make_cha_ast_node_function_return(convert_location(@1, @2), $2); }
 	| KEYWORD_RET 																	{ $$ = make_cha_ast_node_function_return(convert_location(@1, @1), NULL); }
@@ -107,9 +107,9 @@ statement :
 
 expr :
 	const_value																		{ $$ = $1; }
-	| IDENTIFIER																	{ $$ = make_cha_ast_node_variable_lookup(convert_location(@1, @1), $1); free($1); }
-	| IDENTIFIER OPEN_PAR CLOSE_PAR													{ $$ = make_cha_ast_node_function_call(convert_location(@1, @3), $1, NULL); free($1); }
-	| IDENTIFIER OPEN_PAR call_args CLOSE_PAR										{ $$ = make_cha_ast_node_function_call(convert_location(@1, @4), $1, $3); free($1); }
+	| IDENTIFIER																	{ $$ = make_cha_ast_node_variable_lookup(convert_location(@1, @1), $1); }
+	| IDENTIFIER OPEN_PAR CLOSE_PAR													{ $$ = make_cha_ast_node_function_call(convert_location(@1, @3), $1, NULL); }
+	| IDENTIFIER OPEN_PAR call_args CLOSE_PAR										{ $$ = make_cha_ast_node_function_call(convert_location(@1, @4), $1, $3); }
 	| expr ADD expr																	{ $$ = make_cha_ast_node_bin_op(convert_location(@1, @3), CHA_AST_OPERATOR_ADD, $1, $3); }
 	| expr SUBTRACT expr															{ $$ = make_cha_ast_node_bin_op(convert_location(@1, @3), CHA_AST_OPERATOR_SUBTRACT, $1, $3); }
 	| expr MULTIPLY expr															{ $$ = make_cha_ast_node_bin_op(convert_location(@1, @3), CHA_AST_OPERATOR_MULTIPLY, $1, $3); }
@@ -145,9 +145,9 @@ reftype :
 	;
 
 const_value :
-	INTEGER																			{ $$ = make_cha_ast_node_constant_integer(convert_location(@1, @1), $1); free($1); }
-	| UINTEGER																		{ $$ = make_cha_ast_node_constant_unsigned_integer(convert_location(@1, @1), $1); free($1); }
-	| FLOAT																			{ $$ = make_cha_ast_node_constant_float(convert_location(@1, @1), $1); free($1); }
+	INTEGER																			{ $$ = make_cha_ast_node_constant_integer(convert_location(@1, @1), $1); }
+	| UINTEGER																		{ $$ = make_cha_ast_node_constant_unsigned_integer(convert_location(@1, @1), $1); }
+	| FLOAT																			{ $$ = make_cha_ast_node_constant_float(convert_location(@1, @1), $1); }
 	| BOOL_TRUE																		{ $$ = make_cha_ast_node_constant_true(convert_location(@1, @1)); }
 	| BOOL_FALSE																	{ $$ = make_cha_ast_node_constant_false(convert_location(@1, @1)); }
 	;
