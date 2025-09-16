@@ -23,7 +23,7 @@ int cha_validate_node_if(cha_ast_node *ast_node);
 int cha_check_type_assignment(cha_ast_node *ast_node,
                               const cha_ast_type *ast_type);
 void cha_set_type_on_const(cha_ast_node *ast_node,
-                           cha_ast_internal_type internal_type);
+                           cha_ast_primitive_type primitive_type);
 void cha_validate_create_stack_frame();
 void cha_validate_release_stack_frame();
 
@@ -31,31 +31,31 @@ symbol_table *validate_symbol_table = NULL;
 cha_ast_node *fun = NULL;
 
 // Type classification and conversion helpers
-static inline bool is_signed_int(cha_ast_internal_type type) {
-  return type >= CHA_AST_INTERNAL_TYPE_CONST_INT &&
-         type <= CHA_AST_INTERNAL_TYPE_INT64;
+static inline bool is_signed_int(cha_ast_primitive_type type) {
+  return type >= CHA_AST_PRIMITIVE_TYPE_CONST_INT &&
+         type <= CHA_AST_PRIMITIVE_TYPE_INT64;
 }
 
-static inline bool is_unsigned_int(cha_ast_internal_type type) {
-  return type >= CHA_AST_INTERNAL_TYPE_CONST_UINT &&
-         type <= CHA_AST_INTERNAL_TYPE_UINT64;
+static inline bool is_unsigned_int(cha_ast_primitive_type type) {
+  return type >= CHA_AST_PRIMITIVE_TYPE_CONST_UINT &&
+         type <= CHA_AST_PRIMITIVE_TYPE_UINT64;
 }
 
-static bool is_float(cha_ast_internal_type type) {
-  return (type == CHA_AST_INTERNAL_TYPE_FLOAT16 ||
-          type == CHA_AST_INTERNAL_TYPE_FLOAT32 ||
-          type == CHA_AST_INTERNAL_TYPE_FLOAT64 ||
-          type == CHA_AST_INTERNAL_TYPE_CONST_FLOAT);
+static bool is_float(cha_ast_primitive_type type) {
+  return (type == CHA_AST_PRIMITIVE_TYPE_FLOAT16 ||
+          type == CHA_AST_PRIMITIVE_TYPE_FLOAT32 ||
+          type == CHA_AST_PRIMITIVE_TYPE_FLOAT64 ||
+          type == CHA_AST_PRIMITIVE_TYPE_CONST_FLOAT);
 }
 
-static bool is_numeric(cha_ast_internal_type type) {
+static bool is_numeric(cha_ast_primitive_type type) {
   return is_signed_int(type) || is_unsigned_int(type) || is_float(type);
 }
 
 // Main arithmetic conversion function
-static cha_ast_internal_type
-cha_convert_arithmetic_types(cha_ast_internal_type left,
-                             cha_ast_internal_type right) {
+static cha_ast_primitive_type
+cha_convert_arithmetic_types(cha_ast_primitive_type left,
+                             cha_ast_primitive_type right) {
   if (is_float(left) && is_float(right)) {
     return (left > right) ? left : right;
   }
@@ -68,38 +68,38 @@ cha_convert_arithmetic_types(cha_ast_internal_type left,
     return (left > right) ? left : right;
   }
 
-  return CHA_AST_INTERNAL_TYPE_UNDEF; // Default: incompatible types
+  return CHA_AST_PRIMITIVE_TYPE_UNDEF; // Default: incompatible types
 }
 
 // Assignment compatibility check
-static int cha_check_assignment_compatibility(cha_ast_internal_type from,
-                                              cha_ast_internal_type to) {
+static int cha_check_assignment_compatibility(cha_ast_primitive_type from,
+                                              cha_ast_primitive_type to) {
   // Assignment is more permissive than arithmetic operations
-  if (from == CHA_AST_INTERNAL_TYPE_UNDEF ||
-      to == CHA_AST_INTERNAL_TYPE_UNDEF) {
+  if (from == CHA_AST_PRIMITIVE_TYPE_UNDEF ||
+      to == CHA_AST_PRIMITIVE_TYPE_UNDEF) {
     return 1; // Error
   }
 
   // Same type assignments (except for non-assignable types)
   if (from == to) {
-    return (from == CHA_AST_INTERNAL_TYPE_CONST_INT ||
-            from == CHA_AST_INTERNAL_TYPE_CONST_UINT ||
-            from == CHA_AST_INTERNAL_TYPE_CONST_FLOAT)
+    return (from == CHA_AST_PRIMITIVE_TYPE_CONST_INT ||
+            from == CHA_AST_PRIMITIVE_TYPE_CONST_UINT ||
+            from == CHA_AST_PRIMITIVE_TYPE_CONST_FLOAT)
                ? 1
                : 0;
   }
 
   // Constants can be assigned to their corresponding types
-  if (from == CHA_AST_INTERNAL_TYPE_CONST_INT && is_signed_int(to))
+  if (from == CHA_AST_PRIMITIVE_TYPE_CONST_INT && is_signed_int(to))
     return 0;
-  if (from == CHA_AST_INTERNAL_TYPE_CONST_UINT && is_unsigned_int(to))
+  if (from == CHA_AST_PRIMITIVE_TYPE_CONST_UINT && is_unsigned_int(to))
     return 0;
-  if (from == CHA_AST_INTERNAL_TYPE_CONST_FLOAT && is_float(to))
+  if (from == CHA_AST_PRIMITIVE_TYPE_CONST_FLOAT && is_float(to))
     return 0;
 
   // Bool assignments are very restrictive
-  if (to == CHA_AST_INTERNAL_TYPE_BOOL) {
-    return (from == CHA_AST_INTERNAL_TYPE_BOOL) ? 0 : 1;
+  if (to == CHA_AST_PRIMITIVE_TYPE_BOOL) {
+    return (from == CHA_AST_PRIMITIVE_TYPE_BOOL) ? 0 : 1;
   }
 
   // Check for compatible type ranges
@@ -122,18 +122,18 @@ static int cha_check_assignment_compatibility(cha_ast_internal_type from,
 
 // Numeric comparison compatibility (returns 0 if compatible, 1 if error)
 static int
-cha_check_numeric_comparison_compatibility(cha_ast_internal_type left,
-                                           cha_ast_internal_type right) {
-  if (left == CHA_AST_INTERNAL_TYPE_UNDEF ||
-      right == CHA_AST_INTERNAL_TYPE_UNDEF) {
+cha_check_numeric_comparison_compatibility(cha_ast_primitive_type left,
+                                           cha_ast_primitive_type right) {
+  if (left == CHA_AST_PRIMITIVE_TYPE_UNDEF ||
+      right == CHA_AST_PRIMITIVE_TYPE_UNDEF) {
     return 1;
   }
 
   // Same type comparisons
   if (left == right) {
-    return (left == CHA_AST_INTERNAL_TYPE_CONST_INT ||
-            left == CHA_AST_INTERNAL_TYPE_CONST_UINT ||
-            left == CHA_AST_INTERNAL_TYPE_CONST_FLOAT)
+    return (left == CHA_AST_PRIMITIVE_TYPE_CONST_INT ||
+            left == CHA_AST_PRIMITIVE_TYPE_CONST_UINT ||
+            left == CHA_AST_PRIMITIVE_TYPE_CONST_FLOAT)
                ? 1
                : 0;
   }
@@ -145,8 +145,8 @@ cha_check_numeric_comparison_compatibility(cha_ast_internal_type left,
   }
 
   // Bool can be compared with bool
-  if (left == CHA_AST_INTERNAL_TYPE_BOOL &&
-      right == CHA_AST_INTERNAL_TYPE_BOOL) {
+  if (left == CHA_AST_PRIMITIVE_TYPE_BOOL &&
+      right == CHA_AST_PRIMITIVE_TYPE_BOOL) {
     return 0;
   }
 
@@ -155,8 +155,8 @@ cha_check_numeric_comparison_compatibility(cha_ast_internal_type left,
 
 // Equality comparison compatibility (returns 0 if compatible, 1 if error)
 static int
-cha_check_equality_comparison_compatibility(cha_ast_internal_type left,
-                                            cha_ast_internal_type right) {
+cha_check_equality_comparison_compatibility(cha_ast_primitive_type left,
+                                            cha_ast_primitive_type right) {
   // Equality is similar to numeric comparison but slightly more permissive
   return cha_check_numeric_comparison_compatibility(left, right);
 }
@@ -350,9 +350,9 @@ int cha_validate_node_var_lookup(cha_ast_node *ast_node) {
   case CHA_AST_NODE_TYPE_CONSTANT_DECLARATION: // replace lookup with value
     free(ast_node->variable_lookup.identifier);
     ast_node->node_type = v->node->constant_declaration.value->node_type;
-    ast_node->_result_type = make_cha_ast_type(
+    ast_node->_result_type = make_cha_ast_primitive_type(
         ast_node->location,
-        v->node->constant_declaration.value->_result_type->internal_type);
+        v->node->constant_declaration.value->_result_type->primitive_type);
     switch (ast_node->node_type) {
     case CHA_AST_NODE_TYPE_CONSTANT_UINT:
     case CHA_AST_NODE_TYPE_CONSTANT_INT:
@@ -369,8 +369,8 @@ int cha_validate_node_var_lookup(cha_ast_node *ast_node) {
     }
     break;
   case CHA_AST_NODE_TYPE_VARIABLE_DECLARATION: // copy type
-    ast_node->_result_type = make_cha_ast_type(
-        ast_node->location, v->node->variable_declaration.type->internal_type);
+    ast_node->_result_type = make_cha_ast_primitive_type(
+        ast_node->location, v->node->variable_declaration.type->primitive_type);
     break;
   default:
     log_validation_error(ast_node->location, "incompatible element found");
@@ -391,15 +391,15 @@ int cha_validate_node_bin_op(cha_ast_node *ast_node) {
   case CHA_AST_OPERATOR_SUBTRACT: // -
   case CHA_AST_OPERATOR_MULTIPLY: // *
   case CHA_AST_OPERATOR_DIVIDE:   // /
-    ast_node->_result_type = make_cha_ast_type(
+    ast_node->_result_type = make_cha_ast_primitive_type(
         ast_node->location,
         cha_convert_arithmetic_types(
-            ast_node->bin_op.left->_result_type->internal_type,
-            ast_node->bin_op.right->_result_type->internal_type));
+            ast_node->bin_op.left->_result_type->primitive_type,
+            ast_node->bin_op.right->_result_type->primitive_type));
     cha_set_type_on_const(ast_node->bin_op.left,
-                          ast_node->_result_type->internal_type);
+                          ast_node->_result_type->primitive_type);
     cha_set_type_on_const(ast_node->bin_op.right,
-                          ast_node->_result_type->internal_type);
+                          ast_node->_result_type->primitive_type);
 
     break;
   case CHA_AST_OPERATOR_GREATER_THAN:           // >
@@ -407,51 +407,51 @@ int cha_validate_node_bin_op(cha_ast_node *ast_node) {
   case CHA_AST_OPERATOR_LESS_THAN:              // <
   case CHA_AST_OPERATOR_LESS_THAN_OR_EQUALS:    // <=
     if (cha_check_numeric_comparison_compatibility(
-            ast_node->bin_op.left->_result_type->internal_type,
-            ast_node->bin_op.right->_result_type->internal_type) == 1) {
+            ast_node->bin_op.left->_result_type->primitive_type,
+            ast_node->bin_op.right->_result_type->primitive_type) == 1) {
       ast_node->_result_type =
-          make_cha_ast_type(ast_node->location, CHA_AST_INTERNAL_TYPE_UNDEF);
+          make_cha_ast_primitive_type(ast_node->location, CHA_AST_PRIMITIVE_TYPE_UNDEF);
     } else {
       ast_node->_result_type =
-          make_cha_ast_type(ast_node->location, CHA_AST_INTERNAL_TYPE_BOOL);
+          make_cha_ast_primitive_type(ast_node->location, CHA_AST_PRIMITIVE_TYPE_BOOL);
     }
     cha_set_type_on_const(ast_node->bin_op.left,
-                          ast_node->bin_op.right->_result_type->internal_type);
+                          ast_node->bin_op.right->_result_type->primitive_type);
     cha_set_type_on_const(ast_node->bin_op.right,
-                          ast_node->bin_op.left->_result_type->internal_type);
+                          ast_node->bin_op.left->_result_type->primitive_type);
     break;
   case CHA_AST_OPERATOR_EQUALS_EQUALS: // ==
   case CHA_AST_OPERATOR_NOT_EQUALS:    // !=
     if (cha_check_equality_comparison_compatibility(
-            ast_node->bin_op.left->_result_type->internal_type,
-            ast_node->bin_op.right->_result_type->internal_type) == 1) {
+            ast_node->bin_op.left->_result_type->primitive_type,
+            ast_node->bin_op.right->_result_type->primitive_type) == 1) {
       ast_node->_result_type =
-          make_cha_ast_type(ast_node->location, CHA_AST_INTERNAL_TYPE_UNDEF);
+          make_cha_ast_primitive_type(ast_node->location, CHA_AST_PRIMITIVE_TYPE_UNDEF);
     } else {
       ast_node->_result_type =
-          make_cha_ast_type(ast_node->location, CHA_AST_INTERNAL_TYPE_BOOL);
+          make_cha_ast_primitive_type(ast_node->location, CHA_AST_PRIMITIVE_TYPE_BOOL);
     }
     cha_set_type_on_const(ast_node->bin_op.left,
-                          ast_node->bin_op.right->_result_type->internal_type);
+                          ast_node->bin_op.right->_result_type->primitive_type);
     cha_set_type_on_const(ast_node->bin_op.right,
-                          ast_node->bin_op.left->_result_type->internal_type);
+                          ast_node->bin_op.left->_result_type->primitive_type);
     break;
   case CHA_AST_OPERATOR_AND: // &&
   case CHA_AST_OPERATOR_OR:  // ||
     // Boolean operators require both operands to be boolean
-    if (ast_node->bin_op.left->_result_type->internal_type !=
-            CHA_AST_INTERNAL_TYPE_BOOL ||
-        ast_node->bin_op.right->_result_type->internal_type !=
-            CHA_AST_INTERNAL_TYPE_BOOL) {
+    if (ast_node->bin_op.left->_result_type->primitive_type !=
+            CHA_AST_PRIMITIVE_TYPE_BOOL ||
+        ast_node->bin_op.right->_result_type->primitive_type !=
+            CHA_AST_PRIMITIVE_TYPE_BOOL) {
       ast_node->_result_type =
-          make_cha_ast_type(ast_node->location, CHA_AST_INTERNAL_TYPE_UNDEF);
+          make_cha_ast_primitive_type(ast_node->location, CHA_AST_PRIMITIVE_TYPE_UNDEF);
     } else {
       ast_node->_result_type =
-          make_cha_ast_type(ast_node->location, CHA_AST_INTERNAL_TYPE_BOOL);
+          make_cha_ast_primitive_type(ast_node->location, CHA_AST_PRIMITIVE_TYPE_BOOL);
     }
     break;
   }
-  if (ast_node->_result_type->internal_type == CHA_AST_INTERNAL_TYPE_UNDEF) {
+  if (ast_node->_result_type->primitive_type == CHA_AST_PRIMITIVE_TYPE_UNDEF) {
     char ltype[TYPE_STR_LEN];
     char rtype[TYPE_STR_LEN];
     type_str(ltype, ast_node->bin_op.left->_result_type);
@@ -478,9 +478,9 @@ int cha_validate_node_call(cha_ast_node *ast_node) {
   }
 
   if (callee_fun->node->function_declaration.return_type != NULL) {
-    ast_node->_result_type = make_cha_ast_type(
+    ast_node->_result_type = make_cha_ast_primitive_type(
         ast_node->location,
-        callee_fun->node->function_declaration.return_type->internal_type);
+        callee_fun->node->function_declaration.return_type->primitive_type);
   }
 
   if ((ast_node->function_call.argument_list == NULL ||
@@ -582,8 +582,8 @@ int cha_validate_node_if(cha_ast_node *ast_node) {
   if (cha_validate_node(ast_node->if_block.condition) != 0) {
     return 1;
   }
-  if (ast_node->if_block.condition->_result_type->internal_type !=
-      CHA_AST_INTERNAL_TYPE_BOOL) {
+  if (ast_node->if_block.condition->_result_type->primitive_type !=
+      CHA_AST_PRIMITIVE_TYPE_BOOL) {
     log_validation_error(ast_node->if_block.condition->location,
                          "condition should return bool");
     return 1;
@@ -611,59 +611,59 @@ void type_str(char *out, const cha_ast_type *ast_type) {
   if (ast_type == NULL) {
     sprintf(out, "void");
   } else {
-    switch (ast_type->internal_type) {
-    case CHA_AST_INTERNAL_TYPE_UNDEF:
+    switch (ast_type->primitive_type) {
+    case CHA_AST_PRIMITIVE_TYPE_UNDEF:
       sprintf(out, "undefined");
       break;
-    case CHA_AST_INTERNAL_TYPE_CONST_INT:
+    case CHA_AST_PRIMITIVE_TYPE_CONST_INT:
       sprintf(out, "c_int");
       break;
-    case CHA_AST_INTERNAL_TYPE_CONST_UINT:
+    case CHA_AST_PRIMITIVE_TYPE_CONST_UINT:
       sprintf(out, "c_uint");
       break;
-    case CHA_AST_INTERNAL_TYPE_INT8:
+    case CHA_AST_PRIMITIVE_TYPE_INT8:
       sprintf(out, "int8");
       break;
-    case CHA_AST_INTERNAL_TYPE_UINT8:
+    case CHA_AST_PRIMITIVE_TYPE_UINT8:
       sprintf(out, "uint8");
       break;
-    case CHA_AST_INTERNAL_TYPE_INT16:
+    case CHA_AST_PRIMITIVE_TYPE_INT16:
       sprintf(out, "int16");
       break;
-    case CHA_AST_INTERNAL_TYPE_UINT16:
+    case CHA_AST_PRIMITIVE_TYPE_UINT16:
       sprintf(out, "uint16");
       break;
-    case CHA_AST_INTERNAL_TYPE_INT32:
+    case CHA_AST_PRIMITIVE_TYPE_INT32:
       sprintf(out, "int32");
       break;
-    case CHA_AST_INTERNAL_TYPE_UINT32:
+    case CHA_AST_PRIMITIVE_TYPE_UINT32:
       sprintf(out, "uint32");
       break;
-    case CHA_AST_INTERNAL_TYPE_INT64:
+    case CHA_AST_PRIMITIVE_TYPE_INT64:
       sprintf(out, "int64");
       break;
-    case CHA_AST_INTERNAL_TYPE_UINT64:
+    case CHA_AST_PRIMITIVE_TYPE_UINT64:
       sprintf(out, "uint64");
       break;
-    case CHA_AST_INTERNAL_TYPE_CONST_FLOAT:
+    case CHA_AST_PRIMITIVE_TYPE_CONST_FLOAT:
       sprintf(out, "float");
       break;
-    case CHA_AST_INTERNAL_TYPE_FLOAT16:
+    case CHA_AST_PRIMITIVE_TYPE_FLOAT16:
       sprintf(out, "float16");
       break;
-    case CHA_AST_INTERNAL_TYPE_FLOAT32:
+    case CHA_AST_PRIMITIVE_TYPE_FLOAT32:
       sprintf(out, "float32");
       break;
-    case CHA_AST_INTERNAL_TYPE_FLOAT64:
+    case CHA_AST_PRIMITIVE_TYPE_FLOAT64:
       sprintf(out, "float64");
       break;
-    case CHA_AST_INTERNAL_TYPE_INT:
+    case CHA_AST_PRIMITIVE_TYPE_INT:
       sprintf(out, "int");
       break;
-    case CHA_AST_INTERNAL_TYPE_UINT:
+    case CHA_AST_PRIMITIVE_TYPE_UINT:
       sprintf(out, "uint");
       break;
-    case CHA_AST_INTERNAL_TYPE_BOOL:
+    case CHA_AST_PRIMITIVE_TYPE_BOOL:
       sprintf(out, "bool");
       break;
     }
@@ -673,25 +673,25 @@ void type_str(char *out, const cha_ast_type *ast_type) {
 int cha_check_type_assignment(cha_ast_node *ast_node,
                               const cha_ast_type *ast_type) {
 
-  if (cha_check_assignment_compatibility(ast_node->_result_type->internal_type,
-                                         ast_type->internal_type) != 0) {
+  if (cha_check_assignment_compatibility(ast_node->_result_type->primitive_type,
+                                         ast_type->primitive_type) != 0) {
     return 1;
   }
-  cha_set_type_on_const(ast_node, ast_type->internal_type);
+  cha_set_type_on_const(ast_node, ast_type->primitive_type);
 
   return 0;
 }
 
 void cha_set_type_on_const(cha_ast_node *ast_node,
-                           cha_ast_internal_type internal_type) {
-  if (ast_node->_result_type->internal_type ==
-          CHA_AST_INTERNAL_TYPE_CONST_INT ||
-      ast_node->_result_type->internal_type ==
-          CHA_AST_INTERNAL_TYPE_CONST_UINT ||
-      ast_node->_result_type->internal_type ==
-          CHA_AST_INTERNAL_TYPE_CONST_FLOAT) {
+                           cha_ast_primitive_type primitive_type) {
+  if (ast_node->_result_type->primitive_type ==
+          CHA_AST_PRIMITIVE_TYPE_CONST_INT ||
+      ast_node->_result_type->primitive_type ==
+          CHA_AST_PRIMITIVE_TYPE_CONST_UINT ||
+      ast_node->_result_type->primitive_type ==
+          CHA_AST_PRIMITIVE_TYPE_CONST_FLOAT) {
     ast_node->_result_type =
-        make_cha_ast_type(ast_node->location, internal_type);
+        make_cha_ast_primitive_type(ast_node->location, primitive_type);
   }
 }
 

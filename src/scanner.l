@@ -136,6 +136,14 @@ identifier [_a-zA-Z][_a-zA-Z0-9]{0,31}
 	return CLOSE_CUR;
 }
 
+"[" {
+	return OPEN_BRA;
+}
+
+"]" {
+	return CLOSE_BRA;
+}
+
 "," {
 	return COMMA;
 }

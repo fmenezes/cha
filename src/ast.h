@@ -15,26 +15,32 @@ typedef struct cha_ast_location {
   int column_end;
 } cha_ast_location;
 
-typedef enum cha_ast_internal_type {
-  CHA_AST_INTERNAL_TYPE_UNDEF = -1,
-  CHA_AST_INTERNAL_TYPE_CONST_INT,
-  CHA_AST_INTERNAL_TYPE_INT,
-  CHA_AST_INTERNAL_TYPE_INT8,
-  CHA_AST_INTERNAL_TYPE_INT16,
-  CHA_AST_INTERNAL_TYPE_INT32,
-  CHA_AST_INTERNAL_TYPE_INT64,
-  CHA_AST_INTERNAL_TYPE_CONST_UINT,
-  CHA_AST_INTERNAL_TYPE_UINT,
-  CHA_AST_INTERNAL_TYPE_UINT8,
-  CHA_AST_INTERNAL_TYPE_UINT16,
-  CHA_AST_INTERNAL_TYPE_UINT32,
-  CHA_AST_INTERNAL_TYPE_UINT64,
-  CHA_AST_INTERNAL_TYPE_CONST_FLOAT,
-  CHA_AST_INTERNAL_TYPE_FLOAT16,
-  CHA_AST_INTERNAL_TYPE_FLOAT32,
-  CHA_AST_INTERNAL_TYPE_FLOAT64,
-  CHA_AST_INTERNAL_TYPE_BOOL,
-} cha_ast_internal_type;
+typedef enum cha_ast_primitive_type {
+  CHA_AST_PRIMITIVE_TYPE_UNDEF = -1,
+  CHA_AST_PRIMITIVE_TYPE_CONST_INT,
+  CHA_AST_PRIMITIVE_TYPE_INT,
+  CHA_AST_PRIMITIVE_TYPE_INT8,
+  CHA_AST_PRIMITIVE_TYPE_INT16,
+  CHA_AST_PRIMITIVE_TYPE_INT32,
+  CHA_AST_PRIMITIVE_TYPE_INT64,
+  CHA_AST_PRIMITIVE_TYPE_CONST_UINT,
+  CHA_AST_PRIMITIVE_TYPE_UINT,
+  CHA_AST_PRIMITIVE_TYPE_UINT8,
+  CHA_AST_PRIMITIVE_TYPE_UINT16,
+  CHA_AST_PRIMITIVE_TYPE_UINT32,
+  CHA_AST_PRIMITIVE_TYPE_UINT64,
+  CHA_AST_PRIMITIVE_TYPE_CONST_FLOAT,
+  CHA_AST_PRIMITIVE_TYPE_FLOAT16,
+  CHA_AST_PRIMITIVE_TYPE_FLOAT32,
+  CHA_AST_PRIMITIVE_TYPE_FLOAT64,
+  CHA_AST_PRIMITIVE_TYPE_BOOL,
+} cha_ast_primitive_type;
+
+typedef enum cha_ast_type_definition {
+  CHA_AST_TYPE_DEFINITION_PRIMITIVE,
+  CHA_AST_TYPE_DEFINITION_ARRAY,
+  CHA_AST_TYPE_DEFINITION_IDENTIFIER,
+} cha_ast_type_definition;
 
 typedef enum cha_ast_node_type {
   CHA_AST_NODE_TYPE_CONSTANT_INT,
@@ -141,34 +147,43 @@ struct cha_ast_node_list {
 };
 
 struct cha_ast_type {
-  cha_ast_internal_type internal_type;
   cha_ast_location location;
+  cha_ast_type_definition type_definition;
+  union {
+    cha_ast_primitive_type primitive_type;
+    struct {
+      cha_ast_type* element_type;
+      int size;
+    } array_type;
+    char *identifier;
+  };
 };
 
 cha_ast_node *make_cha_ast_node_constant_integer(cha_ast_location loc,
-                                                 char *value);
+                                                 char * value);
 cha_ast_node *make_cha_ast_node_constant_unsigned_integer(cha_ast_location loc,
-                                                          char *value);
+                                                          char * value);
 cha_ast_node *make_cha_ast_node_constant_float(cha_ast_location loc,
                                                double value);
 cha_ast_node *make_cha_ast_node_constant_true(cha_ast_location loc);
 cha_ast_node *make_cha_ast_node_constant_false(cha_ast_location loc);
-cha_ast_type *make_cha_ast_type(cha_ast_location loc,
-                                cha_ast_internal_type internal_type);
-cha_ast_type *make_cha_ast_type_int(cha_ast_location loc);
-cha_ast_type *make_cha_ast_type_uint(cha_ast_location loc);
-cha_ast_type *make_cha_ast_type_int8(cha_ast_location loc);
-cha_ast_type *make_cha_ast_type_uint8(cha_ast_location loc);
-cha_ast_type *make_cha_ast_type_int16(cha_ast_location loc);
-cha_ast_type *make_cha_ast_type_uint16(cha_ast_location loc);
-cha_ast_type *make_cha_ast_type_int32(cha_ast_location loc);
-cha_ast_type *make_cha_ast_type_uint32(cha_ast_location loc);
-cha_ast_type *make_cha_ast_type_int64(cha_ast_location loc);
-cha_ast_type *make_cha_ast_type_uint64(cha_ast_location loc);
-cha_ast_type *make_cha_ast_type_float16(cha_ast_location loc);
-cha_ast_type *make_cha_ast_type_float32(cha_ast_location loc);
-cha_ast_type *make_cha_ast_type_float64(cha_ast_location loc);
-cha_ast_type *make_cha_ast_type_bool(cha_ast_location loc);
+cha_ast_type *make_cha_ast_primitive_type(cha_ast_location loc,
+                                cha_ast_primitive_type internal_type);
+cha_ast_type *make_cha_ast_primitive_type_int(cha_ast_location loc);
+cha_ast_type *make_cha_ast_primitive_type_uint(cha_ast_location loc);
+cha_ast_type *make_cha_ast_primitive_type_int8(cha_ast_location loc);
+cha_ast_type *make_cha_ast_primitive_type_uint8(cha_ast_location loc);
+cha_ast_type *make_cha_ast_primitive_type_int16(cha_ast_location loc);
+cha_ast_type *make_cha_ast_primitive_type_uint16(cha_ast_location loc);
+cha_ast_type *make_cha_ast_primitive_type_int32(cha_ast_location loc);
+cha_ast_type *make_cha_ast_primitive_type_uint32(cha_ast_location loc);
+cha_ast_type *make_cha_ast_primitive_type_int64(cha_ast_location loc);
+cha_ast_type *make_cha_ast_primitive_type_uint64(cha_ast_location loc);
+cha_ast_type *make_cha_ast_primitive_type_float16(cha_ast_location loc);
+cha_ast_type *make_cha_ast_primitive_type_float32(cha_ast_location loc);
+cha_ast_type *make_cha_ast_primitive_type_float64(cha_ast_location loc);
+cha_ast_type *make_cha_ast_primitive_type_bool(cha_ast_location loc);
+cha_ast_type *make_cha_ast_array_type(cha_ast_location loc, cha_ast_type* element_type, int size);
 cha_ast_node *make_cha_ast_node_bin_op(cha_ast_location loc,
                                        cha_ast_operator op, cha_ast_node *left,
                                        cha_ast_node *right);
