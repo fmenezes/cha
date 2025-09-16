@@ -45,8 +45,8 @@ jobs:
       - name: Generate coverage info
         run: |
           cd build
-          lcov --directory . --capture --output-file coverage.info
-          lcov --remove coverage.info '/usr/*' '*/build/*' '*/test/*' '*/_deps/*' '*/scanner.c' '*/parser.tab.c' --output-file coverage.info.cleaned
+          lcov --directory . --capture --output-file coverage.info --ignore-errors gcov,source,unused
+          lcov --remove coverage.info '*/test/*' '*/_deps/*' '*/scanner.c' '*/parser.tab.c' '*/src/scanner.l' '*/src/parser.y' --output-file coverage.info.cleaned --ignore-errors unused
           lcov --list coverage.info.cleaned
           
       - name: Upload to Coveralls
