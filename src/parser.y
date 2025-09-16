@@ -145,19 +145,7 @@ reftype :
 const_value :
 	INTEGER																			{ $$ = make_cha_ast_node_constant_integer(convert_location(@1, @1), $1); }
 	| UINTEGER																		{ $$ = make_cha_ast_node_constant_unsigned_integer(convert_location(@1, @1), $1); }
-<<<<<<< HEAD
 	| FLOAT																			{ $$ = make_cha_ast_node_constant_float(convert_location(@1, @1), $1); }
-=======
-	| FLOAT																			{ 
-																						char *endptr;
-																						double value = strtod($1, &endptr);
-																						if (*endptr != '\0' || endptr == $1) {
-																							yyerror("Invalid floating-point number");
-																							YYERROR;
-																						}
-																						$$ = make_cha_ast_node_constant_float(convert_location(@1, @1), value);
-																					}
->>>>>>> 4fcd1f8 (remove int128 type)
 	| BOOL_TRUE																		{ $$ = make_cha_ast_node_constant_true(convert_location(@1, @1)); }
 	| BOOL_FALSE																	{ $$ = make_cha_ast_node_constant_false(convert_location(@1, @1)); }
 	;
