@@ -147,11 +147,11 @@ struct cha_ast_type {
 };
 
 cha_ast_node *make_cha_ast_node_constant_integer(cha_ast_location loc,
-                                                 const char *value);
+                                                 char *value);
 cha_ast_node *make_cha_ast_node_constant_unsigned_integer(cha_ast_location loc,
-                                                          const char *value);
+                                                          char *value);
 cha_ast_node *make_cha_ast_node_constant_float(cha_ast_location loc,
-                                               const char *value);
+                                               char *value);
 cha_ast_node *make_cha_ast_node_constant_true(cha_ast_location loc);
 cha_ast_node *make_cha_ast_node_constant_false(cha_ast_location loc);
 cha_ast_type *make_cha_ast_type(cha_ast_location loc,
@@ -176,27 +176,26 @@ cha_ast_node *make_cha_ast_node_bin_op(cha_ast_location loc,
                                        cha_ast_operator op, cha_ast_node *left,
                                        cha_ast_node *right);
 cha_ast_node *make_cha_ast_node_variable_declaration(cha_ast_location loc,
-                                                     const char *identifier,
+                                                     char *identifier,
                                                      cha_ast_type *type,
                                                      cha_ast_node *value);
 cha_ast_node *make_cha_ast_node_variable_assignment(cha_ast_location loc,
-                                                    const char *identifier,
+                                                    char *identifier,
                                                     cha_ast_node *value);
 cha_ast_node *make_cha_ast_node_variable_lookup(cha_ast_location loc,
-                                                const char *identifier);
-cha_ast_node *make_cha_ast_node_argument(cha_ast_location loc,
-                                         const char *identifier,
+                                                char *identifier);
+cha_ast_node *make_cha_ast_node_argument(cha_ast_location loc, char *identifier,
                                          cha_ast_type *type);
 cha_ast_node *make_cha_ast_node_block(cha_ast_location loc,
                                       cha_ast_node_list *block);
 cha_ast_node *make_cha_ast_node_function_declaration(
-    cha_ast_location loc, const char *identifier, cha_ast_type *return_type,
+    cha_ast_location loc, char *identifier, cha_ast_type *return_type,
     cha_ast_node_list *argument_list, cha_ast_node_list *block);
 cha_ast_node *make_cha_ast_node_constant_declaration(cha_ast_location loc,
-                                                     const char *identifier,
+                                                     char *identifier,
                                                      cha_ast_node *value);
 cha_ast_node *make_cha_ast_node_function_call(cha_ast_location loc,
-                                              const char *identifier,
+                                              char *identifier,
                                               cha_ast_node_list *argument_list);
 cha_ast_node *make_cha_ast_node_function_return(cha_ast_location loc,
                                                 cha_ast_node *value);

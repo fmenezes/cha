@@ -7,33 +7,33 @@
 extern cha_ast_node_list *parsed_ast;
 
 cha_ast_node *make_cha_ast_node_constant_integer(cha_ast_location loc,
-                                                 const char *value) {
+                                                 char *value) {
   cha_ast_node *node = malloc(sizeof(cha_ast_node));
   node->node_type = CHA_AST_NODE_TYPE_CONSTANT_INT;
   node->location = loc;
   node->_result_type = make_cha_ast_type(loc, CHA_AST_INTERNAL_TYPE_CONST_INT);
-  node->const_value = strdup(value);
+  node->const_value = value;
   return node;
 }
 
 cha_ast_node *make_cha_ast_node_constant_unsigned_integer(cha_ast_location loc,
-                                                          const char *value) {
+                                                          char *value) {
   cha_ast_node *node = malloc(sizeof(cha_ast_node));
   node->node_type = CHA_AST_NODE_TYPE_CONSTANT_UINT;
   node->location = loc;
   node->_result_type = make_cha_ast_type(loc, CHA_AST_INTERNAL_TYPE_CONST_UINT);
-  node->const_value = strdup(value);
+  node->const_value = value;
   return node;
 }
 
 cha_ast_node *make_cha_ast_node_constant_float(cha_ast_location loc,
-                                               const char *value) {
+                                               char *value) {
   cha_ast_node *node = malloc(sizeof(cha_ast_node));
   node->node_type = CHA_AST_NODE_TYPE_CONSTANT_FLOAT;
   node->location = loc;
   node->_result_type =
       make_cha_ast_type(loc, CHA_AST_INTERNAL_TYPE_CONST_FLOAT);
-  node->const_value = strdup(value);
+  node->const_value = value;
   return node;
 }
 
@@ -181,49 +181,48 @@ cha_ast_node *make_cha_ast_node_bin_op(cha_ast_location loc,
 }
 
 cha_ast_node *make_cha_ast_node_variable_declaration(cha_ast_location loc,
-                                                     const char *identifier,
+                                                     char *identifier,
                                                      cha_ast_type *type,
                                                      cha_ast_node *value) {
   cha_ast_node *node = malloc(sizeof(cha_ast_node));
   node->node_type = CHA_AST_NODE_TYPE_VARIABLE_DECLARATION;
   node->location = loc;
   node->_result_type = NULL;
-  node->variable_declaration.identifier = strdup(identifier);
+  node->variable_declaration.identifier = identifier;
   node->variable_declaration.type = type;
   node->variable_declaration.value = value;
   return node;
 }
 
 cha_ast_node *make_cha_ast_node_variable_assignment(cha_ast_location loc,
-                                                    const char *identifier,
+                                                    char *identifier,
                                                     cha_ast_node *value) {
   cha_ast_node *node = malloc(sizeof(cha_ast_node));
   node->node_type = CHA_AST_NODE_TYPE_VARIABLE_ASSIGNMENT;
   node->location = loc;
   node->_result_type = NULL;
-  node->variable_assignment.identifier = strdup(identifier);
+  node->variable_assignment.identifier = identifier;
   node->variable_assignment.value = value;
   return node;
 }
 
 cha_ast_node *make_cha_ast_node_variable_lookup(cha_ast_location loc,
-                                                const char *identifier) {
+                                                char *identifier) {
   cha_ast_node *node = malloc(sizeof(cha_ast_node));
   node->node_type = CHA_AST_NODE_TYPE_VARIABLE_LOOKUP;
   node->location = loc;
   node->_result_type = NULL;
-  node->variable_lookup.identifier = strdup(identifier);
+  node->variable_lookup.identifier = identifier;
   return node;
 }
 
-cha_ast_node *make_cha_ast_node_argument(cha_ast_location loc,
-                                         const char *identifier,
+cha_ast_node *make_cha_ast_node_argument(cha_ast_location loc, char *identifier,
                                          cha_ast_type *type) {
   cha_ast_node *node = malloc(sizeof(cha_ast_node));
   node->node_type = CHA_AST_NODE_TYPE_ARGUMENT;
   node->location = loc;
   node->_result_type = NULL;
-  node->argument.identifier = strdup(identifier);
+  node->argument.identifier = identifier;
   node->argument.type = type;
   return node;
 }
@@ -239,13 +238,13 @@ cha_ast_node *make_cha_ast_node_block(cha_ast_location loc,
 }
 
 cha_ast_node *make_cha_ast_node_function_declaration(
-    cha_ast_location loc, const char *identifier, cha_ast_type *return_type,
+    cha_ast_location loc, char *identifier, cha_ast_type *return_type,
     cha_ast_node_list *argument_list, cha_ast_node_list *block) {
   cha_ast_node *node = malloc(sizeof(cha_ast_node));
   node->node_type = CHA_AST_NODE_TYPE_FUNCTION_DECLARATION;
   node->location = loc;
   node->_result_type = NULL;
-  node->function_declaration.identifier = strdup(identifier);
+  node->function_declaration.identifier = identifier;
   node->function_declaration.return_type = return_type;
   node->function_declaration.argument_list = argument_list;
   node->function_declaration.block = block;
@@ -253,13 +252,13 @@ cha_ast_node *make_cha_ast_node_function_declaration(
 }
 
 cha_ast_node *
-make_cha_ast_node_function_call(cha_ast_location loc, const char *identifier,
+make_cha_ast_node_function_call(cha_ast_location loc, char *identifier,
                                 cha_ast_node_list *argument_list) {
   cha_ast_node *node = malloc(sizeof(cha_ast_node));
   node->node_type = CHA_AST_NODE_TYPE_FUNCTION_CALL;
   node->location = loc;
   node->_result_type = NULL;
-  node->function_call.identifier = strdup(identifier);
+  node->function_call.identifier = identifier;
   node->function_call.argument_list = argument_list;
   return node;
 }
@@ -399,13 +398,13 @@ void free_cha_ast_node_list(cha_ast_node_list *list) {
 }
 
 cha_ast_node *make_cha_ast_node_constant_declaration(cha_ast_location loc,
-                                                     const char *identifier,
+                                                     char *identifier,
                                                      cha_ast_node *value) {
   cha_ast_node *node = malloc(sizeof(cha_ast_node));
   node->node_type = CHA_AST_NODE_TYPE_CONSTANT_DECLARATION;
   node->location = loc;
   node->_result_type = NULL;
-  node->constant_declaration.identifier = strdup(identifier);
+  node->constant_declaration.identifier = identifier;
   node->constant_declaration.value = value;
   return node;
 }
