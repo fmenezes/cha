@@ -22,13 +22,8 @@ if(ENABLE_COVERAGE)
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --coverage -fprofile-arcs -ftest-coverage")
         set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} --coverage")
         
-        # Find gcov or llvm-cov
-        find_program(GCOV_PATH gcov)
         find_program(LLVM_COV_PATH llvm-cov)
-        
-        if(LLVM_COV_PATH)
-            set(GCOV_PATH "${LLVM_COV_PATH} gcov")
-        endif()
+        find_program(LCOV_PATH lcov)
     endif()
 endif()
 
@@ -261,57 +256,12 @@ add_custom_target(
     DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/compile_commands.json
 )
 
-# Coverage targets
 if(ENABLE_COVERAGE)
-    # Reset coverage counters
-    add_custom_target(coverage-reset
-        COMMAND find ${CMAKE_CURRENT_BINARY_DIR} -name "*.gcda" -delete
-        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-        COMMENT "Resetting coverage counters"
-    )
-    
-    # Generate coverage report
-    add_custom_target(coverage-report
+    add_custom_target(coverage
         COMMAND mkdir -p coverage
-        COMMAND gcov -r -pb ${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/cha.dir/src/*.gcno
-        COMMAND find . -name "*.gcov" -exec mv {} coverage/ \\;
+        COMMAND lcov --all --directory CMakeFiles/cha.dir/src --output-file lcov.info
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
         DEPENDS cha
         COMMENT "Generating coverage report"
     )
-    
-    # Generate HTML coverage report (requires lcov)
-    find_program(LCOV_PATH lcov)
-    find_program(GENHTML_PATH genhtml)
-    
-    if(LCOV_PATH AND GENHTML_PATH)
-        add_custom_target(coverage-html
-            COMMAND mkdir -p coverage
-            COMMAND ${LCOV_PATH} --directory . --capture --output-file coverage/coverage.info
-            COMMAND ${LCOV_PATH} --remove coverage/coverage.info '/usr/*' '*/build/*' '*/test/*' --output-file coverage/coverage.info.cleaned
-            COMMAND ${GENHTML_PATH} -o coverage/html coverage/coverage.info.cleaned
-            COMMAND echo "Coverage report generated in coverage/html/index.html"
-            WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-            DEPENDS cha
-            COMMENT "Generating HTML coverage report"
-        )
-        
-        # Combined target: run tests and generate HTML report
-        add_custom_target(coverage
-            COMMAND ${CMAKE_COMMAND} --build . --target coverage-reset
-            COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure
-            COMMAND ${CMAKE_COMMAND} --build . --target coverage-html
-            WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-            COMMENT "Running tests and generating coverage report"
-        )
-    else()
-        # Fallback: run tests and generate basic coverage report
-        add_custom_target(coverage
-            COMMAND ${CMAKE_COMMAND} --build . --target coverage-reset
-            COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure
-            COMMAND ${CMAKE_COMMAND} --build . --target coverage-report
-            WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-            COMMENT "Running tests and generating coverage report"
-        )
-    endif()
 endif()
