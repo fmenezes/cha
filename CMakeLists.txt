@@ -265,3 +265,35 @@ if(ENABLE_COVERAGE)
         COMMENT "Generating coverage report"
     )
 endif()
+
+# Find clang-format
+find_program(CLANG_FORMAT_EXECUTABLE
+    NAMES clang-format clang-format-18 clang-format-17 clang-format-16 clang-format-15
+    DOC "clang-format executable"
+)
+
+# Add format target if clang-format is found
+if(CLANG_FORMAT_EXECUTABLE)
+    file(GLOB_RECURSE ALL_SOURCE_FILES
+        "${CMAKE_SOURCE_DIR}/src/*.c"
+        "${CMAKE_SOURCE_DIR}/src/*.h"
+        "${CMAKE_SOURCE_DIR}/include/*.h"
+        "${CMAKE_SOURCE_DIR}/include/**/*.h"
+    )
+    
+    add_custom_target(format
+        COMMAND ${CLANG_FORMAT_EXECUTABLE} -i ${ALL_SOURCE_FILES}
+        COMMENT "Running clang-format on source files"
+        VERBATIM
+    )
+    
+    add_custom_target(format-check
+        COMMAND ${CLANG_FORMAT_EXECUTABLE} --dry-run --Werror ${ALL_SOURCE_FILES}
+        COMMENT "Checking code formatting with clang-format"
+        VERBATIM
+    )
+    
+    message(STATUS "clang-format found: ${CLANG_FORMAT_EXECUTABLE}")
+else()
+    message(STATUS "clang-format not found. Format targets will not be available.")
+endif()
