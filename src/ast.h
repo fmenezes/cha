@@ -15,26 +15,26 @@ typedef struct cha_ast_location {
   int column_end;
 } cha_ast_location;
 
-typedef enum cha_ast_internal_type {
-  CHA_AST_INTERNAL_TYPE_UNDEF = -1,
-  CHA_AST_INTERNAL_TYPE_CONST_INT,
-  CHA_AST_INTERNAL_TYPE_INT,
-  CHA_AST_INTERNAL_TYPE_INT8,
-  CHA_AST_INTERNAL_TYPE_INT16,
-  CHA_AST_INTERNAL_TYPE_INT32,
-  CHA_AST_INTERNAL_TYPE_INT64,
-  CHA_AST_INTERNAL_TYPE_CONST_UINT,
-  CHA_AST_INTERNAL_TYPE_UINT,
-  CHA_AST_INTERNAL_TYPE_UINT8,
-  CHA_AST_INTERNAL_TYPE_UINT16,
-  CHA_AST_INTERNAL_TYPE_UINT32,
-  CHA_AST_INTERNAL_TYPE_UINT64,
-  CHA_AST_INTERNAL_TYPE_CONST_FLOAT,
-  CHA_AST_INTERNAL_TYPE_FLOAT16,
-  CHA_AST_INTERNAL_TYPE_FLOAT32,
-  CHA_AST_INTERNAL_TYPE_FLOAT64,
-  CHA_AST_INTERNAL_TYPE_BOOL,
-} cha_ast_internal_type;
+typedef enum cha_ast_primitive_type {
+  CHA_AST_PRIMITIVE_TYPE_UNDEF = -1,
+  CHA_AST_PRIMITIVE_TYPE_CONST_INT,
+  CHA_AST_PRIMITIVE_TYPE_INT,
+  CHA_AST_PRIMITIVE_TYPE_INT8,
+  CHA_AST_PRIMITIVE_TYPE_INT16,
+  CHA_AST_PRIMITIVE_TYPE_INT32,
+  CHA_AST_PRIMITIVE_TYPE_INT64,
+  CHA_AST_PRIMITIVE_TYPE_CONST_UINT,
+  CHA_AST_PRIMITIVE_TYPE_UINT,
+  CHA_AST_PRIMITIVE_TYPE_UINT8,
+  CHA_AST_PRIMITIVE_TYPE_UINT16,
+  CHA_AST_PRIMITIVE_TYPE_UINT32,
+  CHA_AST_PRIMITIVE_TYPE_UINT64,
+  CHA_AST_PRIMITIVE_TYPE_CONST_FLOAT,
+  CHA_AST_PRIMITIVE_TYPE_FLOAT16,
+  CHA_AST_PRIMITIVE_TYPE_FLOAT32,
+  CHA_AST_PRIMITIVE_TYPE_FLOAT64,
+  CHA_AST_PRIMITIVE_TYPE_BOOL,
+} cha_ast_primitive_type;
 
 typedef enum cha_ast_node_type {
   CHA_AST_NODE_TYPE_CONSTANT_INT,
@@ -141,7 +141,7 @@ struct cha_ast_node_list {
 };
 
 struct cha_ast_type {
-  cha_ast_internal_type internal_type;
+  cha_ast_primitive_type primitive_type;
   cha_ast_location location;
 };
 
@@ -154,7 +154,7 @@ cha_ast_node *make_cha_ast_node_constant_float(cha_ast_location loc,
 cha_ast_node *make_cha_ast_node_constant_true(cha_ast_location loc);
 cha_ast_node *make_cha_ast_node_constant_false(cha_ast_location loc);
 cha_ast_type *make_cha_ast_type(cha_ast_location loc,
-                                cha_ast_internal_type internal_type);
+                                cha_ast_primitive_type primitive_type);
 cha_ast_type *make_cha_ast_type_int(cha_ast_location loc);
 cha_ast_type *make_cha_ast_type_uint(cha_ast_location loc);
 cha_ast_type *make_cha_ast_type_int8(cha_ast_location loc);
