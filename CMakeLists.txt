@@ -259,7 +259,7 @@ add_custom_target(
 if(ENABLE_COVERAGE)
     add_custom_target(coverage
         COMMAND mkdir -p coverage
-        COMMAND lcov -c --all --directory CMakeFiles/cha.dir/src --output-file lcov.info
+        COMMAND lcov -c --directory CMakeFiles/cha.dir/src --output-file lcov.info
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
         DEPENDS cha
         COMMENT "Generating coverage report"
