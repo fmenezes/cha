@@ -7,21 +7,21 @@
 extern cha_ast_node_list *parsed_ast;
 
 cha_ast_node *make_cha_ast_node_constant_integer(cha_ast_location loc,
-                                                 char *value) {
+                                                 char * value) {
   cha_ast_node *node = malloc(sizeof(cha_ast_node));
   node->node_type = CHA_AST_NODE_TYPE_CONSTANT_INT;
   node->location = loc;
-  node->_result_type = make_cha_ast_type(loc, CHA_AST_INTERNAL_TYPE_CONST_INT);
+  node->_result_type = make_cha_ast_primitive_type(loc, CHA_AST_PRIMITIVE_TYPE_CONST_INT);
   node->const_value = value;
   return node;
 }
 
 cha_ast_node *make_cha_ast_node_constant_unsigned_integer(cha_ast_location loc,
-                                                          char *value) {
+                                                          char * value) {
   cha_ast_node *node = malloc(sizeof(cha_ast_node));
   node->node_type = CHA_AST_NODE_TYPE_CONSTANT_UINT;
   node->location = loc;
-  node->_result_type = make_cha_ast_type(loc, CHA_AST_INTERNAL_TYPE_CONST_UINT);
+  node->_result_type = make_cha_ast_primitive_type(loc, CHA_AST_PRIMITIVE_TYPE_CONST_UINT);
   node->const_value = value;
   return node;
 }
@@ -32,7 +32,7 @@ cha_ast_node *make_cha_ast_node_constant_float(cha_ast_location loc,
   node->node_type = CHA_AST_NODE_TYPE_CONSTANT_FLOAT;
   node->location = loc;
   node->_result_type =
-      make_cha_ast_type(loc, CHA_AST_INTERNAL_TYPE_CONST_FLOAT);
+      make_cha_ast_primitive_type(loc, CHA_AST_PRIMITIVE_TYPE_CONST_FLOAT);
   node->const_float = value;
   return node;
 }
@@ -41,7 +41,7 @@ cha_ast_node *make_cha_ast_node_constant_true(cha_ast_location loc) {
   cha_ast_node *node = malloc(sizeof(cha_ast_node));
   node->node_type = CHA_AST_NODE_TYPE_CONSTANT_BOOL;
   node->location = loc;
-  node->_result_type = make_cha_ast_type(loc, CHA_AST_INTERNAL_TYPE_BOOL);
+  node->_result_type = make_cha_ast_primitive_type(loc, CHA_AST_PRIMITIVE_TYPE_BOOL);
   node->const_bool = 1;
   return node;
 }
@@ -50,105 +50,128 @@ cha_ast_node *make_cha_ast_node_constant_false(cha_ast_location loc) {
   cha_ast_node *node = malloc(sizeof(cha_ast_node));
   node->node_type = CHA_AST_NODE_TYPE_CONSTANT_BOOL;
   node->location = loc;
-  node->_result_type = make_cha_ast_type(loc, CHA_AST_INTERNAL_TYPE_BOOL);
+  node->_result_type = make_cha_ast_primitive_type(loc, CHA_AST_PRIMITIVE_TYPE_BOOL);
   node->const_bool = 0;
   return node;
 }
 
-cha_ast_type *make_cha_ast_type_int(cha_ast_location loc) {
+cha_ast_type *make_cha_ast_primitive_type_int(cha_ast_location loc) {
   cha_ast_type *t = malloc(sizeof(cha_ast_type));
-  t->internal_type = CHA_AST_INTERNAL_TYPE_INT;
+  t->primitive_type = CHA_AST_PRIMITIVE_TYPE_INT;
+  t->type_definition = CHA_AST_TYPE_DEFINITION_PRIMITIVE;
   t->location = loc;
   return t;
 }
 
-cha_ast_type *make_cha_ast_type_uint(cha_ast_location loc) {
+cha_ast_type *make_cha_ast_primitive_type_uint(cha_ast_location loc) {
   cha_ast_type *t = malloc(sizeof(cha_ast_type));
-  t->internal_type = CHA_AST_INTERNAL_TYPE_UINT;
+  t->primitive_type = CHA_AST_PRIMITIVE_TYPE_UINT;
+  t->type_definition = CHA_AST_TYPE_DEFINITION_PRIMITIVE;
   t->location = loc;
   return t;
 }
 
-cha_ast_type *make_cha_ast_type_uint8(cha_ast_location loc) {
+cha_ast_type *make_cha_ast_primitive_type_uint8(cha_ast_location loc) {
   cha_ast_type *t = malloc(sizeof(cha_ast_type));
-  t->internal_type = CHA_AST_INTERNAL_TYPE_UINT8;
+  t->primitive_type = CHA_AST_PRIMITIVE_TYPE_UINT8;
+  t->type_definition = CHA_AST_TYPE_DEFINITION_PRIMITIVE;
   t->location = loc;
   return t;
 }
 
-cha_ast_type *make_cha_ast_type_int8(cha_ast_location loc) {
+cha_ast_type *make_cha_ast_primitive_type_int8(cha_ast_location loc) {
   cha_ast_type *t = malloc(sizeof(cha_ast_type));
-  t->internal_type = CHA_AST_INTERNAL_TYPE_INT8;
+  t->primitive_type = CHA_AST_PRIMITIVE_TYPE_INT8;
+  t->type_definition = CHA_AST_TYPE_DEFINITION_PRIMITIVE;
   t->location = loc;
   return t;
 }
 
-cha_ast_type *make_cha_ast_type_int16(cha_ast_location loc) {
+cha_ast_type *make_cha_ast_primitive_type_int16(cha_ast_location loc) {
   cha_ast_type *t = malloc(sizeof(cha_ast_type));
-  t->internal_type = CHA_AST_INTERNAL_TYPE_INT16;
+  t->primitive_type = CHA_AST_PRIMITIVE_TYPE_INT16;
+  t->type_definition = CHA_AST_TYPE_DEFINITION_PRIMITIVE;
   t->location = loc;
   return t;
 }
 
-cha_ast_type *make_cha_ast_type_uint16(cha_ast_location loc) {
+cha_ast_type *make_cha_ast_primitive_type_uint16(cha_ast_location loc) {
   cha_ast_type *t = malloc(sizeof(cha_ast_type));
-  t->internal_type = CHA_AST_INTERNAL_TYPE_UINT16;
+  t->primitive_type = CHA_AST_PRIMITIVE_TYPE_UINT16;
+  t->type_definition = CHA_AST_TYPE_DEFINITION_PRIMITIVE;
   t->location = loc;
   return t;
 }
 
-cha_ast_type *make_cha_ast_type_int32(cha_ast_location loc) {
+cha_ast_type *make_cha_ast_primitive_type_int32(cha_ast_location loc) {
   cha_ast_type *t = malloc(sizeof(cha_ast_type));
-  t->internal_type = CHA_AST_INTERNAL_TYPE_INT32;
+  t->primitive_type = CHA_AST_PRIMITIVE_TYPE_INT32;
+  t->type_definition = CHA_AST_TYPE_DEFINITION_PRIMITIVE;
   t->location = loc;
   return t;
 }
 
-cha_ast_type *make_cha_ast_type_uint32(cha_ast_location loc) {
+cha_ast_type *make_cha_ast_primitive_type_uint32(cha_ast_location loc) {
   cha_ast_type *t = malloc(sizeof(cha_ast_type));
-  t->internal_type = CHA_AST_INTERNAL_TYPE_UINT32;
+  t->primitive_type = CHA_AST_PRIMITIVE_TYPE_UINT32;
+  t->type_definition = CHA_AST_TYPE_DEFINITION_PRIMITIVE;
   t->location = loc;
   return t;
 }
 
-cha_ast_type *make_cha_ast_type_int64(cha_ast_location loc) {
+cha_ast_type *make_cha_ast_primitive_type_int64(cha_ast_location loc) {
   cha_ast_type *t = malloc(sizeof(cha_ast_type));
-  t->internal_type = CHA_AST_INTERNAL_TYPE_INT64;
+  t->primitive_type = CHA_AST_PRIMITIVE_TYPE_INT64;
+  t->type_definition = CHA_AST_TYPE_DEFINITION_PRIMITIVE;
   t->location = loc;
   return t;
 }
 
-cha_ast_type *make_cha_ast_type_uint64(cha_ast_location loc) {
+cha_ast_type *make_cha_ast_primitive_type_uint64(cha_ast_location loc) {
   cha_ast_type *t = malloc(sizeof(cha_ast_type));
-  t->internal_type = CHA_AST_INTERNAL_TYPE_UINT64;
+  t->primitive_type = CHA_AST_PRIMITIVE_TYPE_UINT64;
+  t->type_definition = CHA_AST_TYPE_DEFINITION_PRIMITIVE;
   t->location = loc;
   return t;
 }
 
-cha_ast_type *make_cha_ast_type_float16(cha_ast_location loc) {
+cha_ast_type *make_cha_ast_primitive_type_float16(cha_ast_location loc) {
   cha_ast_type *t = malloc(sizeof(cha_ast_type));
-  t->internal_type = CHA_AST_INTERNAL_TYPE_FLOAT16;
+  t->primitive_type = CHA_AST_PRIMITIVE_TYPE_FLOAT16;
+  t->type_definition = CHA_AST_TYPE_DEFINITION_PRIMITIVE;
   t->location = loc;
   return t;
 }
 
-cha_ast_type *make_cha_ast_type_float32(cha_ast_location loc) {
+cha_ast_type *make_cha_ast_primitive_type_float32(cha_ast_location loc) {
   cha_ast_type *t = malloc(sizeof(cha_ast_type));
-  t->internal_type = CHA_AST_INTERNAL_TYPE_FLOAT32;
+  t->primitive_type = CHA_AST_PRIMITIVE_TYPE_FLOAT32;
+  t->type_definition = CHA_AST_TYPE_DEFINITION_PRIMITIVE;
   t->location = loc;
   return t;
 }
 
-cha_ast_type *make_cha_ast_type_float64(cha_ast_location loc) {
+cha_ast_type *make_cha_ast_primitive_type_float64(cha_ast_location loc) {
   cha_ast_type *t = malloc(sizeof(cha_ast_type));
-  t->internal_type = CHA_AST_INTERNAL_TYPE_FLOAT64;
+  t->primitive_type = CHA_AST_PRIMITIVE_TYPE_FLOAT64;
+  t->type_definition = CHA_AST_TYPE_DEFINITION_PRIMITIVE;
   t->location = loc;
   return t;
 }
 
-cha_ast_type *make_cha_ast_type_bool(cha_ast_location loc) {
+cha_ast_type *make_cha_ast_primitive_type_bool(cha_ast_location loc) {
   cha_ast_type *t = malloc(sizeof(cha_ast_type));
-  t->internal_type = CHA_AST_INTERNAL_TYPE_BOOL;
+  t->primitive_type = CHA_AST_PRIMITIVE_TYPE_BOOL;
+  t->type_definition = CHA_AST_TYPE_DEFINITION_PRIMITIVE;
+  t->location = loc;
+  return t;
+}
+
+cha_ast_type *make_cha_ast_array_type(cha_ast_location loc, cha_ast_type* element_type, int size) {
+  cha_ast_type *t = malloc(sizeof(cha_ast_type));
+  t->type_definition = CHA_AST_TYPE_DEFINITION_ARRAY;
+  t->array_type.element_type = element_type;
+  t->array_type.size = size;
   t->location = loc;
   return t;
 }
@@ -273,10 +296,11 @@ cha_ast_node *make_cha_ast_node_if(cha_ast_location loc,
   return node;
 }
 
-cha_ast_type *make_cha_ast_type(cha_ast_location loc,
-                                cha_ast_internal_type internal_type) {
+cha_ast_type *make_cha_ast_primitive_type(cha_ast_location loc,
+                                cha_ast_primitive_type primitive_type) {
   cha_ast_type *t = malloc(sizeof(cha_ast_type));
-  t->internal_type = internal_type;
+  t->type_definition = CHA_AST_TYPE_DEFINITION_PRIMITIVE;
+  t->primitive_type = primitive_type;
   t->location = loc;
   return t;
 }
@@ -285,6 +309,20 @@ void free_cha_ast_type(cha_ast_type *type) {
   if (type == NULL) {
     return;
   }
+
+  switch (type->type_definition)
+  {
+  case CHA_AST_TYPE_DEFINITION_PRIMITIVE:
+    // nothing to free
+    break;
+  case CHA_AST_TYPE_DEFINITION_ARRAY:
+    free_cha_ast_type(type->array_type.element_type);
+    break;
+  case CHA_AST_TYPE_DEFINITION_IDENTIFIER:
+    free(type->identifier);
+    break;
+  }
+  
   free(type);
 }
 
@@ -340,6 +378,10 @@ void free_cha_ast_node(cha_ast_node *node) {
   case CHA_AST_NODE_TYPE_CONSTANT_BOOL:
   case CHA_AST_NODE_TYPE_CONSTANT_FLOAT:
     // nothing to free
+  case CHA_AST_NODE_TYPE_IF:
+    free_cha_ast_node_list(node->if_block.block);
+    free_cha_ast_node_list(node->if_block.else_block);
+    free_cha_ast_node(node->if_block.condition);
     break;
   }
 

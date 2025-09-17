@@ -31,7 +31,7 @@ cha_ast_location convert_location(YYLTYPE start, YYLTYPE end);
   cha_ast_node_list* list;
 }
 
-%token KEYWORD_FUN OPEN_PAR CLOSE_PAR OPEN_CUR CLOSE_CUR COMMA KEYWORD_VAR EQUALS KEYWORD_RET ADD SUBTRACT MULTIPLY DIVIDE REFTYPE_INT8 REFTYPE_UINT8 REFTYPE_INT16 REFTYPE_UINT16 REFTYPE_INT32 REFTYPE_UINT32 REFTYPE_INT64 REFTYPE_UINT64 REFTYPE_INT REFTYPE_UINT REFTYPE_FLOAT16 REFTYPE_FLOAT32 REFTYPE_FLOAT64 REFTYPE_BOOL BOOL_TRUE BOOL_FALSE EQUALS_EQUALS NOT_EQUALS GREATER_THAN GREATER_THAN_OR_EQUALS LESS_THAN LESS_THAN_OR_EQUALS AND OR KEYWORD_CONST KEYWORD_IF KEYWORD_ELSE
+%token KEYWORD_FUN OPEN_PAR CLOSE_PAR OPEN_CUR CLOSE_CUR OPEN_BRA CLOSE_BRA COMMA KEYWORD_VAR EQUALS KEYWORD_RET ADD SUBTRACT MULTIPLY DIVIDE REFTYPE_INT8 REFTYPE_UINT8 REFTYPE_INT16 REFTYPE_UINT16 REFTYPE_INT32 REFTYPE_UINT32 REFTYPE_INT64 REFTYPE_UINT64 REFTYPE_INT REFTYPE_UINT REFTYPE_FLOAT16 REFTYPE_FLOAT32 REFTYPE_FLOAT64 REFTYPE_BOOL BOOL_TRUE BOOL_FALSE EQUALS_EQUALS NOT_EQUALS GREATER_THAN GREATER_THAN_OR_EQUALS LESS_THAN LESS_THAN_OR_EQUALS AND OR KEYWORD_CONST KEYWORD_IF KEYWORD_ELSE
 %token <str> IDENTIFIER INTEGER UINTEGER FLOAT
 
 %nterm <list> top_level block def_args call_args statements
@@ -126,20 +126,21 @@ expr :
 	;
 
 reftype :
-	REFTYPE_INT																		{ $$ = make_cha_ast_type_int(convert_location(@1, @1)); }
-	| REFTYPE_UINT																	{ $$ = make_cha_ast_type_uint(convert_location(@1, @1)); }
-	| REFTYPE_INT8																	{ $$ = make_cha_ast_type_int8(convert_location(@1, @1)); }
-	| REFTYPE_UINT8																	{ $$ = make_cha_ast_type_uint8(convert_location(@1, @1)); }
-	| REFTYPE_INT16																	{ $$ = make_cha_ast_type_int16(convert_location(@1, @1)); }
-	| REFTYPE_UINT16																{ $$ = make_cha_ast_type_uint16(convert_location(@1, @1)); }
-	| REFTYPE_INT32																	{ $$ = make_cha_ast_type_int32(convert_location(@1, @1)); }
-	| REFTYPE_UINT32																{ $$ = make_cha_ast_type_uint32(convert_location(@1, @1)); }
-	| REFTYPE_INT64																	{ $$ = make_cha_ast_type_int64(convert_location(@1, @1)); }
-	| REFTYPE_UINT64																{ $$ = make_cha_ast_type_uint64(convert_location(@1, @1)); }
-	| REFTYPE_FLOAT16																{ $$ = make_cha_ast_type_float16(convert_location(@1, @1)); }
-	| REFTYPE_FLOAT32																{ $$ = make_cha_ast_type_float32(convert_location(@1, @1)); }
-	| REFTYPE_FLOAT64																{ $$ = make_cha_ast_type_float64(convert_location(@1, @1)); }
-	| REFTYPE_BOOL																	{ $$ = make_cha_ast_type_bool(convert_location(@1, @1)); }
+	REFTYPE_INT																		{ $$ = make_cha_ast_primitive_type_int(convert_location(@1, @1)); }
+	| REFTYPE_UINT																	{ $$ = make_cha_ast_primitive_type_uint(convert_location(@1, @1)); }
+	| REFTYPE_INT8																	{ $$ = make_cha_ast_primitive_type_int8(convert_location(@1, @1)); }
+	| REFTYPE_UINT8																	{ $$ = make_cha_ast_primitive_type_uint8(convert_location(@1, @1)); }
+	| REFTYPE_INT16																	{ $$ = make_cha_ast_primitive_type_int16(convert_location(@1, @1)); }
+	| REFTYPE_UINT16																{ $$ = make_cha_ast_primitive_type_uint16(convert_location(@1, @1)); }
+	| REFTYPE_INT32																	{ $$ = make_cha_ast_primitive_type_int32(convert_location(@1, @1)); }
+	| REFTYPE_UINT32																{ $$ = make_cha_ast_primitive_type_uint32(convert_location(@1, @1)); }
+	| REFTYPE_INT64																	{ $$ = make_cha_ast_primitive_type_int64(convert_location(@1, @1)); }
+	| REFTYPE_UINT64																{ $$ = make_cha_ast_primitive_type_uint64(convert_location(@1, @1)); }
+	| REFTYPE_FLOAT16																{ $$ = make_cha_ast_primitive_type_float16(convert_location(@1, @1)); }
+	| REFTYPE_FLOAT32																{ $$ = make_cha_ast_primitive_type_float32(convert_location(@1, @1)); }
+	| REFTYPE_FLOAT64																{ $$ = make_cha_ast_primitive_type_float64(convert_location(@1, @1)); }
+	| REFTYPE_BOOL																	{ $$ = make_cha_ast_primitive_type_bool(convert_location(@1, @1)); }
+	| OPEN_BRA INTEGER CLOSE_BRA reftype											{ $$ = make_cha_ast_array_type(convert_location(@1, @4), $4, atoi($2)); }
 	;
 
 const_value :

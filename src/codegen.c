@@ -593,13 +593,13 @@ int signed_type(const cha_ast_type *ast_type) {
     return 1;
   }
 
-  switch (ast_type->internal_type) {
-  case CHA_AST_INTERNAL_TYPE_CONST_UINT:
-  case CHA_AST_INTERNAL_TYPE_UINT:
-  case CHA_AST_INTERNAL_TYPE_UINT8:
-  case CHA_AST_INTERNAL_TYPE_UINT16:
-  case CHA_AST_INTERNAL_TYPE_UINT32:
-  case CHA_AST_INTERNAL_TYPE_UINT64:
+  switch (ast_type->primitive_type) {
+  case CHA_AST_PRIMITIVE_TYPE_CONST_UINT:
+  case CHA_AST_PRIMITIVE_TYPE_UINT:
+  case CHA_AST_PRIMITIVE_TYPE_UINT8:
+  case CHA_AST_PRIMITIVE_TYPE_UINT16:
+  case CHA_AST_PRIMITIVE_TYPE_UINT32:
+  case CHA_AST_PRIMITIVE_TYPE_UINT64:
     return 1;
   default:
     return 0;
@@ -611,11 +611,11 @@ int float_type(const cha_ast_type *ast_type) {
     return 0;
   }
 
-  switch (ast_type->internal_type) {
-  case CHA_AST_INTERNAL_TYPE_CONST_FLOAT:
-  case CHA_AST_INTERNAL_TYPE_FLOAT16:
-  case CHA_AST_INTERNAL_TYPE_FLOAT32:
-  case CHA_AST_INTERNAL_TYPE_FLOAT64:
+  switch (ast_type->primitive_type) {
+  case CHA_AST_PRIMITIVE_TYPE_CONST_FLOAT:
+  case CHA_AST_PRIMITIVE_TYPE_FLOAT16:
+  case CHA_AST_PRIMITIVE_TYPE_FLOAT32:
+  case CHA_AST_PRIMITIVE_TYPE_FLOAT64:
     return 0;
   default:
     return 1;
@@ -675,34 +675,34 @@ LLVMTypeRef make_type(cha_ast_type *ast_type) {
     return LLVMVoidTypeInContext(context);
   }
 
-  switch (ast_type->internal_type) {
-  case CHA_AST_INTERNAL_TYPE_UNDEF:
+  switch (ast_type->primitive_type) {
+  case CHA_AST_PRIMITIVE_TYPE_UNDEF:
     return LLVMVoidTypeInContext(context);
-  case CHA_AST_INTERNAL_TYPE_CONST_INT:
-  case CHA_AST_INTERNAL_TYPE_CONST_UINT:
-  case CHA_AST_INTERNAL_TYPE_INT:
-  case CHA_AST_INTERNAL_TYPE_UINT:
+  case CHA_AST_PRIMITIVE_TYPE_CONST_INT:
+  case CHA_AST_PRIMITIVE_TYPE_CONST_UINT:
+  case CHA_AST_PRIMITIVE_TYPE_INT:
+  case CHA_AST_PRIMITIVE_TYPE_UINT:
     return LLVMIntPtrTypeInContext(context, target_data_layout);
-  case CHA_AST_INTERNAL_TYPE_UINT8:
-  case CHA_AST_INTERNAL_TYPE_INT8:
+  case CHA_AST_PRIMITIVE_TYPE_UINT8:
+  case CHA_AST_PRIMITIVE_TYPE_INT8:
     return LLVMInt8TypeInContext(context);
-  case CHA_AST_INTERNAL_TYPE_INT16:
-  case CHA_AST_INTERNAL_TYPE_UINT16:
+  case CHA_AST_PRIMITIVE_TYPE_INT16:
+  case CHA_AST_PRIMITIVE_TYPE_UINT16:
     return LLVMInt16TypeInContext(context);
-  case CHA_AST_INTERNAL_TYPE_INT32:
-  case CHA_AST_INTERNAL_TYPE_UINT32:
+  case CHA_AST_PRIMITIVE_TYPE_INT32:
+  case CHA_AST_PRIMITIVE_TYPE_UINT32:
     return LLVMInt32TypeInContext(context);
-  case CHA_AST_INTERNAL_TYPE_INT64:
-  case CHA_AST_INTERNAL_TYPE_UINT64:
+  case CHA_AST_PRIMITIVE_TYPE_INT64:
+  case CHA_AST_PRIMITIVE_TYPE_UINT64:
     return LLVMInt64TypeInContext(context);
-  case CHA_AST_INTERNAL_TYPE_FLOAT16:
+  case CHA_AST_PRIMITIVE_TYPE_FLOAT16:
     return LLVMHalfTypeInContext(context);
-  case CHA_AST_INTERNAL_TYPE_CONST_FLOAT:
-  case CHA_AST_INTERNAL_TYPE_FLOAT32:
+  case CHA_AST_PRIMITIVE_TYPE_CONST_FLOAT:
+  case CHA_AST_PRIMITIVE_TYPE_FLOAT32:
     return LLVMFloatTypeInContext(context);
-  case CHA_AST_INTERNAL_TYPE_FLOAT64:
+  case CHA_AST_PRIMITIVE_TYPE_FLOAT64:
     return LLVMDoubleTypeInContext(context);
-  case CHA_AST_INTERNAL_TYPE_BOOL:
+  case CHA_AST_PRIMITIVE_TYPE_BOOL:
     return LLVMInt1TypeInContext(context);
   }
 
