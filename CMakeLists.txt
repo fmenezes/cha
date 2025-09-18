@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 3.5.0)
 project(cha VERSION 0.0.1 LANGUAGES CXX C)
 
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
 add_definitions(-DCMAKE_PROJECT_NAME="${CMAKE_PROJECT_NAME}" -DCMAKE_PROJECT_VERSION="${CMAKE_PROJECT_VERSION}")
 
 include(CTest)
@@ -27,19 +30,34 @@ if(ENABLE_COVERAGE)
     endif()
 endif()
 
+# Setup FLEX and BISON first
+flex_target(scanner src/scanner.l "${CMAKE_CURRENT_BINARY_DIR}/scanner.c")
+bison_target(parser src/parser.y "${CMAKE_CURRENT_BINARY_DIR}/parser.tab.cpp" DEFINES_FILE "${CMAKE_CURRENT_BINARY_DIR}/parser.tab.hpp")
+add_flex_bison_dependency(scanner parser)
+
 file(GLOB_RECURSE SRC
     CONFIGURE_DEPENDS
-    "src/*.c"
-    "src/*.h"
-    "src/**/*.c"
-    "src/**/*.h"
+    "src/*.cpp"
+    "src/*.hpp"
+    "src/**/*.cpp"
+    "src/**/*.hpp"
     "include/*.h"
+    "include/*.hpp"
     "include/**/*.h"
+    "include/**/*.hpp"
 )
 
-flex_target(scanner src/scanner.l "${CMAKE_CURRENT_BINARY_DIR}/scanner.c")
-bison_target(parser src/parser.y "${CMAKE_CURRENT_BINARY_DIR}/parser.tab.c")
-add_flex_bison_dependency(scanner parser)
+# Add specific C++ files we want to include (now that BISON/FLEX outputs are defined)
+set(CHA_SOURCES
+    src/ast.cpp
+    src/validate.cpp
+    src/log.cpp
+    src/codegen.cpp
+    src/cha.cpp
+    src/main.cpp
+    ${BISON_parser_OUTPUTS}
+    ${FLEX_scanner_OUTPUTS}
+)
 
 include_directories(include src ${CMAKE_CURRENT_BINARY_DIR} ${LLVM_INCLUDE_DIRS})
 add_definitions(${LLVM_DEFINITIONS})
@@ -221,20 +239,78 @@ llvm_map_components_to_libnames(LLVM_LIBS
     # demangle
 )
 
-add_executable(cha ${SRC} ${BISON_parser_OUTPUTS} ${FLEX_scanner_OUTPUTS})
+add_executable(cha ${CHA_SOURCES})
 
 target_link_libraries(cha ${LLVM_LIBS})
 
 file(GLOB_RECURSE TEST_SRC
     CONFIGURE_DEPENDS
-    "test/*.cha"
-    "test/**/*.cha"
+    "test/integration/*.cha"
+    "test/integration/**/*.cha"
 )
 
 add_executable(
     cha_test
-    test/test.c
+    test/integration/test.c
 )
+
+# Add C++ AST unit tests
+add_executable(
+    ast_cpp_test
+    test/unit/test_ast_cpp.cpp
+    src/ast.cpp
+)
+
+# Set C++ standard for the test
+set_target_properties(ast_cpp_test PROPERTIES
+    CXX_STANDARD 17
+    CXX_STANDARD_REQUIRED ON
+)
+
+# Add the C++ AST test to CTest
+add_test(NAME ast_cpp_unit_tests COMMAND ast_cpp_test)
+
+# Add C++ Parser unit tests
+add_executable(
+    parser_cpp_test
+    test/unit/test_parser_cpp.cpp
+    src/ast.cpp
+    src/log.cpp
+    ${BISON_parser_OUTPUTS}
+    ${FLEX_scanner_OUTPUTS}
+)
+
+# Set C++ standard and link dependencies for parser test
+set_target_properties(parser_cpp_test PROPERTIES
+    CXX_STANDARD 17
+    CXX_STANDARD_REQUIRED ON
+)
+
+target_link_libraries(parser_cpp_test ${LLVM_LIBS})
+
+# Add the C++ Parser test to CTest
+add_test(NAME parser_cpp_unit_tests COMMAND parser_cpp_test)
+set_tests_properties(parser_cpp_unit_tests PROPERTIES
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+)
+
+# Add C++ Validation unit tests
+add_executable(
+    validate_cpp_test
+    test/unit/test_validate_cpp.cpp
+    src/ast.cpp
+    src/validate.cpp
+    src/log.cpp
+)
+
+# Set C++ standard for the validation test
+set_target_properties(validate_cpp_test PROPERTIES
+    CXX_STANDARD 17
+    CXX_STANDARD_REQUIRED ON
+)
+
+# Add the C++ Validation test to CTest
+add_test(NAME validate_cpp_unit_tests COMMAND validate_cpp_test)
 
 FOREACH(test ${TEST_SRC})
     GET_FILENAME_COMPONENT(TName ${test} NAME_WE)
@@ -276,9 +352,13 @@ find_program(CLANG_FORMAT_EXECUTABLE
 if(CLANG_FORMAT_EXECUTABLE)
     file(GLOB_RECURSE ALL_SOURCE_FILES
         "${CMAKE_SOURCE_DIR}/src/*.c"
+        "${CMAKE_SOURCE_DIR}/src/*.cpp"
         "${CMAKE_SOURCE_DIR}/src/*.h"
+        "${CMAKE_SOURCE_DIR}/src/*.hpp"
         "${CMAKE_SOURCE_DIR}/include/*.h"
+        "${CMAKE_SOURCE_DIR}/include/*.hpp"
         "${CMAKE_SOURCE_DIR}/include/**/*.h"
+        "${CMAKE_SOURCE_DIR}/include/**/*.hpp"
     )
     
     add_custom_target(format

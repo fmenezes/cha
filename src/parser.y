@@ -3,32 +3,42 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "ast.h"
-#include "parser.h"
-#include "log.h"
+#include "ast.hpp"
+#include "parser.hpp" 
+#include "log.hpp"
 
-cha_ast_node_list *parsed_ast;
+using namespace cha;
+AstNodeList *parsed_ast;
+const char *current_file = nullptr;
 
-extern int yylex();
-extern FILE *yyin;
-const char *current_file;
+int yyerror(const char *msg) {
+  AstLocation location(
+    current_file ? std::string(current_file) : std::string(""),
+    1, 1, 1, 1  // Default location since yylloc isn't available here
+  );
+  
+  cha::log_validation_error(location, std::string(msg));
+  return 1;
+}
 
-int yyerror(const char *msg);
+extern "C" {
+    int yylex();
+    extern FILE *yyin;
+}
 %}
 
 %locations
 
 %code{
-# include "ast.h"
-
-cha_ast_location convert_location(YYLTYPE start, YYLTYPE end);
+# include "ast.hpp"
+AstLocation convert_location(YYLTYPE start, YYLTYPE end);
 }
 
 %union {
   char *str;
-  cha_ast_node* node;
-  cha_ast_type* type;
-  cha_ast_node_list* list;
+  AstNodePtr* node;
+  AstTypePtr* type;
+  AstNodeList* list;
 }
 
 %token KEYWORD_FUN OPEN_PAR CLOSE_PAR OPEN_CUR CLOSE_CUR COMMA KEYWORD_VAR EQUALS KEYWORD_RET ADD SUBTRACT MULTIPLY DIVIDE REFTYPE_INT8 REFTYPE_UINT8 REFTYPE_INT16 REFTYPE_UINT16 REFTYPE_INT32 REFTYPE_UINT32 REFTYPE_INT64 REFTYPE_UINT64 REFTYPE_INT REFTYPE_UINT REFTYPE_FLOAT16 REFTYPE_FLOAT32 REFTYPE_FLOAT64 REFTYPE_BOOL BOOL_TRUE BOOL_FALSE EQUALS_EQUALS NOT_EQUALS GREATER_THAN GREATER_THAN_OR_EQUALS LESS_THAN LESS_THAN_OR_EQUALS AND OR KEYWORD_CONST KEYWORD_IF KEYWORD_ELSE
@@ -46,12 +56,12 @@ cha_ast_location convert_location(YYLTYPE start, YYLTYPE end);
 %%
 
 parse :
-	top_level																		{ parsed_ast = $1; }
+	top_level																		{ *parsed_ast = std::move(*$1); delete $1; }
 	;
 
 top_level :
-	instruction																		{ $$ = make_cha_ast_node_list($1); }
-	| top_level instruction															{ $$ = $1; cha_ast_node_list_append($$, $2); }
+	instruction																		{ $$ = new AstNodeList(); $$->push_back(std::move(*$1)); delete $1; }
+	| top_level instruction															{ $$ = $1; $$->push_back(std::move(*$2)); delete $2; }
 	;
 
 instruction :
@@ -60,134 +70,158 @@ instruction :
 	;
 
 const_definition :
-	KEYWORD_CONST IDENTIFIER EQUALS const_value										{ $$ = make_cha_ast_node_constant_declaration(convert_location(@1, @4), $2, $4); }
+	KEYWORD_CONST IDENTIFIER EQUALS const_value										{ $$ = new AstNodePtr(std::make_unique<ConstantDeclarationNode>(convert_location(@1, @4), std::string($2), std::move(*$4))); delete $4; }
 	;
 
 function :
-	KEYWORD_FUN IDENTIFIER OPEN_PAR CLOSE_PAR block									{ $$ = make_cha_ast_node_function_declaration(convert_location(@1, @5), $2, NULL, NULL, $5); }
-	| KEYWORD_FUN IDENTIFIER OPEN_PAR def_args CLOSE_PAR block						{ $$ = make_cha_ast_node_function_declaration(convert_location(@1, @6), $2, NULL, $4, $6); }
-	| KEYWORD_FUN IDENTIFIER OPEN_PAR CLOSE_PAR reftype block						{ $$ = make_cha_ast_node_function_declaration(convert_location(@1, @6), $2, $5, NULL, $6); }
-	| KEYWORD_FUN IDENTIFIER OPEN_PAR def_args CLOSE_PAR reftype block				{ $$ = make_cha_ast_node_function_declaration(convert_location(@1, @7), $2, $6, $4, $7); }
+	KEYWORD_FUN IDENTIFIER OPEN_PAR CLOSE_PAR block									{ 
+		auto void_type = std::make_unique<AstType>(convert_location(@1, @5), AstType::Primitive{PrimitiveType::UNDEF});
+		AstNodeList args;
+		$$ = new AstNodePtr(std::make_unique<FunctionDeclarationNode>(convert_location(@1, @5), std::string($2), std::move(void_type), std::move(args), std::move(*$5))); 
+		delete $5; 
+	}
+	| KEYWORD_FUN IDENTIFIER OPEN_PAR def_args CLOSE_PAR block						{ 
+		auto void_type = std::make_unique<AstType>(convert_location(@1, @6), AstType::Primitive{PrimitiveType::UNDEF});
+		$$ = new AstNodePtr(std::make_unique<FunctionDeclarationNode>(convert_location(@1, @6), std::string($2), std::move(void_type), std::move(*$4), std::move(*$6))); 
+		delete $4; delete $6; 
+	}
+	| KEYWORD_FUN IDENTIFIER OPEN_PAR CLOSE_PAR reftype block						{ 
+		AstNodeList args;
+		$$ = new AstNodePtr(std::make_unique<FunctionDeclarationNode>(convert_location(@1, @6), std::string($2), std::move(*$5), std::move(args), std::move(*$6))); 
+		delete $5; delete $6; 
+	}
+	| KEYWORD_FUN IDENTIFIER OPEN_PAR def_args CLOSE_PAR reftype block				{ 
+		$$ = new AstNodePtr(std::make_unique<FunctionDeclarationNode>(convert_location(@1, @7), std::string($2), std::move(*$6), std::move(*$4), std::move(*$7))); 
+		delete $4; delete $6; delete $7; 
+	}
 	;
 
 block :
 	OPEN_CUR statements CLOSE_CUR													{ $$ = $2; }
-	| OPEN_CUR CLOSE_CUR															{ $$ = NULL; }
+	| OPEN_CUR CLOSE_CUR															{ $$ = new AstNodeList(); }
 	;
 
 arg :
-	IDENTIFIER reftype																{ $$ = make_cha_ast_node_argument(convert_location(@1, @2), $1, $2); }
+	IDENTIFIER reftype																{ $$ = new AstNodePtr(std::make_unique<ArgumentNode>(convert_location(@1, @2), std::string($1), std::move(*$2))); delete $2; }
 	;
 
 def_args :
-	arg																				{ $$ = make_cha_ast_node_list($1); }
-	| def_args COMMA arg															{ $$ = $1; cha_ast_node_list_append($$, $3); }
+	arg																				{ $$ = new AstNodeList(); $$->push_back(std::move(*$1)); delete $1; }
+	| def_args COMMA arg															{ $$ = $1; $$->push_back(std::move(*$3)); delete $3; }
 	;
 
 call_args :
-	expr																			{ $$ = make_cha_ast_node_list($1); }
-	| call_args COMMA expr															{ $$ = $1; cha_ast_node_list_append($$, $3); }
+	expr																			{ $$ = new AstNodeList(); $$->push_back(std::move(*$1)); delete $1; }
+	| call_args COMMA expr															{ $$ = $1; $$->push_back(std::move(*$3)); delete $3; }
 	;
 
 statements :
-	statement																		{ $$ = make_cha_ast_node_list($1); }
-	| statements statement															{ $$ = $1; cha_ast_node_list_append($$, $2); }
+	statement																		{ $$ = new AstNodeList(); $$->push_back(std::move(*$1)); delete $1; }
+	| statements statement															{ $$ = $1; $$->push_back(std::move(*$2)); delete $2; }
 	;
 
 statement :
-	KEYWORD_VAR IDENTIFIER reftype													{ $$ = make_cha_ast_node_variable_declaration(convert_location(@1, @3), $2, $3, NULL); }
-	| KEYWORD_VAR IDENTIFIER reftype EQUALS expr									{ $$ = make_cha_ast_node_variable_declaration(convert_location(@1, @5), $2, $3, $5); }
-	| IDENTIFIER EQUALS expr														{ $$ = make_cha_ast_node_variable_assignment(convert_location(@1, @3), $1, $3); }
+	KEYWORD_VAR IDENTIFIER reftype													{ $$ = new AstNodePtr(std::make_unique<VariableDeclarationNode>(convert_location(@1, @3), std::string($2), std::move(*$3), nullptr)); delete $3; }
+	| KEYWORD_VAR IDENTIFIER reftype EQUALS expr									{ $$ = new AstNodePtr(std::make_unique<VariableDeclarationNode>(convert_location(@1, @5), std::string($2), std::move(*$3), std::move(*$5))); delete $3; delete $5; }
+	| IDENTIFIER EQUALS expr														{ $$ = new AstNodePtr(std::make_unique<VariableAssignmentNode>(convert_location(@1, @3), std::string($1), std::move(*$3))); delete $3; }
 	| expr																			{ $$ = $1; }
-	| KEYWORD_RET expr																{ $$ = make_cha_ast_node_function_return(convert_location(@1, @2), $2); }
-	| KEYWORD_RET 																	{ $$ = make_cha_ast_node_function_return(convert_location(@1, @1), NULL); }
-	| KEYWORD_IF expr block															{ $$ = make_cha_ast_node_if(convert_location(@1, @3), $2, $3, NULL); }
-	| KEYWORD_IF expr block KEYWORD_ELSE block										{ $$ = make_cha_ast_node_if(convert_location(@1, @5), $2, $3, $5); }
+	| KEYWORD_RET expr																{ $$ = new AstNodePtr(std::make_unique<FunctionReturnNode>(convert_location(@1, @2), std::move(*$2))); delete $2; }
+	| KEYWORD_RET 																	{ $$ = new AstNodePtr(std::make_unique<FunctionReturnNode>(convert_location(@1, @1), nullptr)); }
+	| KEYWORD_IF expr block															{ 
+		AstNodeList empty_else;
+		$$ = new AstNodePtr(std::make_unique<IfNode>(convert_location(@1, @3), std::move(*$2), std::move(*$3), std::move(empty_else))); 
+		delete $2; delete $3; 
+	}
+	| KEYWORD_IF expr block KEYWORD_ELSE block										{ $$ = new AstNodePtr(std::make_unique<IfNode>(convert_location(@1, @5), std::move(*$2), std::move(*$3), std::move(*$5))); delete $2; delete $3; delete $5; }
 	;
 
 expr :
 	const_value																		{ $$ = $1; }
-	| IDENTIFIER																	{ $$ = make_cha_ast_node_variable_lookup(convert_location(@1, @1), $1); }
-	| IDENTIFIER OPEN_PAR CLOSE_PAR													{ $$ = make_cha_ast_node_function_call(convert_location(@1, @3), $1, NULL); }
-	| IDENTIFIER OPEN_PAR call_args CLOSE_PAR										{ $$ = make_cha_ast_node_function_call(convert_location(@1, @4), $1, $3); }
-	| expr ADD expr																	{ $$ = make_cha_ast_node_bin_op(convert_location(@1, @3), CHA_AST_OPERATOR_ADD, $1, $3); }
-	| expr SUBTRACT expr															{ $$ = make_cha_ast_node_bin_op(convert_location(@1, @3), CHA_AST_OPERATOR_SUBTRACT, $1, $3); }
-	| expr MULTIPLY expr															{ $$ = make_cha_ast_node_bin_op(convert_location(@1, @3), CHA_AST_OPERATOR_MULTIPLY, $1, $3); }
-	| expr DIVIDE expr																{ $$ = make_cha_ast_node_bin_op(convert_location(@1, @3), CHA_AST_OPERATOR_DIVIDE, $1, $3); }
-	| expr EQUALS_EQUALS expr														{ $$ = make_cha_ast_node_bin_op(convert_location(@1, @3), CHA_AST_OPERATOR_EQUALS_EQUALS, $1, $3); }
-	| expr NOT_EQUALS expr															{ $$ = make_cha_ast_node_bin_op(convert_location(@1, @3), CHA_AST_OPERATOR_NOT_EQUALS, $1, $3); }
-	| expr GREATER_THAN expr														{ $$ = make_cha_ast_node_bin_op(convert_location(@1, @3), CHA_AST_OPERATOR_GREATER_THAN, $1, $3); }
-	| expr GREATER_THAN_OR_EQUALS expr												{ $$ = make_cha_ast_node_bin_op(convert_location(@1, @3), CHA_AST_OPERATOR_GREATER_THAN_OR_EQUALS, $1, $3); }
-	| expr LESS_THAN expr															{ $$ = make_cha_ast_node_bin_op(convert_location(@1, @3), CHA_AST_OPERATOR_LESS_THAN, $1, $3); }
-	| expr LESS_THAN_OR_EQUALS expr													{ $$ = make_cha_ast_node_bin_op(convert_location(@1, @3), CHA_AST_OPERATOR_LESS_THAN_OR_EQUALS, $1, $3); }
-	| expr AND expr																	{ $$ = make_cha_ast_node_bin_op(convert_location(@1, @3), CHA_AST_OPERATOR_AND, $1, $3); }
-	| expr OR expr																	{ $$ = make_cha_ast_node_bin_op(convert_location(@1, @3), CHA_AST_OPERATOR_OR, $1, $3); }
+	| IDENTIFIER																	{ $$ = new AstNodePtr(std::make_unique<VariableLookupNode>(convert_location(@1, @1), std::string($1))); }
+	| IDENTIFIER OPEN_PAR CLOSE_PAR													{ 
+		AstNodeList empty_args;
+		$$ = new AstNodePtr(std::make_unique<FunctionCallNode>(convert_location(@1, @3), std::string($1), std::move(empty_args))); 
+	}
+	| IDENTIFIER OPEN_PAR call_args CLOSE_PAR										{ $$ = new AstNodePtr(std::make_unique<FunctionCallNode>(convert_location(@1, @4), std::string($1), std::move(*$3))); delete $3; }
+	| expr ADD expr																	{ $$ = new AstNodePtr(std::make_unique<BinaryOpNode>(convert_location(@1, @3), Operator::ADD, std::move(*$1), std::move(*$3))); delete $1; delete $3; }
+	| expr SUBTRACT expr															{ $$ = new AstNodePtr(std::make_unique<BinaryOpNode>(convert_location(@1, @3), Operator::SUBTRACT, std::move(*$1), std::move(*$3))); delete $1; delete $3; }
+	| expr MULTIPLY expr															{ $$ = new AstNodePtr(std::make_unique<BinaryOpNode>(convert_location(@1, @3), Operator::MULTIPLY, std::move(*$1), std::move(*$3))); delete $1; delete $3; }
+	| expr DIVIDE expr																{ $$ = new AstNodePtr(std::make_unique<BinaryOpNode>(convert_location(@1, @3), Operator::DIVIDE, std::move(*$1), std::move(*$3))); delete $1; delete $3; }
+	| expr EQUALS_EQUALS expr														{ $$ = new AstNodePtr(std::make_unique<BinaryOpNode>(convert_location(@1, @3), Operator::EQUALS_EQUALS, std::move(*$1), std::move(*$3))); delete $1; delete $3; }
+	| expr NOT_EQUALS expr															{ $$ = new AstNodePtr(std::make_unique<BinaryOpNode>(convert_location(@1, @3), Operator::NOT_EQUALS, std::move(*$1), std::move(*$3))); delete $1; delete $3; }
+	| expr GREATER_THAN expr														{ $$ = new AstNodePtr(std::make_unique<BinaryOpNode>(convert_location(@1, @3), Operator::GREATER_THAN, std::move(*$1), std::move(*$3))); delete $1; delete $3; }
+	| expr GREATER_THAN_OR_EQUALS expr												{ $$ = new AstNodePtr(std::make_unique<BinaryOpNode>(convert_location(@1, @3), Operator::GREATER_THAN_OR_EQUALS, std::move(*$1), std::move(*$3))); delete $1; delete $3; }
+	| expr LESS_THAN expr															{ $$ = new AstNodePtr(std::make_unique<BinaryOpNode>(convert_location(@1, @3), Operator::LESS_THAN, std::move(*$1), std::move(*$3))); delete $1; delete $3; }
+	| expr LESS_THAN_OR_EQUALS expr													{ $$ = new AstNodePtr(std::make_unique<BinaryOpNode>(convert_location(@1, @3), Operator::LESS_THAN_OR_EQUALS, std::move(*$1), std::move(*$3))); delete $1; delete $3; }
+	| expr AND expr																	{ $$ = new AstNodePtr(std::make_unique<BinaryOpNode>(convert_location(@1, @3), Operator::AND, std::move(*$1), std::move(*$3))); delete $1; delete $3; }
+	| expr OR expr																	{ $$ = new AstNodePtr(std::make_unique<BinaryOpNode>(convert_location(@1, @3), Operator::OR, std::move(*$1), std::move(*$3))); delete $1; delete $3; }
 	| OPEN_PAR expr CLOSE_PAR														{ $$ = $2; }
 	;
 
 reftype :
-	REFTYPE_INT																		{ $$ = make_cha_ast_type_int(convert_location(@1, @1)); }
-	| REFTYPE_UINT																	{ $$ = make_cha_ast_type_uint(convert_location(@1, @1)); }
-	| REFTYPE_INT8																	{ $$ = make_cha_ast_type_int8(convert_location(@1, @1)); }
-	| REFTYPE_UINT8																	{ $$ = make_cha_ast_type_uint8(convert_location(@1, @1)); }
-	| REFTYPE_INT16																	{ $$ = make_cha_ast_type_int16(convert_location(@1, @1)); }
-	| REFTYPE_UINT16																{ $$ = make_cha_ast_type_uint16(convert_location(@1, @1)); }
-	| REFTYPE_INT32																	{ $$ = make_cha_ast_type_int32(convert_location(@1, @1)); }
-	| REFTYPE_UINT32																{ $$ = make_cha_ast_type_uint32(convert_location(@1, @1)); }
-	| REFTYPE_INT64																	{ $$ = make_cha_ast_type_int64(convert_location(@1, @1)); }
-	| REFTYPE_UINT64																{ $$ = make_cha_ast_type_uint64(convert_location(@1, @1)); }
-	| REFTYPE_FLOAT16																{ $$ = make_cha_ast_type_float16(convert_location(@1, @1)); }
-	| REFTYPE_FLOAT32																{ $$ = make_cha_ast_type_float32(convert_location(@1, @1)); }
-	| REFTYPE_FLOAT64																{ $$ = make_cha_ast_type_float64(convert_location(@1, @1)); }
-	| REFTYPE_BOOL																	{ $$ = make_cha_ast_type_bool(convert_location(@1, @1)); }
+	REFTYPE_INT																		{ $$ = new AstTypePtr(std::make_unique<AstType>(convert_location(@1, @1), AstType::Primitive{PrimitiveType::INT})); }
+	| REFTYPE_UINT																	{ $$ = new AstTypePtr(std::make_unique<AstType>(convert_location(@1, @1), AstType::Primitive{PrimitiveType::UINT})); }
+	| REFTYPE_INT8																	{ $$ = new AstTypePtr(std::make_unique<AstType>(convert_location(@1, @1), AstType::Primitive{PrimitiveType::INT8})); }
+	| REFTYPE_UINT8																	{ $$ = new AstTypePtr(std::make_unique<AstType>(convert_location(@1, @1), AstType::Primitive{PrimitiveType::UINT8})); }
+	| REFTYPE_INT16																	{ $$ = new AstTypePtr(std::make_unique<AstType>(convert_location(@1, @1), AstType::Primitive{PrimitiveType::INT16})); }
+	| REFTYPE_UINT16																{ $$ = new AstTypePtr(std::make_unique<AstType>(convert_location(@1, @1), AstType::Primitive{PrimitiveType::UINT16})); }
+	| REFTYPE_INT32																	{ $$ = new AstTypePtr(std::make_unique<AstType>(convert_location(@1, @1), AstType::Primitive{PrimitiveType::INT32})); }
+	| REFTYPE_UINT32																{ $$ = new AstTypePtr(std::make_unique<AstType>(convert_location(@1, @1), AstType::Primitive{PrimitiveType::UINT32})); }
+	| REFTYPE_INT64																	{ $$ = new AstTypePtr(std::make_unique<AstType>(convert_location(@1, @1), AstType::Primitive{PrimitiveType::INT64})); }
+	| REFTYPE_UINT64																{ $$ = new AstTypePtr(std::make_unique<AstType>(convert_location(@1, @1), AstType::Primitive{PrimitiveType::UINT64})); }
+	| REFTYPE_FLOAT16																{ $$ = new AstTypePtr(std::make_unique<AstType>(convert_location(@1, @1), AstType::Primitive{PrimitiveType::FLOAT16})); }
+	| REFTYPE_FLOAT32																{ $$ = new AstTypePtr(std::make_unique<AstType>(convert_location(@1, @1), AstType::Primitive{PrimitiveType::FLOAT32})); }
+	| REFTYPE_FLOAT64																{ $$ = new AstTypePtr(std::make_unique<AstType>(convert_location(@1, @1), AstType::Primitive{PrimitiveType::FLOAT64})); }
+	| REFTYPE_BOOL																	{ $$ = new AstTypePtr(std::make_unique<AstType>(convert_location(@1, @1), AstType::Primitive{PrimitiveType::BOOL})); }
 	;
 
 const_value :
-	INTEGER																			{ $$ = make_cha_ast_node_constant_integer(convert_location(@1, @1), $1); }
-	| UINTEGER																		{ $$ = make_cha_ast_node_constant_unsigned_integer(convert_location(@1, @1), $1); }
-	| FLOAT																			{ $$ = make_cha_ast_node_constant_float(convert_location(@1, @1), atof($1)); }
-	| BOOL_TRUE																		{ $$ = make_cha_ast_node_constant_true(convert_location(@1, @1)); }
-	| BOOL_FALSE																	{ $$ = make_cha_ast_node_constant_false(convert_location(@1, @1)); }
+	INTEGER																			{ $$ = new AstNodePtr(std::make_unique<ConstantIntegerNode>(convert_location(@1, @1), std::string($1))); }
+	| UINTEGER																		{ $$ = new AstNodePtr(std::make_unique<ConstantUnsignedIntegerNode>(convert_location(@1, @1), std::string($1))); }
+	| FLOAT																			{ $$ = new AstNodePtr(std::make_unique<ConstantFloatNode>(convert_location(@1, @1), atof($1))); }
+	| BOOL_TRUE																		{ $$ = new AstNodePtr(std::make_unique<ConstantBoolNode>(convert_location(@1, @1), true)); }
+	| BOOL_FALSE																	{ $$ = new AstNodePtr(std::make_unique<ConstantBoolNode>(convert_location(@1, @1), false)); }
 	;
 
 %%
 
-int yyerror(const char *msg) {
-  cha_ast_location location;
-  sprintf(location.file, "%s", current_file);
-  location.line_begin = yylloc.first_line;
-  location.column_begin = yylloc.first_column;
-  location.line_end = yylloc.last_line;
-  location.column_end = yylloc.last_column;
-  
-  log_validation_error(location, msg);
-  return 1;
+// yyerror is already defined in the header section above
+
+AstLocation convert_location(YYLTYPE start, YYLTYPE end) {
+  return AstLocation(
+    current_file ? std::string(current_file) : std::string(""),
+    start.first_line,
+    start.first_column,
+    end.last_line,
+    end.last_column
+  );
 }
 
-cha_ast_location convert_location(YYLTYPE start, YYLTYPE end) {
-  cha_ast_location location;
-  sprintf(location.file, "%s", current_file);
-  location.line_begin = start.first_line;
-  location.column_begin = start.first_column;
-  location.line_end = end.last_line;
-  location.column_end = end.last_column;
-  return location;
-}
+// Main parser function (C++ interface)
+namespace cha {
 
-int cha_parse(const char *file, cha_ast_node_list **out) {
+int parse(const char *file, AstNodeList &out) {
   current_file = file;
   FILE *f = fopen(file, "r");
   if (f == NULL) {
-    log_error("Could not open file %s\n", file);
+    cha::log_error(std::string("Could not open file ") + std::string(file));
     return 1;
   }
 
   yyin = f;
+  parsed_ast = &out;
+  
   int ret = yyparse();
   fclose(f);
+  
+  current_file = nullptr;
+  parsed_ast = nullptr;
+  
   if (ret != 0) {
     return 1;
   }
-  *out = parsed_ast;
+  
   return 0;
 }
+
+} // namespace cha
