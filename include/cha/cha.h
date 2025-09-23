@@ -1,22 +1,20 @@
 #ifndef __CHA_H__
 #define __CHA_H__
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include <string>
 
-typedef enum cha_compile_format {
-  CHA_COMPILE_FORMAT_LLVM_IR,
-  CHA_COMPILE_FORMAT_ASSEMBLY_FILE,
-  CHA_COMPILE_FORMAT_OBJECT_FILE,
-  CHA_COMPILE_FORMAT_BINARY_FILE,
-} cha_compile_format;
+namespace cha {
 
-int cha_compile(const char *file, cha_compile_format format,
-                const char *output_file);
+enum class CompileFormat {
+  LLVM_IR,
+  ASSEMBLY_FILE,
+  OBJECT_FILE,
+  BINARY_FILE,
+};
 
-#ifdef __cplusplus
-}
-#endif
+int compile(const std::string& file, CompileFormat format,
+            const std::string& output_file);
+
+} // namespace cha
 
 #endif // __CHA_H__
