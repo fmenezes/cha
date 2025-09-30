@@ -9,7 +9,7 @@ int yycolumn = 1;
 	yylloc.last_column = yycolumn + yyleng; \
     yycolumn += yyleng;
 
-#include "parser.tab.h"
+#include "parser.tab.hpp"
 %}
 
 %option noyywrap yylineno
