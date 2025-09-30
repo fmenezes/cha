@@ -204,9 +204,11 @@ if(CLANG_FORMAT_EXECUTABLE)
         "${CMAKE_SOURCE_DIR}/include/**/*.hpp"
         "${CMAKE_SOURCE_DIR}/test/*.h"
         "${CMAKE_SOURCE_DIR}/test/*.hpp"
+        "${CMAKE_SOURCE_DIR}/test/*.c"
         "${CMAKE_SOURCE_DIR}/test/*.cpp"
         "${CMAKE_SOURCE_DIR}/test/**/*.h"
         "${CMAKE_SOURCE_DIR}/test/**/*.hpp"
+        "${CMAKE_SOURCE_DIR}/test/**/*.c"
         "${CMAKE_SOURCE_DIR}/test/**/*.cpp"
     )
     
