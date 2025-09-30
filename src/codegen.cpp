@@ -209,8 +209,52 @@ void CodeGenerator::visit(const ConstantIntegerNode &node) {
   // Parse the string value to integer
   try {
     int64_t value = std::stoll(node.value());
-    current_value_ =
-        llvm::ConstantInt::get(*context_, llvm::APInt(32, value, true));
+
+    // Use the result type if available, otherwise default to int32
+    unsigned bit_width = 32;
+    bool is_signed = true;
+
+    if (node.result_type() && node.result_type()->is_primitive()) {
+      PrimitiveType type = node.result_type()->as_primitive().type;
+      switch (type) {
+      case PrimitiveType::INT8:
+        bit_width = 8;
+        break;
+      case PrimitiveType::INT16:
+        bit_width = 16;
+        break;
+      case PrimitiveType::INT32:
+      case PrimitiveType::INT:
+        bit_width = 32;
+        break;
+      case PrimitiveType::INT64:
+        bit_width = 64;
+        break;
+      case PrimitiveType::UINT8:
+        bit_width = 8;
+        is_signed = false;
+        break;
+      case PrimitiveType::UINT16:
+        bit_width = 16;
+        is_signed = false;
+        break;
+      case PrimitiveType::UINT32:
+      case PrimitiveType::UINT:
+        bit_width = 32;
+        is_signed = false;
+        break;
+      case PrimitiveType::UINT64:
+        bit_width = 64;
+        is_signed = false;
+        break;
+      default:
+        // Keep defaults for other types
+        break;
+      }
+    }
+
+    current_value_ = llvm::ConstantInt::get(
+        *context_, llvm::APInt(bit_width, value, is_signed));
   } catch (const std::exception &e) {
     log_error("Invalid integer constant: " + node.value());
     has_error_ = true;
@@ -221,8 +265,47 @@ void CodeGenerator::visit(const ConstantUnsignedIntegerNode &node) {
   // Parse the string value to unsigned integer
   try {
     uint64_t value = std::stoull(node.value());
+
+    // Use the result type if available, otherwise default to uint64
+    unsigned bit_width = 64;
+
+    if (node.result_type() && node.result_type()->is_primitive()) {
+      PrimitiveType type = node.result_type()->as_primitive().type;
+      switch (type) {
+      case PrimitiveType::UINT8:
+        bit_width = 8;
+        break;
+      case PrimitiveType::UINT16:
+        bit_width = 16;
+        break;
+      case PrimitiveType::UINT32:
+      case PrimitiveType::UINT:
+        bit_width = 32;
+        break;
+      case PrimitiveType::UINT64:
+        bit_width = 64;
+        break;
+      case PrimitiveType::INT8:
+        bit_width = 8;
+        break;
+      case PrimitiveType::INT16:
+        bit_width = 16;
+        break;
+      case PrimitiveType::INT32:
+      case PrimitiveType::INT:
+        bit_width = 32;
+        break;
+      case PrimitiveType::INT64:
+        bit_width = 64;
+        break;
+      default:
+        // Keep default for other types
+        break;
+      }
+    }
+
     current_value_ =
-        llvm::ConstantInt::get(*context_, llvm::APInt(64, value, false));
+        llvm::ConstantInt::get(*context_, llvm::APInt(bit_width, value, false));
   } catch (const std::exception &e) {
     log_error("Invalid unsigned integer constant: " + node.value());
     has_error_ = true;
