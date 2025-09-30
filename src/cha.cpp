@@ -7,15 +7,15 @@
 
 namespace cha {
 
-int compile(const std::string& file, CompileFormat format,
-            const std::string& output_file) {
+int compile(const std::string &file, CompileFormat format,
+            const std::string &output_file) {
   AstNodeList ast;
-  
+
   if (parse(file, ast) != 0) {
     log_error("Could not parse file " + file);
     return 1;
   }
-  
+
   Validator validator;
   if (!validator.validate(ast)) {
     // Errors already logged by validator
@@ -28,7 +28,7 @@ int compile(const std::string& file, CompileFormat format,
     log_error("Code generation failed");
     return ret;
   }
-  
+
   return 0;
 }
 

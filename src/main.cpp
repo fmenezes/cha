@@ -7,14 +7,16 @@
 int main(int argc, char *argv[]) {
   // Convert C-style args to modern C++ vector
   std::vector<std::string> args(argv, argv + argc);
-  
+
   if (args.size() == 2 && args[1] == "--version") {
-    std::cerr << CMAKE_PROJECT_NAME << " " << CMAKE_PROJECT_VERSION << std::endl;
+    std::cerr << CMAKE_PROJECT_NAME << " " << CMAKE_PROJECT_VERSION
+              << std::endl;
     return 0;
   }
 
   if (args.size() != 4) {
-    std::cerr << "Usage: --version | " << args[0] << " <format> <outputfile> <inputfile>" << std::endl;
+    std::cerr << "Usage: --version | " << args[0]
+              << " <format> <outputfile> <inputfile>" << std::endl;
     std::cerr << "format: -s for Assembly Code" << std::endl;
     std::cerr << "format: -c for Object File" << std::endl;
     std::cerr << "format: -ll for LLVM IR" << std::endl;
@@ -22,9 +24,9 @@ int main(int argc, char *argv[]) {
     return 1;
   }
 
-  const std::string& format = args[1];
-  const std::string& outputfile = args[2];
-  const std::string& inputfile = args[3];
+  const std::string &format = args[1];
+  const std::string &outputfile = args[2];
+  const std::string &inputfile = args[3];
 
   cha::CompileFormat compile_format;
   if (format == "-s") {

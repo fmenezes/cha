@@ -8,8 +8,8 @@ namespace cha {
 int parse(const char *file, AstNodeList &out);
 
 // Convenience overload for std::string
-inline int parse(const std::string& file, AstNodeList &out) {
-    return parse(file.c_str(), out);
+inline int parse(const std::string &file, AstNodeList &out) {
+  return parse(file.c_str(), out);
 }
 
 } // namespace cha
