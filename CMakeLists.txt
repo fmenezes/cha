@@ -23,6 +23,9 @@ FetchContent_Declare(
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googletest)
 
+# Include GoogleTest module for test discovery
+include(GoogleTest)
+
 find_package(FLEX REQUIRED)
 find_package(BISON REQUIRED)
 find_package(LLVM 21.1.1 REQUIRED CONFIG)
@@ -144,10 +147,10 @@ target_link_libraries(all_tests
     ${LLVM_LIBS}
 )
 
-# Add the test to CTest
-add_test(NAME all_tests COMMAND all_tests)
-set_tests_properties(all_tests PROPERTIES
+# Discover and register individual Google Tests with CTest
+gtest_discover_tests(all_tests
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
 )
 
 # Add a convenience target to run tests
