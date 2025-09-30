@@ -14,7 +14,7 @@ TEST(AstTest, ConstantNodes) {
   ASSERT_NE(int_const->result_type(), nullptr);
   EXPECT_TRUE(int_const->result_type()->is_primitive());
   EXPECT_EQ(int_const->result_type()->as_primitive().type,
-         PrimitiveType::CONST_INT);
+            PrimitiveType::CONST_INT);
 
   // Test boolean constant
   auto bool_node = std::make_unique<ConstantBoolNode>(loc, true);
@@ -145,7 +145,7 @@ TEST(AstTest, TypeSystem) {
   EXPECT_EQ(array_type->as_array().size, 10);
   EXPECT_TRUE(array_type->as_array().element_type->is_primitive());
   EXPECT_EQ(array_type->as_array().element_type->as_primitive().type,
-         PrimitiveType::FLOAT32);
+            PrimitiveType::FLOAT32);
 
   // Test identifier type
   auto id_type =
