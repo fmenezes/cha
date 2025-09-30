@@ -12,6 +12,17 @@ enable_testing()
 # Add coverage option
 option(ENABLE_COVERAGE "Enable coverage reporting" OFF)
 
+# Fetch Google Test
+include(FetchContent)
+FetchContent_Declare(
+  googletest
+  GIT_REPOSITORY https://github.com/google/googletest.git
+  GIT_TAG        v1.14.0
+)
+# For Windows: Prevent overriding the parent project's compiler/linker settings
+set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+FetchContent_MakeAvailable(googletest)
+
 find_package(FLEX REQUIRED)
 find_package(BISON REQUIRED)
 find_package(LLVM 21.1.1 REQUIRED CONFIG)
@@ -99,81 +110,54 @@ add_executable(cha ${CHA_SOURCES})
 
 target_link_libraries(cha ${LLVM_LIBS})
 
-file(GLOB_RECURSE TEST_SRC
-    CONFIGURE_DEPENDS
-    "test/integration/*.cha"
-    "test/integration/**/*.cha"
-)
-
+# Create a single test executable with all unit and integration tests
 add_executable(
-    cha_test
-    test/integration/test.c
-)
-
-# Add C++ AST unit tests
-add_executable(
-    ast_test
+    all_tests
     test/unit/test_ast.cpp
-    src/ast.cpp
-)
-
-# Set C++ standard for the test
-set_target_properties(ast_test PROPERTIES
-    CXX_STANDARD 17
-    CXX_STANDARD_REQUIRED ON
-)
-
-# Add the C++ AST test to CTest
-add_test(NAME ast_unit_tests COMMAND ast_test)
-
-# Add C++ Parser unit tests
-add_executable(
-    parser_test
     test/unit/test_parser.cpp
+    test/unit/test_validate.cpp
+    test/integration/test_integration.cpp
     src/ast.cpp
+    src/validate.cpp
     src/log.cpp
     ${BISON_parser_OUTPUTS}
     ${FLEX_scanner_OUTPUTS}
 )
 
-# Set C++ standard and link dependencies for parser test
-set_target_properties(parser_test PROPERTIES
+# Set C++ standard and include directories for tests
+set_target_properties(all_tests PROPERTIES
     CXX_STANDARD 17
     CXX_STANDARD_REQUIRED ON
 )
 
-target_link_libraries(parser_test ${LLVM_LIBS})
+target_include_directories(all_tests PRIVATE 
+    include 
+    src 
+    ${CMAKE_CURRENT_BINARY_DIR} 
+    ${LLVM_INCLUDE_DIRS}
+)
 
-# Add the C++ Parser test to CTest
-add_test(NAME parser_unit_tests COMMAND parser_test)
-set_tests_properties(parser_unit_tests PROPERTIES
+# Link against Google Test and LLVM libraries
+target_link_libraries(all_tests 
+    gtest_main
+    gtest
+    ${LLVM_LIBS}
+)
+
+# Add the test to CTest
+add_test(NAME all_tests COMMAND all_tests)
+set_tests_properties(all_tests PROPERTIES
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
 )
 
-# Add C++ Validation unit tests
-add_executable(
-    validate_test
-    test/unit/test_validate.cpp
-    src/ast.cpp
-    src/validate.cpp
-    src/log.cpp
+# Add a convenience target to run tests
+add_custom_target(test_all
+    COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR} --target all_tests
+    COMMAND ${CMAKE_SOURCE_DIR}/build/all_tests
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    DEPENDS all_tests
+    COMMENT "Building and running all tests"
 )
-
-# Set C++ standard for the validation test
-set_target_properties(validate_test PROPERTIES
-    CXX_STANDARD 17
-    CXX_STANDARD_REQUIRED ON
-)
-
-# Add the C++ Validation test to CTest
-add_test(NAME validate_unit_tests COMMAND validate_test)
-
-FOREACH(test ${TEST_SRC})
-    GET_FILENAME_COMPONENT(TName ${test} NAME_WE)
-    GET_FILENAME_COMPONENT(TPath ${test} DIRECTORY)
-    ADD_TEST(NAME ${TName} COMMAND cha_test "${TPath}/${TName}.cha")
-    SET_PROPERTY(TEST ${TName} PROPERTY ENVIRONMENT "PATH=${CMAKE_CURRENT_BINARY_DIR}:$ENV{PATH}")
-ENDFOREACH(test)
 
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})
 set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})
