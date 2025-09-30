@@ -1,4 +1,4 @@
-#include "cha/cha.h"
+#include "cha/cha.hpp"
 #include "ast.hpp"
 #include "codegen.hpp"
 #include "log.hpp"

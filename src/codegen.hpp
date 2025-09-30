@@ -1,7 +1,7 @@
 #pragma once
 
 #include "ast.hpp"
-#include "cha/cha.h"
+#include "cha/cha.hpp"
 
 #include <llvm/CodeGen/CommandFlags.h>
 #include <llvm/IR/BasicBlock.h>

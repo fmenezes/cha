@@ -2,7 +2,7 @@
 #include <string>
 #include <vector>
 
-#include "cha/cha.h"
+#include "cha/cha.hpp"
 
 int main(int argc, char *argv[]) {
   // Convert C-style args to modern C++ vector
