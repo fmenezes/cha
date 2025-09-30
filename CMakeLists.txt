@@ -111,6 +111,12 @@ llvm_map_components_to_libnames(LLVM_LIBS
 
 add_executable(cha ${CHA_SOURCES})
 
+# Add compiler flags to handle LLVM ABI conflicts
+target_compile_options(cha PRIVATE
+    -Wno-deprecated-declarations
+    -D_GLIBCXX_USE_CXX11_ABI=1
+)
+
 target_link_libraries(cha ${LLVM_LIBS})
 
 # Create a single test executable with all unit and integration tests
@@ -131,6 +137,12 @@ add_executable(
 set_target_properties(all_tests PROPERTIES
     CXX_STANDARD 17
     CXX_STANDARD_REQUIRED ON
+)
+
+# Add compiler flags to handle LLVM/GTest ABI conflicts
+target_compile_options(all_tests PRIVATE
+    -Wno-deprecated-declarations
+    -D_GLIBCXX_USE_CXX11_ABI=1
 )
 
 target_include_directories(all_tests PRIVATE 
