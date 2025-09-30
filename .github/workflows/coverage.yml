@@ -43,6 +43,7 @@ jobs:
           ctest --output-on-failure
           
       - name: Generate coverage info
+        if: always()
         run: |
           cd build
           make coverage

@@ -80,6 +80,7 @@ llvm_map_components_to_libnames(LLVM_LIBS
 
     # x86desc
     x86info
+    x86asmparser
 
     # webassemblydisassembler
     # webassemblyasmparser
