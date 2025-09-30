@@ -257,24 +257,24 @@ add_executable(
 
 # Add C++ AST unit tests
 add_executable(
-    ast_cpp_test
-    test/unit/test_ast_cpp.cpp
+    ast_test
+    test/unit/test_ast.cpp
     src/ast.cpp
 )
 
 # Set C++ standard for the test
-set_target_properties(ast_cpp_test PROPERTIES
+set_target_properties(ast_test PROPERTIES
     CXX_STANDARD 17
     CXX_STANDARD_REQUIRED ON
 )
 
 # Add the C++ AST test to CTest
-add_test(NAME ast_cpp_unit_tests COMMAND ast_cpp_test)
+add_test(NAME ast_unit_tests COMMAND ast_test)
 
 # Add C++ Parser unit tests
 add_executable(
-    parser_cpp_test
-    test/unit/test_parser_cpp.cpp
+    parser_test
+    test/unit/test_parser.cpp
     src/ast.cpp
     src/log.cpp
     ${BISON_parser_OUTPUTS}
@@ -282,36 +282,36 @@ add_executable(
 )
 
 # Set C++ standard and link dependencies for parser test
-set_target_properties(parser_cpp_test PROPERTIES
+set_target_properties(parser_test PROPERTIES
     CXX_STANDARD 17
     CXX_STANDARD_REQUIRED ON
 )
 
-target_link_libraries(parser_cpp_test ${LLVM_LIBS})
+target_link_libraries(parser_test ${LLVM_LIBS})
 
 # Add the C++ Parser test to CTest
-add_test(NAME parser_cpp_unit_tests COMMAND parser_cpp_test)
-set_tests_properties(parser_cpp_unit_tests PROPERTIES
+add_test(NAME parser_unit_tests COMMAND parser_test)
+set_tests_properties(parser_unit_tests PROPERTIES
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
 )
 
 # Add C++ Validation unit tests
 add_executable(
-    validate_cpp_test
-    test/unit/test_validate_cpp.cpp
+    validate_test
+    test/unit/test_validate.cpp
     src/ast.cpp
     src/validate.cpp
     src/log.cpp
 )
 
 # Set C++ standard for the validation test
-set_target_properties(validate_cpp_test PROPERTIES
+set_target_properties(validate_test PROPERTIES
     CXX_STANDARD 17
     CXX_STANDARD_REQUIRED ON
 )
 
 # Add the C++ Validation test to CTest
-add_test(NAME validate_cpp_unit_tests COMMAND validate_cpp_test)
+add_test(NAME validate_unit_tests COMMAND validate_test)
 
 FOREACH(test ${TEST_SRC})
     GET_FILENAME_COMPONENT(TName ${test} NAME_WE)
