@@ -1,5 +1,4 @@
-#include <cassert>
-#include <iostream>
+#include <gtest/gtest.h>
 #include <memory>
 #include <string>
 #include <vector>
@@ -8,35 +7,6 @@
 #include "../src/validate.hpp"
 
 using namespace cha;
-
-// Test helper macros
-#define ASSERT_TRUE(condition)                                                 \
-  do {                                                                         \
-    if (!(condition)) {                                                        \
-      std::cerr << "ASSERTION FAILED: " << #condition << " at line "           \
-                << __LINE__ << std::endl;                                      \
-      return false;                                                            \
-    }                                                                          \
-  } while (0)
-
-#define ASSERT_FALSE(condition)                                                \
-  do {                                                                         \
-    if (condition) {                                                           \
-      std::cerr << "ASSERTION FAILED: !(" << #condition << ") at line "        \
-                << __LINE__ << std::endl;                                      \
-      return false;                                                            \
-    }                                                                          \
-  } while (0)
-
-#define ASSERT_EQ(expected, actual)                                            \
-  do {                                                                         \
-    if ((expected) != (actual)) {                                              \
-      std::cerr << "ASSERTION FAILED: " << #expected << " == " << #actual      \
-                << " (expected: " << (expected) << ", actual: " << (actual)    \
-                << ") at line " << __LINE__ << std::endl;                      \
-      return false;                                                            \
-    }                                                                          \
-  } while (0)
 
 // Helper function to create a location
 AstLocation make_test_location() {
@@ -65,124 +35,112 @@ std::unique_ptr<AstType> make_float_type() {
 }
 
 // Test TypeUtils functions
-bool test_type_utils() {
-  std::cout << "Testing TypeUtils..." << std::endl;
-
+TEST(ValidateTest, TypeUtils) {
   // Test is_numeric
-  ASSERT_TRUE(TypeUtils::is_numeric(PrimitiveType::INT));
-  ASSERT_TRUE(TypeUtils::is_numeric(PrimitiveType::UINT));
-  ASSERT_TRUE(TypeUtils::is_numeric(PrimitiveType::FLOAT32));
-  ASSERT_FALSE(TypeUtils::is_numeric(PrimitiveType::BOOL));
+  EXPECT_TRUE(TypeUtils::is_numeric(PrimitiveType::INT));
+  EXPECT_TRUE(TypeUtils::is_numeric(PrimitiveType::UINT));
+  EXPECT_TRUE(TypeUtils::is_numeric(PrimitiveType::FLOAT32));
+  EXPECT_FALSE(TypeUtils::is_numeric(PrimitiveType::BOOL));
 
   // Test is_signed_int
-  ASSERT_TRUE(TypeUtils::is_signed_int(PrimitiveType::INT));
-  ASSERT_TRUE(TypeUtils::is_signed_int(PrimitiveType::INT32));
-  ASSERT_FALSE(TypeUtils::is_signed_int(PrimitiveType::UINT));
-  ASSERT_FALSE(TypeUtils::is_signed_int(PrimitiveType::BOOL));
+  EXPECT_TRUE(TypeUtils::is_signed_int(PrimitiveType::INT));
+  EXPECT_TRUE(TypeUtils::is_signed_int(PrimitiveType::INT32));
+  EXPECT_FALSE(TypeUtils::is_signed_int(PrimitiveType::UINT));
+  EXPECT_FALSE(TypeUtils::is_signed_int(PrimitiveType::BOOL));
 
   // Test is_unsigned_int
-  ASSERT_TRUE(TypeUtils::is_unsigned_int(PrimitiveType::UINT));
-  ASSERT_TRUE(TypeUtils::is_unsigned_int(PrimitiveType::UINT32));
-  ASSERT_FALSE(TypeUtils::is_unsigned_int(PrimitiveType::INT));
-  ASSERT_FALSE(TypeUtils::is_unsigned_int(PrimitiveType::BOOL));
+  EXPECT_TRUE(TypeUtils::is_unsigned_int(PrimitiveType::UINT));
+  EXPECT_TRUE(TypeUtils::is_unsigned_int(PrimitiveType::UINT32));
+  EXPECT_FALSE(TypeUtils::is_unsigned_int(PrimitiveType::INT));
+  EXPECT_FALSE(TypeUtils::is_unsigned_int(PrimitiveType::BOOL));
 
   // Test is_float
-  ASSERT_TRUE(TypeUtils::is_float(PrimitiveType::FLOAT32));
-  ASSERT_TRUE(TypeUtils::is_float(PrimitiveType::FLOAT64));
-  ASSERT_FALSE(TypeUtils::is_float(PrimitiveType::INT));
-  ASSERT_FALSE(TypeUtils::is_float(PrimitiveType::BOOL));
+  EXPECT_TRUE(TypeUtils::is_float(PrimitiveType::FLOAT32));
+  EXPECT_TRUE(TypeUtils::is_float(PrimitiveType::FLOAT64));
+  EXPECT_FALSE(TypeUtils::is_float(PrimitiveType::INT));
+  EXPECT_FALSE(TypeUtils::is_float(PrimitiveType::BOOL));
 
   // Test convert_arithmetic_types
-  ASSERT_EQ(PrimitiveType::INT32,
+  EXPECT_EQ(PrimitiveType::INT32,
             TypeUtils::convert_arithmetic_types(PrimitiveType::INT,
                                                 PrimitiveType::INT32));
-  ASSERT_EQ(PrimitiveType::UINT32,
+  EXPECT_EQ(PrimitiveType::UINT32,
             TypeUtils::convert_arithmetic_types(PrimitiveType::UINT,
                                                 PrimitiveType::UINT32));
-  ASSERT_EQ(PrimitiveType::FLOAT64,
+  EXPECT_EQ(PrimitiveType::FLOAT64,
             TypeUtils::convert_arithmetic_types(PrimitiveType::FLOAT32,
                                                 PrimitiveType::FLOAT64));
-  ASSERT_EQ(PrimitiveType::UNDEF, TypeUtils::convert_arithmetic_types(
+  EXPECT_EQ(PrimitiveType::UNDEF, TypeUtils::convert_arithmetic_types(
                                       PrimitiveType::INT, PrimitiveType::UINT));
 
   // Test assignment compatibility
-  ASSERT_TRUE(TypeUtils::is_assignment_compatible(PrimitiveType::INT,
+  EXPECT_TRUE(TypeUtils::is_assignment_compatible(PrimitiveType::INT,
                                                   PrimitiveType::INT));
-  ASSERT_TRUE(TypeUtils::is_assignment_compatible(PrimitiveType::CONST_INT,
+  EXPECT_TRUE(TypeUtils::is_assignment_compatible(PrimitiveType::CONST_INT,
                                                   PrimitiveType::INT));
-  ASSERT_FALSE(TypeUtils::is_assignment_compatible(PrimitiveType::INT,
+  EXPECT_FALSE(TypeUtils::is_assignment_compatible(PrimitiveType::INT,
                                                    PrimitiveType::UINT));
-  ASSERT_FALSE(TypeUtils::is_assignment_compatible(PrimitiveType::INT,
+  EXPECT_FALSE(TypeUtils::is_assignment_compatible(PrimitiveType::INT,
                                                    PrimitiveType::BOOL));
 
   // Test comparison compatibility
-  ASSERT_TRUE(TypeUtils::is_numeric_comparison_compatible(
+  EXPECT_TRUE(TypeUtils::is_numeric_comparison_compatible(
       PrimitiveType::INT, PrimitiveType::INT32));
-  ASSERT_TRUE(TypeUtils::is_equality_comparison_compatible(
+  EXPECT_TRUE(TypeUtils::is_equality_comparison_compatible(
       PrimitiveType::BOOL, PrimitiveType::BOOL));
-  ASSERT_FALSE(TypeUtils::is_numeric_comparison_compatible(
+  EXPECT_FALSE(TypeUtils::is_numeric_comparison_compatible(
       PrimitiveType::INT, PrimitiveType::BOOL));
 
   // Test type_to_string
-  ASSERT_EQ(std::string("int"), TypeUtils::type_to_string(PrimitiveType::INT));
-  ASSERT_EQ(std::string("bool"),
+  EXPECT_EQ(std::string("int"), TypeUtils::type_to_string(PrimitiveType::INT));
+  EXPECT_EQ(std::string("bool"),
             TypeUtils::type_to_string(PrimitiveType::BOOL));
-  ASSERT_EQ(std::string("float32"),
+  EXPECT_EQ(std::string("float32"),
             TypeUtils::type_to_string(PrimitiveType::FLOAT32));
-
-  std::cout << "TypeUtils tests passed!" << std::endl;
-  return true;
 }
 
 // Test SymbolTable functionality
-bool test_symbol_table() {
-  std::cout << "Testing SymbolTable..." << std::endl;
-
+TEST(ValidateTest, SymbolTable) {
   auto table = std::make_shared<SymbolTable>();
 
   // Test inserting a symbol
   auto var_node = std::make_unique<VariableDeclarationNode>(
       make_test_location(), "test_var", make_int_type());
 
-  ASSERT_TRUE(table->insert("test_var", var_node->clone()));
+  EXPECT_TRUE(table->insert("test_var", var_node->clone()));
 
   // Test duplicate insertion fails
-  ASSERT_FALSE(table->insert("test_var", var_node->clone()));
+  EXPECT_FALSE(table->insert("test_var", var_node->clone()));
 
   // Test lookup
   const SymbolEntry *entry = table->lookup("test_var");
-  ASSERT_TRUE(entry != nullptr);
+  EXPECT_NE(entry, nullptr);
 
   // Test lookup non-existent symbol
   const SymbolEntry *missing = table->lookup("missing_var");
-  ASSERT_TRUE(missing == nullptr);
+  EXPECT_EQ(missing, nullptr);
 
   // Test child scope
   auto child_table = table->create_child_scope();
 
   // Child should be able to see parent symbols
   const SymbolEntry *parent_entry = child_table->lookup("test_var");
-  ASSERT_TRUE(parent_entry != nullptr);
+  EXPECT_NE(parent_entry, nullptr);
 
   // Child can shadow parent symbols
   auto child_var = std::make_unique<VariableDeclarationNode>(
       make_test_location(), "test_var", make_bool_type());
-  ASSERT_TRUE(child_table->insert("test_var", child_var->clone()));
-
-  std::cout << "SymbolTable tests passed!" << std::endl;
-  return true;
+  EXPECT_TRUE(child_table->insert("test_var", child_var->clone()));
 }
 
 // Test basic validation scenarios
-bool test_basic_validation() {
-  std::cout << "Testing basic validation..." << std::endl;
-
+TEST(ValidateTest, BasicValidation) {
   Validator validator;
 
   // Test empty AST
   AstNodeList empty_ast;
-  ASSERT_TRUE(validator.validate(empty_ast));
-  ASSERT_EQ(0, validator.errors().size());
+  EXPECT_TRUE(validator.validate(empty_ast));
+  EXPECT_EQ(0, validator.errors().size());
 
   // Test simple function declaration
   AstNodeList simple_func;
@@ -191,17 +149,12 @@ bool test_basic_validation() {
       AstNodeList{});
   simple_func.push_back(std::move(func));
 
-  ASSERT_TRUE(validator.validate(simple_func));
-  ASSERT_EQ(0, validator.errors().size());
-
-  std::cout << "Basic validation tests passed!" << std::endl;
-  return true;
+  EXPECT_TRUE(validator.validate(simple_func));
+  EXPECT_EQ(0, validator.errors().size());
 }
 
 // Test variable validation
-bool test_variable_validation() {
-  std::cout << "Testing variable validation..." << std::endl;
-
+TEST(ValidateTest, VariableValidation) {
   Validator validator;
   AstNodeList ast;
 
@@ -223,17 +176,12 @@ bool test_variable_validation() {
       std::move(func_body));
   ast.push_back(std::move(func));
 
-  ASSERT_TRUE(validator.validate(ast));
-  ASSERT_EQ(0, validator.errors().size());
-
-  std::cout << "Variable validation tests passed!" << std::endl;
-  return true;
+  EXPECT_TRUE(validator.validate(ast));
+  EXPECT_EQ(0, validator.errors().size());
 }
 
 // Test duplicate symbol detection
-bool test_duplicate_symbols() {
-  std::cout << "Testing duplicate symbol detection..." << std::endl;
-
+TEST(ValidateTest, DuplicateSymbols) {
   Validator validator;
   AstNodeList ast;
 
@@ -249,19 +197,14 @@ bool test_duplicate_symbols() {
   ast.push_back(std::move(func1));
   ast.push_back(std::move(func2));
 
-  ASSERT_FALSE(validator.validate(ast));
-  ASSERT_EQ(1, validator.errors().size());
-  ASSERT_TRUE(validator.errors()[0].message().find("already defined") !=
+  EXPECT_FALSE(validator.validate(ast));
+  EXPECT_EQ(1, validator.errors().size());
+  EXPECT_TRUE(validator.errors()[0].message().find("already defined") !=
               std::string::npos);
-
-  std::cout << "Duplicate symbol detection tests passed!" << std::endl;
-  return true;
 }
 
 // Test binary operation validation
-bool test_binary_operations() {
-  std::cout << "Testing binary operations..." << std::endl;
-
+TEST(ValidateTest, BinaryOperations) {
   Validator validator;
   AstNodeList ast;
   AstNodeList func_body;
@@ -288,17 +231,12 @@ bool test_binary_operations() {
       std::move(func_body));
   ast.push_back(std::move(func));
 
-  ASSERT_TRUE(validator.validate(ast));
-  ASSERT_EQ(0, validator.errors().size());
-
-  std::cout << "Binary operation tests passed!" << std::endl;
-  return true;
+  EXPECT_TRUE(validator.validate(ast));
+  EXPECT_EQ(0, validator.errors().size());
 }
 
 // Test type mismatch detection
-bool test_type_mismatches() {
-  std::cout << "Testing type mismatch detection..." << std::endl;
-
+TEST(ValidateTest, TypeMismatches) {
   Validator validator;
   AstNodeList ast;
   AstNodeList func_body;
@@ -322,19 +260,14 @@ bool test_type_mismatches() {
       std::move(func_body));
   ast.push_back(std::move(func));
 
-  ASSERT_FALSE(validator.validate(ast));
-  ASSERT_TRUE(validator.errors().size() > 0);
-  ASSERT_TRUE(validator.errors()[0].message().find("type mismatch") !=
+  EXPECT_FALSE(validator.validate(ast));
+  EXPECT_GT(validator.errors().size(), 0);
+  EXPECT_TRUE(validator.errors()[0].message().find("type mismatch") !=
               std::string::npos);
-
-  std::cout << "Type mismatch detection tests passed!" << std::endl;
-  return true;
 }
 
 // Test function call validation
-bool test_function_calls() {
-  std::cout << "Testing function call validation..." << std::endl;
-
+TEST(ValidateTest, FunctionCalls) {
   Validator validator;
   AstNodeList ast;
 
@@ -387,17 +320,12 @@ bool test_function_calls() {
       std::move(main_body));
   ast.push_back(std::move(main_func));
 
-  ASSERT_TRUE(validator.validate(ast));
-  ASSERT_EQ(0, validator.errors().size());
-
-  std::cout << "Function call validation tests passed!" << std::endl;
-  return true;
+  EXPECT_TRUE(validator.validate(ast));
+  EXPECT_EQ(0, validator.errors().size());
 }
 
 // Test if statement validation
-bool test_if_statements() {
-  std::cout << "Testing if statement validation..." << std::endl;
-
+TEST(ValidateTest, IfStatements) {
   Validator validator;
   AstNodeList ast;
   AstNodeList func_body;
@@ -427,17 +355,12 @@ bool test_if_statements() {
       std::move(func_body));
   ast.push_back(std::move(func));
 
-  ASSERT_TRUE(validator.validate(ast));
-  ASSERT_EQ(0, validator.errors().size());
-
-  std::cout << "If statement validation tests passed!" << std::endl;
-  return true;
+  EXPECT_TRUE(validator.validate(ast));
+  EXPECT_EQ(0, validator.errors().size());
 }
 
 // Test invalid if condition (non-boolean)
-bool test_invalid_if_condition() {
-  std::cout << "Testing invalid if condition..." << std::endl;
-
+TEST(ValidateTest, InvalidIfCondition) {
   Validator validator;
   AstNodeList ast;
   AstNodeList func_body;
@@ -467,65 +390,8 @@ bool test_invalid_if_condition() {
       std::move(func_body));
   ast.push_back(std::move(func));
 
-  ASSERT_FALSE(validator.validate(ast));
-  ASSERT_TRUE(validator.errors().size() > 0);
-  ASSERT_TRUE(validator.errors()[0].message().find(
+  EXPECT_FALSE(validator.validate(ast));
+  EXPECT_GT(validator.errors().size(), 0);
+  EXPECT_TRUE(validator.errors()[0].message().find(
                   "condition should return bool") != std::string::npos);
-
-  std::cout << "Invalid if condition tests passed!" << std::endl;
-  return true;
-}
-
-// Main test runner
-int main() {
-  std::cout << "Running C++ validation tests..." << std::endl << std::endl;
-
-  int passed = 0;
-  int total = 0;
-
-  struct TestCase {
-    const char *name;
-    bool (*func)();
-  };
-
-  TestCase tests[] = {{"TypeUtils", test_type_utils},
-                      {"SymbolTable", test_symbol_table},
-                      {"Basic Validation", test_basic_validation},
-                      {"Variable Validation", test_variable_validation},
-                      {"Duplicate Symbols", test_duplicate_symbols},
-                      {"Binary Operations", test_binary_operations},
-                      {"Type Mismatches", test_type_mismatches},
-                      {"Function Calls", test_function_calls},
-                      {"If Statements", test_if_statements},
-                      {"Invalid If Condition", test_invalid_if_condition}};
-
-  for (const auto &test : tests) {
-    total++;
-    std::cout << "Running " << test.name << " test..." << std::endl;
-
-    try {
-      if (test.func()) {
-        passed++;
-        std::cout << "✓ " << test.name << " test passed" << std::endl;
-      } else {
-        std::cout << "✗ " << test.name << " test failed" << std::endl;
-      }
-    } catch (const std::exception &e) {
-      std::cout << "✗ " << test.name
-                << " test failed with exception: " << e.what() << std::endl;
-    }
-
-    std::cout << std::endl;
-  }
-
-  std::cout << "Test Results: " << passed << "/" << total << " tests passed"
-            << std::endl;
-
-  if (passed == total) {
-    std::cout << "All tests passed! ✓" << std::endl;
-    return 0;
-  } else {
-    std::cout << "Some tests failed! ✗" << std::endl;
-    return 1;
-  }
 }
