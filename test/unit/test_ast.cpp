@@ -1,5 +1,5 @@
-#include <gtest/gtest.h>
 #include "ast.hpp"
+#include <gtest/gtest.h>
 
 using namespace cha;
 

@@ -115,6 +115,7 @@ add_executable(cha ${CHA_SOURCES})
 target_compile_options(cha PRIVATE
     -Wno-deprecated-declarations
     -D_GLIBCXX_USE_CXX11_ABI=1
+    -DGTEST_HAS_CXXABI_H_=0
 )
 
 target_link_libraries(cha ${LLVM_LIBS})
@@ -143,6 +144,7 @@ set_target_properties(all_tests PROPERTIES
 target_compile_options(all_tests PRIVATE
     -Wno-deprecated-declarations
     -D_GLIBCXX_USE_CXX11_ABI=1
+    -DGTEST_HAS_CXXABI_H_=0
 )
 
 target_include_directories(all_tests PRIVATE 

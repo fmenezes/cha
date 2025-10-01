@@ -1,6 +1,6 @@
 #include "ast.hpp"
-#include <gtest/gtest.h>
 #include "parser.hpp"
+#include <gtest/gtest.h>
 
 using namespace cha;
 
