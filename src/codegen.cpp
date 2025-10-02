@@ -1,6 +1,8 @@
 #include "codegen.hpp"
 #include "exceptions.hpp"
 
+#include <cstdio>  // for std::rename, std::remove
+#include <cstdlib> // for std::system
 #include <llvm/Bitcode/BitcodeWriter.h>
 #include <llvm/CodeGen/TargetPassConfig.h>
 #include <llvm/IR/LegacyPassManager.h>
@@ -12,8 +14,6 @@
 #include <llvm/TargetParser/Host.h>
 #include <llvm/TargetParser/Triple.h>
 #include <optional>
-#include <cstdlib>  // for std::system
-#include <cstdio>   // for std::rename, std::remove
 
 namespace cha {
 
@@ -165,22 +165,22 @@ void CodeGenerator::write_output(CompileFormat format,
     // For binary files, add a linker step
     if (format == CompileFormat::BINARY_FILE) {
       dest.close(); // Close the object file first
-      
+
       // Create temporary object file name
       std::string obj_file = output_file + ".o";
-      
+
       // Rename the output to .o extension temporarily
       if (std::rename(output_file.c_str(), obj_file.c_str()) != 0) {
         throw CodeGenerationException("Failed to create temporary object file");
       }
-      
+
       // Link with cc
       std::string link_cmd = "cc -o " + output_file + " " + obj_file;
       int result = std::system(link_cmd.c_str());
-      
+
       // Clean up temporary object file
       std::remove(obj_file.c_str());
-      
+
       if (result != 0) {
         throw CodeGenerationException("Linking failed - is 'cc' available?");
       }
