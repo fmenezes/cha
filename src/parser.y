@@ -5,7 +5,7 @@
 
 #include "ast.hpp"
 #include "parser.hpp" 
-#include "log.hpp"
+#include "exceptions.hpp"
 
 using namespace cha;
 AstNodeList *parsed_ast;
@@ -14,11 +14,11 @@ const char *current_file = nullptr;
 int yyerror(const char *msg) {
   AstLocation location(
     current_file ? std::string(current_file) : std::string(""),
-    1, 1, 1, 1  // Default location since yylloc isn't available here
+    1, 1, 1, 1  // Default location since yylloc isn't available here  
   );
   
-  cha::log_validation_error(location, std::string(msg));
-  return 1;
+  // Throw parse exception instead of logging
+  throw ParseException(location, std::string(msg));
 }
 
 extern "C" {
@@ -200,28 +200,39 @@ AstLocation convert_location(YYLTYPE start, YYLTYPE end) {
 // Main parser function (C++ interface)
 namespace cha {
 
-int parse(const char *file, AstNodeList &out) {
+void parse(const char *file, AstNodeList &out) {
   current_file = file;
   FILE *f = fopen(file, "r");
   if (f == NULL) {
-    cha::log_error(std::string("Could not open file ") + std::string(file));
-    return 1;
+    throw ParseException(
+      AstLocation(std::string(file), 1, 1, 1, 1),
+      std::string("Could not open file")
+    );
   }
 
   yyin = f;
   parsed_ast = &out;
   
-  int ret = yyparse();
-  fclose(f);
-  
-  current_file = nullptr;
-  parsed_ast = nullptr;
-  
-  if (ret != 0) {
-    return 1;
+  try {
+    int ret = yyparse();
+    fclose(f);
+    
+    current_file = nullptr;
+    parsed_ast = nullptr;
+    
+    if (ret != 0) {
+      throw ParseException(
+        AstLocation(std::string(file), 1, 1, 1, 1),
+        "Parse failed"
+      );
+    }
+  } catch (...) {
+    // Clean up and re-throw
+    fclose(f);
+    current_file = nullptr;
+    parsed_ast = nullptr;
+    throw;
   }
-  
-  return 0;
 }
 
 } // namespace cha

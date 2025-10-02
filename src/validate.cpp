@@ -1,5 +1,5 @@
 #include "validate.hpp"
-#include "log.hpp"
+#include "exceptions.hpp"
 #include <cassert>
 #include <sstream>
 
@@ -215,17 +215,25 @@ Validator::Validator()
     : symbol_table_(std::make_shared<SymbolTable>()),
       current_function_(nullptr) {}
 
-bool Validator::validate(const AstNodeList &ast) {
+void Validator::validate(const AstNodeList &ast) {
   errors_.clear();
   symbol_table_ = std::make_shared<SymbolTable>();
   current_function_ = nullptr;
 
-  return validate_top_level(ast);
+  try {
+    validate_top_level(ast);
+    
+    // If we collected any errors, throw a MultipleValidationException
+    if (!errors_.empty()) {
+      throw MultipleValidationException(errors_);
+    }
+  } catch (const ValidationException &e) {
+    // Re-throw single validation exceptions
+    throw;
+  }
 }
 
-bool Validator::validate_top_level(const AstNodeList &nodes) {
-  bool success = true;
-
+void Validator::validate_top_level(const AstNodeList &nodes) {
   // First pass: register all function declarations
   for (const auto &node : nodes) {
     if (auto func_decl =
@@ -233,131 +241,108 @@ bool Validator::validate_top_level(const AstNodeList &nodes) {
       if (!symbol_table_->insert(func_decl->identifier(), node->clone())) {
         add_error(node->location(),
                   "'" + func_decl->identifier() + "' already defined");
-        success = false;
       }
     }
   }
 
   // Second pass: validate all nodes
   for (const auto &node : nodes) {
-    if (!validate_node(*node)) {
-      success = false;
-    }
+    validate_node(*node);
   }
-
-  return success;
 }
 
-bool Validator::validate_node_list(const AstNodeList &nodes) {
-  bool success = true;
+void Validator::validate_node_list(const AstNodeList &nodes) {
   for (const auto &node : nodes) {
-    if (!validate_node(*node)) {
-      success = false;
-    }
+    validate_node(*node);
   }
-  return success;
 }
 
-bool Validator::validate_node(const AstNode &node) {
+void Validator::validate_node(const AstNode &node) {
   if (auto func_decl = dynamic_cast<const FunctionDeclarationNode *>(&node)) {
-    return validate_function_declaration(*func_decl);
+    validate_function_declaration(*func_decl);
   } else if (auto const_decl =
                  dynamic_cast<const ConstantDeclarationNode *>(&node)) {
-    return validate_constant_declaration(*const_decl);
+    validate_constant_declaration(*const_decl);
   } else if (auto var_decl =
                  dynamic_cast<const VariableDeclarationNode *>(&node)) {
-    return validate_variable_declaration(*var_decl);
+    validate_variable_declaration(*var_decl);
   } else if (auto arg = dynamic_cast<const ArgumentNode *>(&node)) {
-    return validate_argument(*arg);
+    validate_argument(*arg);
   } else if (auto var_assign =
                  dynamic_cast<const VariableAssignmentNode *>(&node)) {
-    return validate_variable_assignment(*var_assign);
+    validate_variable_assignment(*var_assign);
   } else if (auto var_lookup = dynamic_cast<VariableLookupNode *>(
                  const_cast<AstNode *>(&node))) {
-    return validate_variable_lookup(*var_lookup);
+    validate_variable_lookup(*var_lookup);
   } else if (auto bin_op =
                  dynamic_cast<BinaryOpNode *>(const_cast<AstNode *>(&node))) {
-    return validate_binary_op(*bin_op);
+    validate_binary_op(*bin_op);
   } else if (auto func_call = dynamic_cast<FunctionCallNode *>(
                  const_cast<AstNode *>(&node))) {
-    return validate_function_call(*func_call);
+    validate_function_call(*func_call);
   } else if (auto func_ret = dynamic_cast<const FunctionReturnNode *>(&node)) {
-    return validate_function_return(*func_ret);
+    validate_function_return(*func_ret);
   } else if (auto if_node = dynamic_cast<const IfNode *>(&node)) {
-    return validate_if(*if_node);
+    validate_if(*if_node);
   } else if (auto block = dynamic_cast<const BlockNode *>(&node)) {
-    return validate_block(*block);
+    validate_block(*block);
   }
 
   // For other node types (constants, etc.), no validation needed
-  return true;
 }
 
-bool Validator::validate_function_declaration(
+void Validator::validate_function_declaration(
     const FunctionDeclarationNode &node) {
   create_stack_frame();
   current_function_ = &node;
 
-  bool success = true;
-
   // Validate arguments
-  success &= validate_node_list(node.arguments());
+  validate_node_list(node.arguments());
 
   // Validate body
-  success &= validate_node_list(node.body());
+  validate_node_list(node.body());
 
   current_function_ = nullptr;
   release_stack_frame();
-
-  return success;
 }
 
-bool Validator::validate_constant_declaration(
+void Validator::validate_constant_declaration(
     const ConstantDeclarationNode &node) {
   if (!symbol_table_->insert(node.identifier(), node.clone())) {
     add_error(node.location(),
               "constant '" + node.identifier() + "' already defined");
-    return false;
   }
-  return true;
 }
 
-bool Validator::validate_variable_declaration(
+void Validator::validate_variable_declaration(
     const VariableDeclarationNode &node) {
-  bool success = true;
-
   if (node.value()) {
-    success &= validate_node(*node.value());
+    validate_node(*node.value());
   }
 
   if (!symbol_table_->insert(node.identifier(), node.clone())) {
     add_error(node.location(),
               "variable '" + node.identifier() + "' already defined");
-    success = false;
   }
-
-  return success;
 }
 
-bool Validator::validate_argument(const ArgumentNode &node) {
+void Validator::validate_argument(const ArgumentNode &node) {
   if (!symbol_table_->insert(node.identifier(), node.clone())) {
     add_error(node.location(),
               "argument '" + node.identifier() + "' already defined");
-    return false;
   }
-  return true;
 }
 
-bool Validator::validate_variable_assignment(
+void Validator::validate_variable_assignment(
     const VariableAssignmentNode &node) {
   const SymbolEntry *entry = symbol_table_->lookup(node.identifier());
   if (!entry) {
     add_error(node.location(),
               "variable '" + node.identifier() + "' not found");
-    return false;
+    return;
   }
 
-  bool success = validate_node(node.value());
+  validate_node(node.value());
 
   if (auto var_decl =
           dynamic_cast<const VariableDeclarationNode *>(entry->node.get())) {
@@ -368,18 +353,15 @@ bool Validator::validate_variable_assignment(
           "type mismatch expects '" +
               TypeUtils::type_to_string(&var_decl->type()) + "' passed '" +
               TypeUtils::type_to_string(node.value().result_type()) + "'");
-      success = false;
     }
   }
-
-  return success;
 }
 
-bool Validator::validate_variable_lookup(VariableLookupNode &node) {
+void Validator::validate_variable_lookup(VariableLookupNode &node) {
   const SymbolEntry *entry = symbol_table_->lookup(node.identifier());
   if (!entry) {
     add_error(node.location(), "'" + node.identifier() + "' not found");
-    return false;
+    return;
   }
 
   if (auto const_decl =
@@ -398,20 +380,12 @@ bool Validator::validate_variable_lookup(VariableLookupNode &node) {
     node.set_result_type(arg_node->type().clone());
   } else {
     add_error(node.location(), "incompatible element found");
-    return false;
   }
-
-  return true;
 }
 
-bool Validator::validate_binary_op(BinaryOpNode &node) {
-  bool success = true;
-  success &= validate_node(node.left());
-  success &= validate_node(node.right());
-
-  if (!success) {
-    return false;
-  }
+void Validator::validate_binary_op(BinaryOpNode &node) {
+  validate_node(node.left());
+  validate_node(node.right());
 
   const AstType *left_type = node.left().result_type();
   const AstType *right_type = node.right().result_type();
@@ -419,7 +393,7 @@ bool Validator::validate_binary_op(BinaryOpNode &node) {
   if (!left_type || !right_type || !left_type->is_primitive() ||
       !right_type->is_primitive()) {
     add_error(node.location(), "invalid operand types");
-    return false;
+    return;
   }
 
   PrimitiveType left_prim = left_type->as_primitive().type;
@@ -437,7 +411,7 @@ bool Validator::validate_binary_op(BinaryOpNode &node) {
                 "incompatible types found for operation: '" +
                     TypeUtils::type_to_string(left_prim) + "', '" +
                     TypeUtils::type_to_string(right_prim) + "'");
-      return false;
+      return;
     }
     node.set_result_type(std::make_unique<AstType>(
         node.location(), AstType::Primitive(result_type)));
@@ -456,7 +430,7 @@ bool Validator::validate_binary_op(BinaryOpNode &node) {
                 "incompatible types found for operation: '" +
                     TypeUtils::type_to_string(left_prim) + "', '" +
                     TypeUtils::type_to_string(right_prim) + "'");
-      return false;
+      return;
     }
     node.set_result_type(std::make_unique<AstType>(
         node.location(), AstType::Primitive(PrimitiveType::BOOL)));
@@ -473,7 +447,7 @@ bool Validator::validate_binary_op(BinaryOpNode &node) {
                 "incompatible types found for operation: '" +
                     TypeUtils::type_to_string(left_prim) + "', '" +
                     TypeUtils::type_to_string(right_prim) + "'");
-      return false;
+      return;
     }
     node.set_result_type(std::make_unique<AstType>(
         node.location(), AstType::Primitive(PrimitiveType::BOOL)));
@@ -490,36 +464,32 @@ bool Validator::validate_binary_op(BinaryOpNode &node) {
                 "incompatible types found for operation: '" +
                     TypeUtils::type_to_string(left_prim) + "', '" +
                     TypeUtils::type_to_string(right_prim) + "'");
-      return false;
+      return;
     }
     node.set_result_type(std::make_unique<AstType>(
         node.location(), AstType::Primitive(PrimitiveType::BOOL)));
     break;
   }
   }
-
-  return true;
 }
 
-bool Validator::validate_function_call(FunctionCallNode &node) {
+void Validator::validate_function_call(FunctionCallNode &node) {
   const SymbolEntry *entry = symbol_table_->lookup(node.identifier());
   if (!entry) {
     add_error(node.location(),
               "function '" + node.identifier() + "' not found");
-    return false;
+    return;
   }
 
   auto func_decl =
       dynamic_cast<const FunctionDeclarationNode *>(entry->node.get());
   if (!func_decl) {
     add_error(node.location(), "'" + node.identifier() + "' is not a function");
-    return false;
+    return;
   }
 
   // Set return type
   node.set_result_type(func_decl->return_type().clone());
-
-  bool success = true;
 
   // Check argument count
   if (node.arguments().size() != func_decl->arguments().size()) {
@@ -531,12 +501,12 @@ bool Validator::validate_function_call(FunctionCallNode &node) {
       ss << "arguments";
     }
     add_error(node.location(), ss.str());
-    return false;
+    return;
   }
 
   // Validate arguments
   for (size_t i = 0; i < node.arguments().size(); ++i) {
-    success &= validate_node(*node.arguments()[i]);
+    validate_node(*node.arguments()[i]);
 
     auto arg_decl =
         dynamic_cast<const ArgumentNode *>(func_decl->arguments()[i].get());
@@ -548,23 +518,18 @@ bool Validator::validate_function_call(FunctionCallNode &node) {
               TypeUtils::type_to_string(&arg_decl->type()) + "' passed '" +
               TypeUtils::type_to_string(node.arguments()[i]->result_type()) +
               "'");
-      success = false;
     }
   }
-
-  return success;
 }
 
-bool Validator::validate_function_return(const FunctionReturnNode &node) {
-  bool success = true;
-
+void Validator::validate_function_return(const FunctionReturnNode &node) {
   if (node.value()) {
-    success &= validate_node(*node.value());
+    validate_node(*node.value());
   }
 
   if (!current_function_) {
     add_error(node.location(), "return statement outside function");
-    return false;
+    return;
   }
 
   // Check return type compatibility
@@ -572,14 +537,14 @@ bool Validator::validate_function_return(const FunctionReturnNode &node) {
       current_function_->return_type().as_primitive().type !=
           PrimitiveType::UNDEF) {
     add_error(node.location(), "return value expected");
-    return false;
+    return;
   }
 
   if (node.value() && current_function_->return_type().is_primitive() &&
       current_function_->return_type().as_primitive().type ==
           PrimitiveType::UNDEF) {
     add_error(node.location(), "return value not expected");
-    return false;
+    return;
   }
 
   if (node.value() &&
@@ -590,39 +555,33 @@ bool Validator::validate_function_return(const FunctionReturnNode &node) {
                   TypeUtils::type_to_string(&current_function_->return_type()) +
                   "' passed '" +
                   TypeUtils::type_to_string(node.value()->result_type()) + "'");
-    success = false;
   }
-
-  return success;
 }
 
-bool Validator::validate_if(const IfNode &node) {
-  bool success = validate_node(node.condition());
+void Validator::validate_if(const IfNode &node) {
+  validate_node(node.condition());
 
   if (node.condition().result_type() &&
       node.condition().result_type()->is_primitive()) {
     if (node.condition().result_type()->as_primitive().type !=
         PrimitiveType::BOOL) {
       add_error(node.condition().location(), "condition should return bool");
-      success = false;
     }
   }
 
   create_stack_frame();
-  success &= validate_node_list(node.then_block());
+  validate_node_list(node.then_block());
   release_stack_frame();
 
   if (node.has_else()) {
     create_stack_frame();
-    success &= validate_node_list(node.else_block());
+    validate_node_list(node.else_block());
     release_stack_frame();
   }
-
-  return success;
 }
 
-bool Validator::validate_block(const BlockNode &node) {
-  return validate_node_list(node.statements());
+void Validator::validate_block(const BlockNode &node) {
+  validate_node_list(node.statements());
 }
 
 bool Validator::check_type_assignment(AstNode &value_node,
@@ -659,7 +618,6 @@ void Validator::release_stack_frame() {
 void Validator::add_error(const AstLocation &location,
                           const std::string &message) {
   errors_.emplace_back(location, message);
-  log_validation_error(location, message);
 }
 
 } // namespace cha

@@ -1,14 +1,19 @@
 #include "ast.hpp"
 #include "parser.hpp"
+#include "exceptions.hpp"
 #include <gtest/gtest.h>
 
 using namespace cha;
 
 TEST(ParserTest, SimpleFunctionParsing) {
   AstNodeList ast;
-  int result = cha::parse("examples/test.cha", ast);
+  
+  try {
+    cha::parse("examples/test.cha", ast);
+  } catch (const ParseException &e) {
+    FAIL() << "Parse failed: " << e.message();
+  }
 
-  EXPECT_EQ(result, 0);
   EXPECT_FALSE(ast.empty());
 
   // Check that we parsed at least one function
@@ -30,9 +35,13 @@ TEST(ParserTest, SimpleFunctionParsing) {
 
 TEST(ParserTest, ConstantParsing) {
   AstNodeList ast;
-  int result = cha::parse("examples/test.cha", ast);
+  
+  try {
+    cha::parse("examples/test.cha", ast);
+  } catch (const ParseException &e) {
+    FAIL() << "Parse failed: " << e.message();
+  }
 
-  EXPECT_EQ(result, 0);
   EXPECT_FALSE(ast.empty());
 
   // Look for constant declarations or constant values in the AST
@@ -59,9 +68,13 @@ TEST(ParserTest, ConstantParsing) {
 
 TEST(ParserTest, AstStructureIntegrity) {
   AstNodeList ast;
-  int result = cha::parse("examples/test.cha", ast);
+  
+  try {
+    cha::parse("examples/test.cha", ast);
+  } catch (const ParseException &e) {
+    FAIL() << "Parse failed: " << e.message();
+  }
 
-  EXPECT_EQ(result, 0);
   EXPECT_FALSE(ast.empty());
 
   // Verify each node has proper location information

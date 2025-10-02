@@ -2,6 +2,7 @@
 #include <string.h>
 
 int yycolumn = 1;
+extern const char *current_file;
 
 #define YYSTYPE char*
 #define YY_USER_ACTION yylloc.first_line = yylloc.last_line = yylineno; \
@@ -206,6 +207,13 @@ identifier [_a-zA-Z][_a-zA-Z0-9]{0,31}
 {identifier} {
 	yylval = strdup(yytext);
 	return IDENTIFIER;
+}
+
+. {
+	// Unknown character - report error and exit
+	fprintf(stderr, "Error: %s:%d:%d: unexpected character '%c'\n", 
+	        (current_file ? current_file : ""), yylineno, yycolumn, yytext[0]);
+	exit(1);
 }
 
 %%
