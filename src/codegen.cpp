@@ -12,6 +12,8 @@
 #include <llvm/TargetParser/Host.h>
 #include <llvm/TargetParser/Triple.h>
 #include <optional>
+#include <cstdlib>  // for std::system
+#include <cstdio>   // for std::rename, std::remove
 
 namespace cha {
 
@@ -160,11 +162,28 @@ void CodeGenerator::write_output(CompileFormat format,
     pass.run(*module_);
     dest.flush();
 
-    // For binary files, we'd need a linker step - not implemented for now
+    // For binary files, add a linker step
     if (format == CompileFormat::BINARY_FILE) {
-      throw CodeGenerationException(
-          "Binary file generation not yet implemented - produced object file "
-          "instead");
+      dest.close(); // Close the object file first
+      
+      // Create temporary object file name
+      std::string obj_file = output_file + ".o";
+      
+      // Rename the output to .o extension temporarily
+      if (std::rename(output_file.c_str(), obj_file.c_str()) != 0) {
+        throw CodeGenerationException("Failed to create temporary object file");
+      }
+      
+      // Link with cc
+      std::string link_cmd = "cc -o " + output_file + " " + obj_file;
+      int result = std::system(link_cmd.c_str());
+      
+      // Clean up temporary object file
+      std::remove(obj_file.c_str());
+      
+      if (result != 0) {
+        throw CodeGenerationException("Linking failed - is 'cc' available?");
+      }
     }
     break;
   }
