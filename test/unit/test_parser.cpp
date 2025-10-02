@@ -1,13 +1,13 @@
 #include "ast.hpp"
-#include "parser.hpp"
 #include "exceptions.hpp"
+#include "parser.hpp"
 #include <gtest/gtest.h>
 
 using namespace cha;
 
 TEST(ParserTest, SimpleFunctionParsing) {
   AstNodeList ast;
-  
+
   try {
     cha::parse("examples/test.cha", ast);
   } catch (const ParseException &e) {
@@ -35,7 +35,7 @@ TEST(ParserTest, SimpleFunctionParsing) {
 
 TEST(ParserTest, ConstantParsing) {
   AstNodeList ast;
-  
+
   try {
     cha::parse("examples/test.cha", ast);
   } catch (const ParseException &e) {
@@ -68,7 +68,7 @@ TEST(ParserTest, ConstantParsing) {
 
 TEST(ParserTest, AstStructureIntegrity) {
   AstNodeList ast;
-  
+
   try {
     cha::parse("examples/test.cha", ast);
   } catch (const ParseException &e) {

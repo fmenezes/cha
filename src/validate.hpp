@@ -84,7 +84,8 @@ class Validator {
 public:
   Validator();
 
-  // Main validation entry point - throws ValidationException or MultipleValidationException
+  // Main validation entry point - throws ValidationException or
+  // MultipleValidationException
   void validate(const AstNodeList &ast);
 
 private:

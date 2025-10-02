@@ -33,7 +33,8 @@ private:
   static std::string format_message(const AstLocation &location,
                                     const std::string &message) {
     return location.file + ":" + std::to_string(location.line_begin) + ":" +
-           std::to_string(location.column_begin) + ": validation error: " + message;
+           std::to_string(location.column_begin) +
+           ": validation error: " + message;
   }
 };
 
@@ -75,8 +76,8 @@ private:
   static std::string format_message(const AstLocation &location,
                                     const std::string &message) {
     return location.file + ":" + std::to_string(location.line_begin) + ":" +
-           std::to_string(location.column_begin) + ": code generation error: " +
-           message;
+           std::to_string(location.column_begin) +
+           ": code generation error: " + message;
   }
 };
 
@@ -92,8 +93,8 @@ public:
 private:
   std::vector<ValidationException> errors_;
 
-  static std::string format_multiple_errors(
-      const std::vector<ValidationException> &errors) {
+  static std::string
+  format_multiple_errors(const std::vector<ValidationException> &errors) {
     if (errors.empty()) {
       return "validation failed";
     }

@@ -222,7 +222,7 @@ void Validator::validate(const AstNodeList &ast) {
 
   try {
     validate_top_level(ast);
-    
+
     // If we collected any errors, throw a MultipleValidationException
     if (!errors_.empty()) {
       throw MultipleValidationException(errors_);

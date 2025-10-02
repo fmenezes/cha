@@ -38,7 +38,7 @@ public:
 
   // Generate code from AST - throws CodeGenerationException on error
   void generate(const AstNodeList &ast, CompileFormat format,
-               const std::string &output_file);
+                const std::string &output_file);
 
   // Visitor pattern implementation
   void visit(const ConstantIntegerNode &node) override;
@@ -83,6 +83,6 @@ private:
 
 // Convenience function - throws CodeGenerationException on error
 void generate_code(const AstNodeList &ast, CompileFormat format,
-                  const std::string &output_file);
+                   const std::string &output_file);
 
 } // namespace cha
