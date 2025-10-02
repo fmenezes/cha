@@ -2,6 +2,7 @@
 
 #include "ast.hpp"
 #include "cha/cha.hpp"
+#include "exceptions.hpp"
 
 #include <llvm/CodeGen/CommandFlags.h>
 #include <llvm/IR/BasicBlock.h>
@@ -35,9 +36,9 @@ public:
   CodeGenerator();
   ~CodeGenerator() = default;
 
-  // Generate code from AST
-  int generate(const AstNodeList &ast, CompileFormat format,
-               const std::string &output_file);
+  // Generate code from AST - throws CodeGenerationException on error
+  void generate(const AstNodeList &ast, CompileFormat format,
+                const std::string &output_file);
 
   // Visitor pattern implementation
   void visit(const ConstantIntegerNode &node) override;
@@ -72,19 +73,16 @@ private:
   // Stack of values from expression evaluation
   llvm::Value *current_value_ = nullptr;
 
-  // Error tracking
-  bool has_error_ = false;
-
   // Helper methods
   void visit_node(const AstNode &node);
   llvm::Type *get_llvm_type(const AstType &type);
   llvm::Type *primitive_to_llvm_type(PrimitiveType prim_type);
-  int write_output(CompileFormat format, const std::string &output_file);
+  void write_output(CompileFormat format, const std::string &output_file);
   void create_main_wrapper();
 };
 
-// Convenience function
-int generate_code(const AstNodeList &ast, CompileFormat format,
-                  const std::string &output_file);
+// Convenience function - throws CodeGenerationException on error
+void generate_code(const AstNodeList &ast, CompileFormat format,
+                   const std::string &output_file);
 
 } // namespace cha

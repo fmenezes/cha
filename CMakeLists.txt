@@ -51,24 +51,35 @@ add_flex_bison_dependency(scanner parser)
 
 file(GLOB_RECURSE SRC
     CONFIGURE_DEPENDS
+    "src/*.c"
     "src/*.cpp"
     "src/*.hpp"
+    "src/*.h"
+    "src/**/*.c"
     "src/**/*.cpp"
     "src/**/*.hpp"
+    "src/**/*.h"
     "include/*.h"
     "include/*.hpp"
     "include/**/*.h"
     "include/**/*.hpp"
 )
 
+file(GLOB_RECURSE TEST_SRC
+    CONFIGURE_DEPENDS
+    "test/*.c"
+    "test/*.cpp"
+    "test/*.hpp"
+    "test/*.h"
+    "test/**/*.c"
+    "test/**/*.cpp"
+    "test/**/*.hpp"
+    "test/**/*.h"
+)
+
 # Add specific C++ files we want to include (now that BISON/FLEX outputs are defined)
 set(CHA_SOURCES
-    src/ast.cpp
-    src/validate.cpp
-    src/log.cpp
-    src/codegen.cpp
-    src/cha.cpp
-    src/main.cpp
+    ${SRC}
     ${BISON_parser_OUTPUTS}
     ${FLEX_scanner_OUTPUTS}
 )
@@ -123,11 +134,9 @@ target_link_libraries(cha ${LLVM_LIBS})
 # Create a single test executable with all unit and integration tests
 add_executable(
     all_tests
-    test/unit/test_ast.cpp
-    test/unit/test_parser.cpp
-    test/unit/test_validate.cpp
-    test/integration/test_integration.cpp
+    ${TEST_SRC}
     src/ast.cpp
+    src/codegen.cpp
     src/validate.cpp
     src/log.cpp
     ${BISON_parser_OUTPUTS}
@@ -181,13 +190,6 @@ set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})
 include(CPack)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-add_custom_target(
-    copy-compile-commands ALL
-    ${CMAKE_COMMAND} -E copy_if_different
-    ${CMAKE_CURRENT_BINARY_DIR}/compile_commands.json
-    ${CMAKE_CURRENT_SOURCE_DIR}
-    DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/compile_commands.json
-)
 
 if(ENABLE_COVERAGE)
     add_custom_target(coverage
@@ -212,6 +214,10 @@ if(CLANG_FORMAT_EXECUTABLE)
         "${CMAKE_SOURCE_DIR}/src/*.cpp"
         "${CMAKE_SOURCE_DIR}/src/*.h"
         "${CMAKE_SOURCE_DIR}/src/*.hpp"
+        "${CMAKE_SOURCE_DIR}/src/**/*.c"
+        "${CMAKE_SOURCE_DIR}/src/**/*.cpp"
+        "${CMAKE_SOURCE_DIR}/src/**/*.h"
+        "${CMAKE_SOURCE_DIR}/src/**/*.hpp"
         "${CMAKE_SOURCE_DIR}/include/*.h"
         "${CMAKE_SOURCE_DIR}/include/*.hpp"
         "${CMAKE_SOURCE_DIR}/include/**/*.h"

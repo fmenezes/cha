@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ast.hpp"
+#include "exceptions.hpp"
 #include <memory>
 #include <string>
 #include <unordered_map>
@@ -11,21 +12,6 @@ namespace cha {
 // Forward declarations
 class SymbolTable;
 class Validator;
-
-// Exception class for validation errors
-class ValidationError : public std::exception {
-public:
-  ValidationError(const AstLocation &location, const std::string &message)
-      : location_(location), message_(message) {}
-
-  const AstLocation &location() const { return location_; }
-  const std::string &message() const { return message_; }
-  const char *what() const noexcept override { return message_.c_str(); }
-
-private:
-  AstLocation location_;
-  std::string message_;
-};
 
 // Symbol table entry
 struct SymbolEntry {
@@ -98,31 +84,29 @@ class Validator {
 public:
   Validator();
 
-  // Main validation entry point
-  bool validate(const AstNodeList &ast);
-
-  // Get collected errors
-  const std::vector<ValidationError> &errors() const { return errors_; }
+  // Main validation entry point - throws ValidationException or
+  // MultipleValidationException
+  void validate(const AstNodeList &ast);
 
 private:
   // Validation methods for different node types
-  bool validate_top_level(const AstNodeList &nodes);
-  bool validate_node_list(const AstNodeList &nodes);
-  bool validate_node(const AstNode &node);
+  void validate_top_level(const AstNodeList &nodes);
+  void validate_node_list(const AstNodeList &nodes);
+  void validate_node(const AstNode &node);
 
-  bool validate_function_declaration(const FunctionDeclarationNode &node);
-  bool validate_constant_declaration(const ConstantDeclarationNode &node);
-  bool validate_variable_declaration(const VariableDeclarationNode &node);
-  bool validate_argument(const ArgumentNode &node);
-  bool validate_variable_assignment(const VariableAssignmentNode &node);
-  bool validate_variable_lookup(
+  void validate_function_declaration(const FunctionDeclarationNode &node);
+  void validate_constant_declaration(const ConstantDeclarationNode &node);
+  void validate_variable_declaration(const VariableDeclarationNode &node);
+  void validate_argument(const ArgumentNode &node);
+  void validate_variable_assignment(const VariableAssignmentNode &node);
+  void validate_variable_lookup(
       VariableLookupNode &node);               // non-const for type setting
-  bool validate_binary_op(BinaryOpNode &node); // non-const for type setting
-  bool
+  void validate_binary_op(BinaryOpNode &node); // non-const for type setting
+  void
   validate_function_call(FunctionCallNode &node); // non-const for type setting
-  bool validate_function_return(const FunctionReturnNode &node);
-  bool validate_if(const IfNode &node);
-  bool validate_block(const BlockNode &node);
+  void validate_function_return(const FunctionReturnNode &node);
+  void validate_if(const IfNode &node);
+  void validate_block(const BlockNode &node);
 
   // Helper methods
   bool check_type_assignment(AstNode &value_node, const AstType &expected_type);
@@ -132,7 +116,7 @@ private:
 
   // State
   std::shared_ptr<SymbolTable> symbol_table_;
-  std::vector<ValidationError> errors_;
+  std::vector<ValidationException> errors_;
   const FunctionDeclarationNode *current_function_;
 };
 

@@ -1,6 +1,8 @@
 #include "codegen.hpp"
-#include "log.hpp"
+#include "exceptions.hpp"
 
+#include <cstdio>  // for std::rename, std::remove
+#include <cstdlib> // for std::system
 #include <llvm/Bitcode/BitcodeWriter.h>
 #include <llvm/CodeGen/TargetPassConfig.h>
 #include <llvm/IR/LegacyPassManager.h>
@@ -26,16 +28,11 @@ CodeGenerator::CodeGenerator()
   llvm::InitializeNativeTargetAsmParser();
 }
 
-int CodeGenerator::generate(const AstNodeList &ast, CompileFormat format,
-                            const std::string &output_file) {
-  has_error_ = false;
-
+void CodeGenerator::generate(const AstNodeList &ast, CompileFormat format,
+                             const std::string &output_file) {
   // Visit all top-level nodes
   for (const auto &node : ast) {
     visit_node(*node);
-    if (has_error_) {
-      return 1;
-    }
   }
 
   // Create main wrapper if we don't have a main function
@@ -47,12 +44,12 @@ int CodeGenerator::generate(const AstNodeList &ast, CompileFormat format,
   std::string error_str;
   llvm::raw_string_ostream error_stream(error_str);
   if (llvm::verifyModule(*module_, &error_stream)) {
-    log_error("LLVM module verification failed: " + error_str);
-    return 1;
+    throw CodeGenerationException("LLVM module verification failed: " +
+                                  error_str);
   }
 
   // Write output
-  return write_output(format, output_file);
+  write_output(format, output_file);
 }
 
 void CodeGenerator::visit_node(const AstNode &node) { node.accept(*this); }
@@ -62,16 +59,14 @@ llvm::Type *CodeGenerator::get_llvm_type(const AstType &type) {
     return primitive_to_llvm_type(type.as_primitive().type);
   } else if (type.is_array()) {
     llvm::Type *element_type = get_llvm_type(*type.as_array().element_type);
-    if (!element_type)
-      return nullptr;
     return llvm::ArrayType::get(element_type, type.as_array().size);
   } else if (type.is_identifier()) {
     // For now, treat identifiers as unknown - would need a symbol table for
     // custom types
-    log_error("Custom types not yet supported: " + type.as_identifier().name);
-    return nullptr;
+    throw CodeGenerationException("Custom types not yet supported: " +
+                                  type.as_identifier().name);
   }
-  return nullptr;
+  throw CodeGenerationException("Unknown type in get_llvm_type");
 }
 
 llvm::Type *CodeGenerator::primitive_to_llvm_type(PrimitiveType prim_type) {
@@ -112,16 +107,15 @@ llvm::Type *CodeGenerator::primitive_to_llvm_type(PrimitiveType prim_type) {
   }
 }
 
-int CodeGenerator::write_output(CompileFormat format,
-                                const std::string &output_file) {
+void CodeGenerator::write_output(CompileFormat format,
+                                 const std::string &output_file) {
   std::error_code ec;
 
   switch (format) {
   case CompileFormat::LLVM_IR: {
     llvm::raw_fd_ostream dest(output_file, ec, llvm::sys::fs::OF_None);
     if (ec) {
-      log_error("Could not open file: " + ec.message());
-      return 1;
+      throw CodeGenerationException("Could not open file: " + ec.message());
     }
     module_->print(dest, nullptr);
     break;
@@ -136,8 +130,7 @@ int CodeGenerator::write_output(CompileFormat format,
     auto target = llvm::TargetRegistry::lookupTarget(target_triple, error);
 
     if (!target) {
-      log_error("Target lookup failed: " + error);
-      return 1;
+      throw CodeGenerationException("Target lookup failed: " + error);
     }
 
     auto cpu = "generic";
@@ -153,8 +146,7 @@ int CodeGenerator::write_output(CompileFormat format,
 
     llvm::raw_fd_ostream dest(output_file, ec, llvm::sys::fs::OF_None);
     if (ec) {
-      log_error("Could not open file: " + ec.message());
-      return 1;
+      throw CodeGenerationException("Could not open file: " + ec.message());
     }
 
     llvm::legacy::PassManager pass;
@@ -163,27 +155,42 @@ int CodeGenerator::write_output(CompileFormat format,
                          : llvm::CodeGenFileType::ObjectFile;
 
     if (target_machine->addPassesToEmitFile(pass, dest, nullptr, file_type)) {
-      log_error("Target machine can't emit a file of this type");
-      return 1;
+      throw CodeGenerationException(
+          "Target machine can't emit a file of this type");
     }
 
     pass.run(*module_);
     dest.flush();
 
-    // For binary files, we'd need a linker step - not implemented for now
+    // For binary files, add a linker step
     if (format == CompileFormat::BINARY_FILE) {
-      log_error("Binary file generation not yet implemented - produced object "
-                "file instead");
+      dest.close(); // Close the object file first
+
+      // Create temporary object file name
+      std::string obj_file = output_file + ".o";
+
+      // Rename the output to .o extension temporarily
+      if (std::rename(output_file.c_str(), obj_file.c_str()) != 0) {
+        throw CodeGenerationException("Failed to create temporary object file");
+      }
+
+      // Link with cc
+      std::string link_cmd = "cc -o " + output_file + " " + obj_file;
+      int result = std::system(link_cmd.c_str());
+
+      // Clean up temporary object file
+      std::remove(obj_file.c_str());
+
+      if (result != 0) {
+        throw CodeGenerationException("Linking failed - is 'cc' available?");
+      }
     }
     break;
   }
 
   default:
-    log_error("Unsupported output format");
-    return 1;
+    throw CodeGenerationException("Unsupported output format");
   }
-
-  return 0;
 }
 
 void CodeGenerator::create_main_wrapper() {
@@ -256,8 +263,8 @@ void CodeGenerator::visit(const ConstantIntegerNode &node) {
     current_value_ = llvm::ConstantInt::get(
         *context_, llvm::APInt(bit_width, value, is_signed));
   } catch (const std::exception &e) {
-    log_error("Invalid integer constant: " + node.value());
-    has_error_ = true;
+    throw CodeGenerationException("Failed to parse integer constant: " +
+                                  node.value());
   }
 }
 
@@ -307,8 +314,8 @@ void CodeGenerator::visit(const ConstantUnsignedIntegerNode &node) {
     current_value_ =
         llvm::ConstantInt::get(*context_, llvm::APInt(bit_width, value, false));
   } catch (const std::exception &e) {
-    log_error("Invalid unsigned integer constant: " + node.value());
-    has_error_ = true;
+    throw CodeGenerationException(
+        "Failed to parse unsigned integer constant: " + node.value());
   }
 }
 
@@ -325,20 +332,15 @@ void CodeGenerator::visit(const ConstantBoolNode &node) {
 void CodeGenerator::visit(const BinaryOpNode &node) {
   // Generate code for left operand
   visit_node(node.left());
-  if (has_error_)
-    return;
   llvm::Value *left_val = current_value_;
 
   // Generate code for right operand
   visit_node(node.right());
-  if (has_error_)
-    return;
   llvm::Value *right_val = current_value_;
 
   if (!left_val || !right_val) {
-    log_error("Invalid operands for binary operation");
-    has_error_ = true;
-    return;
+    throw CodeGenerationException(
+        "Failed to generate operands for binary operation");
   }
 
   // Generate appropriate LLVM instruction based on operator
@@ -432,20 +434,13 @@ void CodeGenerator::visit(const BinaryOpNode &node) {
     break;
 
   default:
-    log_error("Unsupported binary operator");
-    has_error_ = true;
-    return;
+    throw CodeGenerationException("Unsupported binary operator");
   }
 }
 
 void CodeGenerator::visit(const VariableDeclarationNode &node) {
   // Get LLVM type for the variable
   llvm::Type *var_type = get_llvm_type(node.type());
-  if (!var_type) {
-    log_error("Unsupported type for variable: " + node.identifier());
-    has_error_ = true;
-    return;
-  }
 
   // Create alloca instruction for the variable
   llvm::AllocaInst *alloca =
@@ -454,14 +449,11 @@ void CodeGenerator::visit(const VariableDeclarationNode &node) {
   // Store initial value if provided
   if (node.value()) {
     visit_node(*node.value());
-    if (has_error_)
-      return;
 
     if (!current_value_) {
-      log_error("Failed to generate initial value for variable: " +
-                node.identifier());
-      has_error_ = true;
-      return;
+      throw CodeGenerationException(
+          "Failed to generate initial value for variable: " +
+          node.identifier());
     }
 
     builder_->CreateStore(current_value_, alloca);
@@ -476,20 +468,16 @@ void CodeGenerator::visit(const VariableAssignmentNode &node) {
   // Look up the variable
   auto it = named_values_.find(node.identifier());
   if (it == named_values_.end()) {
-    log_error("Unknown variable name: " + node.identifier());
-    has_error_ = true;
-    return;
+    throw CodeGenerationException("Unknown variable name: " +
+                                  node.identifier());
   }
 
   // Generate code for the value
   visit_node(node.value());
-  if (has_error_)
-    return;
 
   if (!current_value_) {
-    log_error("Failed to generate value for assignment");
-    has_error_ = true;
-    return;
+    throw CodeGenerationException(
+        "Failed to generate value for assignment to: " + node.identifier());
   }
 
   // Store the value
@@ -500,9 +488,8 @@ void CodeGenerator::visit(const VariableLookupNode &node) {
   // Look up the variable
   auto it = named_values_.find(node.identifier());
   if (it == named_values_.end()) {
-    log_error("Unknown variable name: " + node.identifier());
-    has_error_ = true;
-    return;
+    throw CodeGenerationException("Unknown variable name: " +
+                                  node.identifier());
   }
 
   // Load the value - cast to AllocaInst to get allocated type
@@ -515,34 +502,24 @@ void CodeGenerator::visit(const ArgumentNode &node) {
   // Arguments are handled in function declaration
   // This visitor is called when we need the argument type
   llvm::Type *arg_type = get_llvm_type(node.type());
-  if (!arg_type) {
-    log_error("Unsupported argument type: " + node.identifier());
-    has_error_ = true;
-  }
+  // get_llvm_type will throw if type is unsupported
 }
 
 void CodeGenerator::visit(const BlockNode &node) {
   // Visit all statements in the block
   for (const auto &stmt : node.statements()) {
     visit_node(*stmt);
-    if (has_error_)
-      return;
   }
 }
 
 void CodeGenerator::visit(const FunctionDeclarationNode &node) {
   // Get return type
   llvm::Type *return_type = get_llvm_type(node.return_type());
-  if (!return_type) {
-    // Check if this is a void function (no explicit return type)
-    if (node.return_type().is_primitive() &&
-        node.return_type().as_primitive().type == PrimitiveType::UNDEF) {
-      return_type = llvm::Type::getVoidTy(*context_);
-    } else {
-      log_error("Unsupported return type for function: " + node.identifier());
-      has_error_ = true;
-      return;
-    }
+
+  // Check if this is a void function (no explicit return type)
+  if (node.return_type().is_primitive() &&
+      node.return_type().as_primitive().type == PrimitiveType::UNDEF) {
+    return_type = llvm::Type::getVoidTy(*context_);
   }
 
   // Get argument types
@@ -551,17 +528,11 @@ void CodeGenerator::visit(const FunctionDeclarationNode &node) {
     const ArgumentNode *arg_node =
         dynamic_cast<const ArgumentNode *>(arg.get());
     if (!arg_node) {
-      log_error("Invalid argument in function: " + node.identifier());
-      has_error_ = true;
-      return;
+      throw CodeGenerationException("Invalid argument in function: " +
+                                    node.identifier());
     }
 
     llvm::Type *arg_type = get_llvm_type(arg_node->type());
-    if (!arg_type) {
-      log_error("Unsupported argument type in function: " + node.identifier());
-      has_error_ = true;
-      return;
-    }
     arg_types.push_back(arg_type);
   }
 
@@ -609,12 +580,6 @@ void CodeGenerator::visit(const FunctionDeclarationNode &node) {
   // Generate function body
   for (const auto &stmt : node.body()) {
     visit_node(*stmt);
-    if (has_error_) {
-      // Restore state
-      current_function_ = prev_function;
-      named_values_ = prev_named_values;
-      return;
-    }
   }
 
   // If no explicit return, add default return
@@ -640,33 +605,26 @@ void CodeGenerator::visit(const FunctionCallNode &node) {
   // Look up the function
   auto it = functions_.find(node.identifier());
   if (it == functions_.end()) {
-    log_error("Unknown function: " + node.identifier());
-    has_error_ = true;
-    return;
+    throw CodeGenerationException("Unknown function: " + node.identifier());
   }
 
   llvm::Function *callee = it->second;
 
   // Check argument count mismatch
   if (callee->arg_size() != node.arguments().size()) {
-    log_error("Incorrect number of arguments for function: " +
-              node.identifier());
-    has_error_ = true;
-    return;
+    throw CodeGenerationException(
+        "Incorrect number of arguments for function: " + node.identifier());
   }
 
   // Generate code for arguments
   std::vector<llvm::Value *> args;
   for (const auto &arg : node.arguments()) {
     visit_node(*arg);
-    if (has_error_)
-      return;
 
     if (!current_value_) {
-      log_error("Failed to generate argument for function call: " +
-                node.identifier());
-      has_error_ = true;
-      return;
+      throw CodeGenerationException(
+          "Failed to generate argument for function call: " +
+          node.identifier());
     }
 
     args.push_back(current_value_);
@@ -680,13 +638,9 @@ void CodeGenerator::visit(const FunctionReturnNode &node) {
   if (node.value()) {
     // Generate code for return value
     visit_node(*node.value());
-    if (has_error_)
-      return;
 
     if (!current_value_) {
-      log_error("Failed to generate return value");
-      has_error_ = true;
-      return;
+      throw CodeGenerationException("Failed to generate return value");
     }
 
     builder_->CreateRet(current_value_);
@@ -699,13 +653,10 @@ void CodeGenerator::visit(const FunctionReturnNode &node) {
 void CodeGenerator::visit(const IfNode &node) {
   // Generate condition
   visit_node(node.condition());
-  if (has_error_)
-    return;
 
   if (!current_value_) {
-    log_error("Failed to generate condition for if statement");
-    has_error_ = true;
-    return;
+    throw CodeGenerationException(
+        "Failed to generate condition for if statement");
   }
 
   // Convert condition to boolean if necessary
@@ -719,9 +670,7 @@ void CodeGenerator::visit(const IfNode &node) {
       cond_val = builder_->CreateFCmpONE(
           cond_val, llvm::ConstantFP::get(cond_val->getType(), 0.0), "ifcond");
     } else {
-      log_error("Invalid condition type for if statement");
-      has_error_ = true;
-      return;
+      throw CodeGenerationException("Invalid condition type for if statement");
     }
   }
 
@@ -744,8 +693,6 @@ void CodeGenerator::visit(const IfNode &node) {
   builder_->SetInsertPoint(then_bb);
   for (const auto &stmt : node.then_block()) {
     visit_node(*stmt);
-    if (has_error_)
-      return;
   }
 
   // Add branch to merge block if no terminator
@@ -760,8 +707,6 @@ void CodeGenerator::visit(const IfNode &node) {
 
     for (const auto &stmt : node.else_block()) {
       visit_node(*stmt);
-      if (has_error_)
-        return;
     }
 
     // Add branch to merge block if no terminator
@@ -778,23 +723,18 @@ void CodeGenerator::visit(const IfNode &node) {
 void CodeGenerator::visit(const ConstantDeclarationNode &node) {
   // Generate code for the constant value
   visit_node(node.value());
-  if (has_error_)
-    return;
 
   if (!current_value_) {
-    log_error("Failed to generate constant value: " + node.identifier());
-    has_error_ = true;
-    return;
+    throw CodeGenerationException("Failed to generate constant value: " +
+                                  node.identifier());
   }
 
   // For constants, we can store the computed value directly
   // Create a global constant
   llvm::Constant *const_val = llvm::dyn_cast<llvm::Constant>(current_value_);
   if (!const_val) {
-    log_error("Constant declaration requires a constant value: " +
-              node.identifier());
-    has_error_ = true;
-    return;
+    throw CodeGenerationException(
+        "Constant declaration requires a constant value: " + node.identifier());
   }
 
   // Create global variable for the constant
@@ -805,10 +745,10 @@ void CodeGenerator::visit(const ConstantDeclarationNode &node) {
   named_values_[node.identifier()] = global_const;
 }
 
-int generate_code(const AstNodeList &ast, CompileFormat format,
-                  const std::string &output_file) {
+void generate_code(const AstNodeList &ast, CompileFormat format,
+                   const std::string &output_file) {
   CodeGenerator generator;
-  return generator.generate(ast, format, output_file);
+  generator.generate(ast, format, output_file);
 }
 
 } // namespace cha

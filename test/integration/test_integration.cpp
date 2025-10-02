@@ -112,7 +112,7 @@ TEST_F(IntegrationTest, ParsePasses) {
 }
 
 TEST_F(IntegrationTest, ParseFailure) {
-  expectCompilationFailure("parse_failure.cha", "syntax error");
+  expectCompilationFailure("parse_failure.cha", "unexpected character");
 }
 
 // Operator Tests

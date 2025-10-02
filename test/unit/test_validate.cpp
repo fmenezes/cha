@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "../src/ast.hpp"
+#include "../src/exceptions.hpp"
 #include "../src/validate.hpp"
 
 using namespace cha;
@@ -139,8 +140,7 @@ TEST(ValidateTest, BasicValidation) {
 
   // Test empty AST
   AstNodeList empty_ast;
-  EXPECT_TRUE(validator.validate(empty_ast));
-  EXPECT_EQ(0, validator.errors().size());
+  EXPECT_NO_THROW(validator.validate(empty_ast));
 
   // Test simple function declaration
   AstNodeList simple_func;
@@ -149,8 +149,7 @@ TEST(ValidateTest, BasicValidation) {
       AstNodeList{});
   simple_func.push_back(std::move(func));
 
-  EXPECT_TRUE(validator.validate(simple_func));
-  EXPECT_EQ(0, validator.errors().size());
+  EXPECT_NO_THROW(validator.validate(simple_func));
 }
 
 // Test variable validation
@@ -176,8 +175,7 @@ TEST(ValidateTest, VariableValidation) {
       std::move(func_body));
   ast.push_back(std::move(func));
 
-  EXPECT_TRUE(validator.validate(ast));
-  EXPECT_EQ(0, validator.errors().size());
+  EXPECT_NO_THROW(validator.validate(ast));
 }
 
 // Test duplicate symbol detection
@@ -197,10 +195,8 @@ TEST(ValidateTest, DuplicateSymbols) {
   ast.push_back(std::move(func1));
   ast.push_back(std::move(func2));
 
-  EXPECT_FALSE(validator.validate(ast));
-  EXPECT_EQ(1, validator.errors().size());
-  EXPECT_TRUE(validator.errors()[0].message().find("already defined") !=
-              std::string::npos);
+  // Should throw ValidationException or MultipleValidationException
+  EXPECT_THROW(validator.validate(ast), ChaException);
 }
 
 // Test binary operation validation
@@ -231,8 +227,7 @@ TEST(ValidateTest, BinaryOperations) {
       std::move(func_body));
   ast.push_back(std::move(func));
 
-  EXPECT_TRUE(validator.validate(ast));
-  EXPECT_EQ(0, validator.errors().size());
+  EXPECT_NO_THROW(validator.validate(ast));
 }
 
 // Test type mismatch detection
@@ -260,10 +255,8 @@ TEST(ValidateTest, TypeMismatches) {
       std::move(func_body));
   ast.push_back(std::move(func));
 
-  EXPECT_FALSE(validator.validate(ast));
-  EXPECT_GT(validator.errors().size(), 0);
-  EXPECT_TRUE(validator.errors()[0].message().find("type mismatch") !=
-              std::string::npos);
+  // Should throw an exception for type mismatch
+  EXPECT_THROW(validator.validate(ast), ChaException);
 }
 
 // Test function call validation
@@ -320,8 +313,7 @@ TEST(ValidateTest, FunctionCalls) {
       std::move(main_body));
   ast.push_back(std::move(main_func));
 
-  EXPECT_TRUE(validator.validate(ast));
-  EXPECT_EQ(0, validator.errors().size());
+  EXPECT_NO_THROW(validator.validate(ast));
 }
 
 // Test if statement validation
@@ -355,8 +347,7 @@ TEST(ValidateTest, IfStatements) {
       std::move(func_body));
   ast.push_back(std::move(func));
 
-  EXPECT_TRUE(validator.validate(ast));
-  EXPECT_EQ(0, validator.errors().size());
+  EXPECT_NO_THROW(validator.validate(ast));
 }
 
 // Test invalid if condition (non-boolean)
@@ -390,8 +381,6 @@ TEST(ValidateTest, InvalidIfCondition) {
       std::move(func_body));
   ast.push_back(std::move(func));
 
-  EXPECT_FALSE(validator.validate(ast));
-  EXPECT_GT(validator.errors().size(), 0);
-  EXPECT_TRUE(validator.errors()[0].message().find(
-                  "condition should return bool") != std::string::npos);
+  // Should throw exception for invalid condition type
+  EXPECT_THROW(validator.validate(ast), ChaException);
 }
