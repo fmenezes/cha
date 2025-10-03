@@ -34,63 +34,63 @@ identifier [_a-zA-Z][_a-zA-Z0-9]{0,31}
 }
 
 "int8" {
-	return REFTYPE_INT8;
+	return KEYWORD_INT8;
 }
 
 "uint8" {
-	return REFTYPE_UINT8;
+	return KEYWORD_UINT8;
 }
 
 "byte" { // type alias for uint8
-	return REFTYPE_UINT8;
+	return KEYWORD_UINT8;
 }
 
 "int16" {
-	return REFTYPE_INT16;
+	return KEYWORD_INT16;
 }
 
 "uint16" {
-	return REFTYPE_UINT16;
+	return KEYWORD_UINT16;
 }
 
 "int32" {
-	return REFTYPE_INT32;
+	return KEYWORD_INT32;
 }
 
 "uint32" {
-	return REFTYPE_UINT32;
+	return KEYWORD_UINT32;
 }
 
 "int" {
-	return REFTYPE_INT;
+	return KEYWORD_INT;
 }
 
 "uint" {
-	return REFTYPE_UINT;
+	return KEYWORD_UINT;
 }
 
 "int64" {
-	return REFTYPE_INT64;
+	return KEYWORD_INT64;
 }
 
 "uint64" {
-	return REFTYPE_UINT64;
+	return KEYWORD_UINT64;
 }
 
 "float16" {
-	return REFTYPE_FLOAT16;
+	return KEYWORD_FLOAT16;
 }
 
 "float32" {
-	return REFTYPE_FLOAT32;
+	return KEYWORD_FLOAT32;
 }
 
 "float64" {
-	return REFTYPE_FLOAT64;
+	return KEYWORD_FLOAT64;
 }
 
 "bool" {
-	return REFTYPE_BOOL;
+	return KEYWORD_BOOL;
 }
 
 "true" {
@@ -102,19 +102,19 @@ identifier [_a-zA-Z][_a-zA-Z0-9]{0,31}
 }
 
 "+" {
-	return ADD;
+	return PLUS;
 }
 
 "-" {
-	return SUBTRACT;
+	return MINUS;
 }
 
 "*" {
-	return MULTIPLY;
+	return STAR;
 }
 
 "/" {
-	return DIVIDE;
+	return SLASH;
 }
 
 "=" {

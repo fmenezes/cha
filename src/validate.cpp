@@ -400,10 +400,10 @@ void Validator::validate_binary_op(BinaryOpNode &node) {
   PrimitiveType right_prim = right_type->as_primitive().type;
 
   switch (node.op()) {
-  case Operator::ADD:
-  case Operator::SUBTRACT:
-  case Operator::MULTIPLY:
-  case Operator::DIVIDE: {
+  case BinaryOperator::PLUS:
+  case BinaryOperator::MINUS:
+  case BinaryOperator::STAR:
+  case BinaryOperator::SLASH: {
     PrimitiveType result_type =
         TypeUtils::convert_arithmetic_types(left_prim, right_prim);
     if (result_type == PrimitiveType::UNDEF) {
@@ -421,10 +421,10 @@ void Validator::validate_binary_op(BinaryOpNode &node) {
                                  result_type);
     break;
   }
-  case Operator::GREATER_THAN:
-  case Operator::GREATER_THAN_OR_EQUALS:
-  case Operator::LESS_THAN:
-  case Operator::LESS_THAN_OR_EQUALS: {
+  case BinaryOperator::GREATER_THAN:
+  case BinaryOperator::GREATER_THAN_OR_EQUALS:
+  case BinaryOperator::LESS_THAN:
+  case BinaryOperator::LESS_THAN_OR_EQUALS: {
     if (!TypeUtils::is_numeric_comparison_compatible(left_prim, right_prim)) {
       add_error(node.location(),
                 "incompatible types found for operation: '" +
@@ -440,8 +440,8 @@ void Validator::validate_binary_op(BinaryOpNode &node) {
                                  left_prim);
     break;
   }
-  case Operator::EQUALS_EQUALS:
-  case Operator::NOT_EQUALS: {
+  case BinaryOperator::EQUALS_EQUALS:
+  case BinaryOperator::NOT_EQUALS: {
     if (!TypeUtils::is_equality_comparison_compatible(left_prim, right_prim)) {
       add_error(node.location(),
                 "incompatible types found for operation: '" +
@@ -457,8 +457,8 @@ void Validator::validate_binary_op(BinaryOpNode &node) {
                                  left_prim);
     break;
   }
-  case Operator::AND:
-  case Operator::OR: {
+  case BinaryOperator::AND:
+  case BinaryOperator::OR: {
     if (left_prim != PrimitiveType::BOOL || right_prim != PrimitiveType::BOOL) {
       add_error(node.location(),
                 "incompatible types found for operation: '" +
