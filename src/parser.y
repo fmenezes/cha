@@ -11,16 +11,6 @@ using namespace cha;
 AstNodeList *parsed_ast;
 const char *current_file = nullptr;
 
-int yyerror(const char *msg) {
-  AstLocation location(
-    current_file ? std::string(current_file) : std::string(""),
-    1, 1, 1, 1  // Default location since yylloc isn't available here  
-  );
-  
-  // Throw parse exception instead of logging
-  throw ParseException(location, std::string(msg));
-}
-
 extern "C" {
     int yylex();
     extern FILE *yyin;
@@ -32,6 +22,7 @@ extern "C" {
 %code{
 # include "ast.hpp"
 AstLocation convert_location(YYLTYPE start, YYLTYPE end);
+int yyerror(const char *msg);
 }
 
 %union {
@@ -195,6 +186,11 @@ AstLocation convert_location(YYLTYPE start, YYLTYPE end) {
     end.last_line,
     end.last_column
   );
+}
+
+int yyerror(const char *msg) {
+  AstLocation location = convert_location(yylloc, yylloc);
+  throw ParseException(location, std::string(msg));
 }
 
 // Main parser function (C++ interface)
