@@ -32,15 +32,15 @@ int yyerror(const char *msg);
   AstNodeList* list;
 }
 
-%token KEYWORD_FUN OPEN_PAR CLOSE_PAR OPEN_CUR CLOSE_CUR COMMA KEYWORD_VAR EQUALS KEYWORD_RET ADD SUBTRACT MULTIPLY DIVIDE REFTYPE_INT8 REFTYPE_UINT8 REFTYPE_INT16 REFTYPE_UINT16 REFTYPE_INT32 REFTYPE_UINT32 REFTYPE_INT64 REFTYPE_UINT64 REFTYPE_INT REFTYPE_UINT REFTYPE_FLOAT16 REFTYPE_FLOAT32 REFTYPE_FLOAT64 REFTYPE_BOOL BOOL_TRUE BOOL_FALSE EQUALS_EQUALS NOT_EQUALS GREATER_THAN GREATER_THAN_OR_EQUALS LESS_THAN LESS_THAN_OR_EQUALS AND OR KEYWORD_CONST KEYWORD_IF KEYWORD_ELSE
+%token KEYWORD_FUN OPEN_PAR CLOSE_PAR OPEN_CUR CLOSE_CUR COMMA KEYWORD_VAR EQUALS KEYWORD_RET PLUS MINUS STAR SLASH KEYWORD_INT8 KEYWORD_UINT8 KEYWORD_INT16 KEYWORD_UINT16 KEYWORD_INT32 KEYWORD_UINT32 KEYWORD_INT64 KEYWORD_UINT64 KEYWORD_INT KEYWORD_UINT KEYWORD_FLOAT16 KEYWORD_FLOAT32 KEYWORD_FLOAT64 KEYWORD_BOOL BOOL_TRUE BOOL_FALSE EQUALS_EQUALS NOT_EQUALS GREATER_THAN GREATER_THAN_OR_EQUALS LESS_THAN LESS_THAN_OR_EQUALS AND OR KEYWORD_CONST KEYWORD_IF KEYWORD_ELSE
 %token <str> IDENTIFIER INTEGER UINTEGER FLOAT
 
 %nterm <list> top_level block def_args call_args statements
 %nterm <node> instruction const_definition function statement arg expr const_value
 %nterm <type> reftype
 
-%left ADD SUBTRACT
-%left MULTIPLY DIVIDE
+%left PLUS MINUS
+%left STAR SLASH
 
 %start parse
 
@@ -134,36 +134,36 @@ expr :
 		$$ = new AstNodePtr(std::make_unique<FunctionCallNode>(convert_location(@1, @3), std::string($1), std::move(empty_args))); 
 	}
 	| IDENTIFIER OPEN_PAR call_args CLOSE_PAR										{ $$ = new AstNodePtr(std::make_unique<FunctionCallNode>(convert_location(@1, @4), std::string($1), std::move(*$3))); delete $3; }
-	| expr ADD expr																	{ $$ = new AstNodePtr(std::make_unique<BinaryOpNode>(convert_location(@1, @3), Operator::ADD, std::move(*$1), std::move(*$3))); delete $1; delete $3; }
-	| expr SUBTRACT expr															{ $$ = new AstNodePtr(std::make_unique<BinaryOpNode>(convert_location(@1, @3), Operator::SUBTRACT, std::move(*$1), std::move(*$3))); delete $1; delete $3; }
-	| expr MULTIPLY expr															{ $$ = new AstNodePtr(std::make_unique<BinaryOpNode>(convert_location(@1, @3), Operator::MULTIPLY, std::move(*$1), std::move(*$3))); delete $1; delete $3; }
-	| expr DIVIDE expr																{ $$ = new AstNodePtr(std::make_unique<BinaryOpNode>(convert_location(@1, @3), Operator::DIVIDE, std::move(*$1), std::move(*$3))); delete $1; delete $3; }
-	| expr EQUALS_EQUALS expr														{ $$ = new AstNodePtr(std::make_unique<BinaryOpNode>(convert_location(@1, @3), Operator::EQUALS_EQUALS, std::move(*$1), std::move(*$3))); delete $1; delete $3; }
-	| expr NOT_EQUALS expr															{ $$ = new AstNodePtr(std::make_unique<BinaryOpNode>(convert_location(@1, @3), Operator::NOT_EQUALS, std::move(*$1), std::move(*$3))); delete $1; delete $3; }
-	| expr GREATER_THAN expr														{ $$ = new AstNodePtr(std::make_unique<BinaryOpNode>(convert_location(@1, @3), Operator::GREATER_THAN, std::move(*$1), std::move(*$3))); delete $1; delete $3; }
-	| expr GREATER_THAN_OR_EQUALS expr												{ $$ = new AstNodePtr(std::make_unique<BinaryOpNode>(convert_location(@1, @3), Operator::GREATER_THAN_OR_EQUALS, std::move(*$1), std::move(*$3))); delete $1; delete $3; }
-	| expr LESS_THAN expr															{ $$ = new AstNodePtr(std::make_unique<BinaryOpNode>(convert_location(@1, @3), Operator::LESS_THAN, std::move(*$1), std::move(*$3))); delete $1; delete $3; }
-	| expr LESS_THAN_OR_EQUALS expr													{ $$ = new AstNodePtr(std::make_unique<BinaryOpNode>(convert_location(@1, @3), Operator::LESS_THAN_OR_EQUALS, std::move(*$1), std::move(*$3))); delete $1; delete $3; }
-	| expr AND expr																	{ $$ = new AstNodePtr(std::make_unique<BinaryOpNode>(convert_location(@1, @3), Operator::AND, std::move(*$1), std::move(*$3))); delete $1; delete $3; }
-	| expr OR expr																	{ $$ = new AstNodePtr(std::make_unique<BinaryOpNode>(convert_location(@1, @3), Operator::OR, std::move(*$1), std::move(*$3))); delete $1; delete $3; }
+	| expr PLUS expr																{ $$ = new AstNodePtr(std::make_unique<BinaryOpNode>(convert_location(@1, @3), BinaryOperator::PLUS, std::move(*$1), std::move(*$3))); delete $1; delete $3; }
+	| expr MINUS expr																{ $$ = new AstNodePtr(std::make_unique<BinaryOpNode>(convert_location(@1, @3), BinaryOperator::MINUS, std::move(*$1), std::move(*$3))); delete $1; delete $3; }
+	| expr STAR expr																{ $$ = new AstNodePtr(std::make_unique<BinaryOpNode>(convert_location(@1, @3), BinaryOperator::STAR, std::move(*$1), std::move(*$3))); delete $1; delete $3; }
+	| expr SLASH expr																{ $$ = new AstNodePtr(std::make_unique<BinaryOpNode>(convert_location(@1, @3), BinaryOperator::SLASH, std::move(*$1), std::move(*$3))); delete $1; delete $3; }
+	| expr EQUALS_EQUALS expr														{ $$ = new AstNodePtr(std::make_unique<BinaryOpNode>(convert_location(@1, @3), BinaryOperator::EQUALS_EQUALS, std::move(*$1), std::move(*$3))); delete $1; delete $3; }
+	| expr NOT_EQUALS expr															{ $$ = new AstNodePtr(std::make_unique<BinaryOpNode>(convert_location(@1, @3), BinaryOperator::NOT_EQUALS, std::move(*$1), std::move(*$3))); delete $1; delete $3; }
+	| expr GREATER_THAN expr														{ $$ = new AstNodePtr(std::make_unique<BinaryOpNode>(convert_location(@1, @3), BinaryOperator::GREATER_THAN, std::move(*$1), std::move(*$3))); delete $1; delete $3; }
+	| expr GREATER_THAN_OR_EQUALS expr												{ $$ = new AstNodePtr(std::make_unique<BinaryOpNode>(convert_location(@1, @3), BinaryOperator::GREATER_THAN_OR_EQUALS, std::move(*$1), std::move(*$3))); delete $1; delete $3; }
+	| expr LESS_THAN expr															{ $$ = new AstNodePtr(std::make_unique<BinaryOpNode>(convert_location(@1, @3), BinaryOperator::LESS_THAN, std::move(*$1), std::move(*$3))); delete $1; delete $3; }
+	| expr LESS_THAN_OR_EQUALS expr													{ $$ = new AstNodePtr(std::make_unique<BinaryOpNode>(convert_location(@1, @3), BinaryOperator::LESS_THAN_OR_EQUALS, std::move(*$1), std::move(*$3))); delete $1; delete $3; }
+	| expr AND expr																	{ $$ = new AstNodePtr(std::make_unique<BinaryOpNode>(convert_location(@1, @3), BinaryOperator::AND, std::move(*$1), std::move(*$3))); delete $1; delete $3; }
+	| expr OR expr																	{ $$ = new AstNodePtr(std::make_unique<BinaryOpNode>(convert_location(@1, @3), BinaryOperator::OR, std::move(*$1), std::move(*$3))); delete $1; delete $3; }
 	| OPEN_PAR expr CLOSE_PAR														{ $$ = $2; }
 	;
 
 reftype :
-	REFTYPE_INT																		{ $$ = new AstTypePtr(std::make_unique<AstType>(convert_location(@1, @1), AstType::Primitive{PrimitiveType::INT})); }
-	| REFTYPE_UINT																	{ $$ = new AstTypePtr(std::make_unique<AstType>(convert_location(@1, @1), AstType::Primitive{PrimitiveType::UINT})); }
-	| REFTYPE_INT8																	{ $$ = new AstTypePtr(std::make_unique<AstType>(convert_location(@1, @1), AstType::Primitive{PrimitiveType::INT8})); }
-	| REFTYPE_UINT8																	{ $$ = new AstTypePtr(std::make_unique<AstType>(convert_location(@1, @1), AstType::Primitive{PrimitiveType::UINT8})); }
-	| REFTYPE_INT16																	{ $$ = new AstTypePtr(std::make_unique<AstType>(convert_location(@1, @1), AstType::Primitive{PrimitiveType::INT16})); }
-	| REFTYPE_UINT16																{ $$ = new AstTypePtr(std::make_unique<AstType>(convert_location(@1, @1), AstType::Primitive{PrimitiveType::UINT16})); }
-	| REFTYPE_INT32																	{ $$ = new AstTypePtr(std::make_unique<AstType>(convert_location(@1, @1), AstType::Primitive{PrimitiveType::INT32})); }
-	| REFTYPE_UINT32																{ $$ = new AstTypePtr(std::make_unique<AstType>(convert_location(@1, @1), AstType::Primitive{PrimitiveType::UINT32})); }
-	| REFTYPE_INT64																	{ $$ = new AstTypePtr(std::make_unique<AstType>(convert_location(@1, @1), AstType::Primitive{PrimitiveType::INT64})); }
-	| REFTYPE_UINT64																{ $$ = new AstTypePtr(std::make_unique<AstType>(convert_location(@1, @1), AstType::Primitive{PrimitiveType::UINT64})); }
-	| REFTYPE_FLOAT16																{ $$ = new AstTypePtr(std::make_unique<AstType>(convert_location(@1, @1), AstType::Primitive{PrimitiveType::FLOAT16})); }
-	| REFTYPE_FLOAT32																{ $$ = new AstTypePtr(std::make_unique<AstType>(convert_location(@1, @1), AstType::Primitive{PrimitiveType::FLOAT32})); }
-	| REFTYPE_FLOAT64																{ $$ = new AstTypePtr(std::make_unique<AstType>(convert_location(@1, @1), AstType::Primitive{PrimitiveType::FLOAT64})); }
-	| REFTYPE_BOOL																	{ $$ = new AstTypePtr(std::make_unique<AstType>(convert_location(@1, @1), AstType::Primitive{PrimitiveType::BOOL})); }
+	KEYWORD_INT																		{ $$ = new AstTypePtr(std::make_unique<AstType>(convert_location(@1, @1), AstType::Primitive{PrimitiveType::INT})); }
+	| KEYWORD_UINT																	{ $$ = new AstTypePtr(std::make_unique<AstType>(convert_location(@1, @1), AstType::Primitive{PrimitiveType::UINT})); }
+	| KEYWORD_INT8																	{ $$ = new AstTypePtr(std::make_unique<AstType>(convert_location(@1, @1), AstType::Primitive{PrimitiveType::INT8})); }
+	| KEYWORD_UINT8																	{ $$ = new AstTypePtr(std::make_unique<AstType>(convert_location(@1, @1), AstType::Primitive{PrimitiveType::UINT8})); }
+	| KEYWORD_INT16																	{ $$ = new AstTypePtr(std::make_unique<AstType>(convert_location(@1, @1), AstType::Primitive{PrimitiveType::INT16})); }
+	| KEYWORD_UINT16																{ $$ = new AstTypePtr(std::make_unique<AstType>(convert_location(@1, @1), AstType::Primitive{PrimitiveType::UINT16})); }
+	| KEYWORD_INT32																	{ $$ = new AstTypePtr(std::make_unique<AstType>(convert_location(@1, @1), AstType::Primitive{PrimitiveType::INT32})); }
+	| KEYWORD_UINT32																{ $$ = new AstTypePtr(std::make_unique<AstType>(convert_location(@1, @1), AstType::Primitive{PrimitiveType::UINT32})); }
+	| KEYWORD_INT64																	{ $$ = new AstTypePtr(std::make_unique<AstType>(convert_location(@1, @1), AstType::Primitive{PrimitiveType::INT64})); }
+	| KEYWORD_UINT64																{ $$ = new AstTypePtr(std::make_unique<AstType>(convert_location(@1, @1), AstType::Primitive{PrimitiveType::UINT64})); }
+	| KEYWORD_FLOAT16																{ $$ = new AstTypePtr(std::make_unique<AstType>(convert_location(@1, @1), AstType::Primitive{PrimitiveType::FLOAT16})); }
+	| KEYWORD_FLOAT32																{ $$ = new AstTypePtr(std::make_unique<AstType>(convert_location(@1, @1), AstType::Primitive{PrimitiveType::FLOAT32})); }
+	| KEYWORD_FLOAT64																{ $$ = new AstTypePtr(std::make_unique<AstType>(convert_location(@1, @1), AstType::Primitive{PrimitiveType::FLOAT64})); }
+	| KEYWORD_BOOL																	{ $$ = new AstTypePtr(std::make_unique<AstType>(convert_location(@1, @1), AstType::Primitive{PrimitiveType::BOOL})); }
 	;
 
 const_value :
@@ -196,7 +196,7 @@ int yyerror(const char *msg) {
 // Main parser function (C++ interface)
 namespace cha {
 
-void parse(const char *file, AstNodeList &out) {
+AstNodeList parse(const char *file) {
   current_file = file;
   FILE *f = fopen(file, "r");
   if (f == NULL) {
@@ -206,8 +206,9 @@ void parse(const char *file, AstNodeList &out) {
     );
   }
 
+  AstNodeList result;
   yyin = f;
-  parsed_ast = &out;
+  parsed_ast = &result;
   
   try {
     int ret = yyparse();
@@ -222,6 +223,8 @@ void parse(const char *file, AstNodeList &out) {
         "Parse failed"
       );
     }
+    
+    return result;
   } catch (...) {
     // Clean up and re-throw
     fclose(f);

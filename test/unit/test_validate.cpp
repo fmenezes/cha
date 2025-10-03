@@ -215,8 +215,9 @@ TEST(ValidateTest, BinaryOperations) {
   right->set_result_type(std::make_unique<AstType>(
       make_test_location(), AstType::Primitive(PrimitiveType::CONST_INT)));
 
-  auto bin_op = std::make_unique<BinaryOpNode>(
-      make_test_location(), Operator::ADD, std::move(left), std::move(right));
+  auto bin_op =
+      std::make_unique<BinaryOpNode>(make_test_location(), BinaryOperator::PLUS,
+                                     std::move(left), std::move(right));
 
   auto var_decl = std::make_unique<VariableDeclarationNode>(
       make_test_location(), "result", make_int_type(), std::move(bin_op));
@@ -276,8 +277,9 @@ TEST(ValidateTest, FunctionCalls) {
   AstNodeList body;
   auto var_a = std::make_unique<VariableLookupNode>(make_test_location(), "a");
   auto var_b = std::make_unique<VariableLookupNode>(make_test_location(), "b");
-  auto add_op = std::make_unique<BinaryOpNode>(
-      make_test_location(), Operator::ADD, std::move(var_a), std::move(var_b));
+  auto add_op =
+      std::make_unique<BinaryOpNode>(make_test_location(), BinaryOperator::PLUS,
+                                     std::move(var_a), std::move(var_b));
   auto return_stmt = std::make_unique<FunctionReturnNode>(make_test_location(),
                                                           std::move(add_op));
   body.push_back(std::move(return_stmt));

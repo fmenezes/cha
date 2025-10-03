@@ -345,7 +345,7 @@ void CodeGenerator::visit(const BinaryOpNode &node) {
 
   // Generate appropriate LLVM instruction based on operator
   switch (node.op()) {
-  case Operator::ADD:
+  case BinaryOperator::PLUS:
     if (left_val->getType()->isIntegerTy()) {
       current_value_ = builder_->CreateAdd(left_val, right_val, "addtmp");
     } else {
@@ -353,7 +353,7 @@ void CodeGenerator::visit(const BinaryOpNode &node) {
     }
     break;
 
-  case Operator::SUBTRACT:
+  case BinaryOperator::MINUS:
     if (left_val->getType()->isIntegerTy()) {
       current_value_ = builder_->CreateSub(left_val, right_val, "subtmp");
     } else {
@@ -361,7 +361,7 @@ void CodeGenerator::visit(const BinaryOpNode &node) {
     }
     break;
 
-  case Operator::MULTIPLY:
+  case BinaryOperator::STAR:
     if (left_val->getType()->isIntegerTy()) {
       current_value_ = builder_->CreateMul(left_val, right_val, "multmp");
     } else {
@@ -369,7 +369,7 @@ void CodeGenerator::visit(const BinaryOpNode &node) {
     }
     break;
 
-  case Operator::DIVIDE:
+  case BinaryOperator::SLASH:
     if (left_val->getType()->isIntegerTy()) {
       current_value_ = builder_->CreateSDiv(left_val, right_val, "divtmp");
     } else {
@@ -377,7 +377,7 @@ void CodeGenerator::visit(const BinaryOpNode &node) {
     }
     break;
 
-  case Operator::EQUALS_EQUALS:
+  case BinaryOperator::EQUALS_EQUALS:
     if (left_val->getType()->isIntegerTy()) {
       current_value_ = builder_->CreateICmpEQ(left_val, right_val, "cmptmp");
     } else {
@@ -385,7 +385,7 @@ void CodeGenerator::visit(const BinaryOpNode &node) {
     }
     break;
 
-  case Operator::NOT_EQUALS:
+  case BinaryOperator::NOT_EQUALS:
     if (left_val->getType()->isIntegerTy()) {
       current_value_ = builder_->CreateICmpNE(left_val, right_val, "cmptmp");
     } else {
@@ -393,7 +393,7 @@ void CodeGenerator::visit(const BinaryOpNode &node) {
     }
     break;
 
-  case Operator::LESS_THAN:
+  case BinaryOperator::LESS_THAN:
     if (left_val->getType()->isIntegerTy()) {
       current_value_ = builder_->CreateICmpSLT(left_val, right_val, "cmptmp");
     } else {
@@ -401,7 +401,7 @@ void CodeGenerator::visit(const BinaryOpNode &node) {
     }
     break;
 
-  case Operator::LESS_THAN_OR_EQUALS:
+  case BinaryOperator::LESS_THAN_OR_EQUALS:
     if (left_val->getType()->isIntegerTy()) {
       current_value_ = builder_->CreateICmpSLE(left_val, right_val, "cmptmp");
     } else {
@@ -409,7 +409,7 @@ void CodeGenerator::visit(const BinaryOpNode &node) {
     }
     break;
 
-  case Operator::GREATER_THAN:
+  case BinaryOperator::GREATER_THAN:
     if (left_val->getType()->isIntegerTy()) {
       current_value_ = builder_->CreateICmpSGT(left_val, right_val, "cmptmp");
     } else {
@@ -417,7 +417,7 @@ void CodeGenerator::visit(const BinaryOpNode &node) {
     }
     break;
 
-  case Operator::GREATER_THAN_OR_EQUALS:
+  case BinaryOperator::GREATER_THAN_OR_EQUALS:
     if (left_val->getType()->isIntegerTy()) {
       current_value_ = builder_->CreateICmpSGE(left_val, right_val, "cmptmp");
     } else {
@@ -425,11 +425,11 @@ void CodeGenerator::visit(const BinaryOpNode &node) {
     }
     break;
 
-  case Operator::AND:
+  case BinaryOperator::AND:
     current_value_ = builder_->CreateAnd(left_val, right_val, "andtmp");
     break;
 
-  case Operator::OR:
+  case BinaryOperator::OR:
     current_value_ = builder_->CreateOr(left_val, right_val, "ortmp");
     break;
 

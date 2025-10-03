@@ -5,11 +5,11 @@
 namespace cha {
 
 // Main parser function implemented in parser.y - throws ParseException on error
-void parse(const char *file, AstNodeList &out);
+AstNodeList parse(const char *file);
 
 // Convenience overload for std::string
-inline void parse(const std::string &file, AstNodeList &out) {
-  parse(file.c_str(), out);
+inline AstNodeList parse(const std::string &file) {
+  return parse(file.c_str());
 }
 
 } // namespace cha

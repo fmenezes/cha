@@ -98,11 +98,11 @@ inline std::ostream &operator<<(std::ostream &os, PrimitiveType type) {
   }
 }
 
-enum class Operator {
-  ADD,
-  SUBTRACT,
-  MULTIPLY,
-  DIVIDE,
+enum class BinaryOperator {
+  PLUS,
+  MINUS,
+  STAR,
+  SLASH,
   EQUALS_EQUALS,
   NOT_EQUALS,
   GREATER_THAN,
@@ -331,11 +331,12 @@ private:
 
 class BinaryOpNode : public AstNode {
 public:
-  BinaryOpNode(AstLocation loc, Operator op, AstNodePtr left, AstNodePtr right)
+  BinaryOpNode(AstLocation loc, BinaryOperator op, AstNodePtr left,
+               AstNodePtr right)
       : AstNode(std::move(loc)), op_(op), left_(std::move(left)),
         right_(std::move(right)) {}
 
-  Operator op() const { return op_; }
+  BinaryOperator op() const { return op_; }
   const AstNode &left() const { return *left_; }
   const AstNode &right() const { return *right_; }
   AstNodePtr clone() const override;
@@ -343,7 +344,7 @@ public:
   void accept(AstVisitor &visitor) override;
 
 private:
-  Operator op_;
+  BinaryOperator op_;
   AstNodePtr left_;
   AstNodePtr right_;
 };

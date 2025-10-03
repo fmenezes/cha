@@ -9,7 +9,7 @@ TEST(ParserTest, SimpleFunctionParsing) {
   AstNodeList ast;
 
   try {
-    cha::parse("examples/test.cha", ast);
+    ast = cha::parse("examples/test.cha");
   } catch (const ParseException &e) {
     FAIL() << "Parse failed: " << e.message();
   }
@@ -37,7 +37,7 @@ TEST(ParserTest, ConstantParsing) {
   AstNodeList ast;
 
   try {
-    cha::parse("examples/test.cha", ast);
+    ast = cha::parse("examples/test.cha");
   } catch (const ParseException &e) {
     FAIL() << "Parse failed: " << e.message();
   }
@@ -70,7 +70,7 @@ TEST(ParserTest, AstStructureIntegrity) {
   AstNodeList ast;
 
   try {
-    cha::parse("examples/test.cha", ast);
+    ast = cha::parse("examples/test.cha");
   } catch (const ParseException &e) {
     FAIL() << "Parse failed: " << e.message();
   }

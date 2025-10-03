@@ -35,11 +35,11 @@ TEST(AstTest, BinaryOperations) {
   auto left = std::make_unique<ConstantIntegerNode>(loc, "10");
   auto right = std::make_unique<ConstantIntegerNode>(loc, "20");
   auto bin_op = std::make_unique<BinaryOpNode>(
-      loc, Operator::ADD, std::move(left), std::move(right));
+      loc, BinaryOperator::PLUS, std::move(left), std::move(right));
 
   auto bin_node = dynamic_cast<const BinaryOpNode *>(bin_op.get());
   ASSERT_NE(bin_node, nullptr);
-  EXPECT_EQ(bin_node->op(), Operator::ADD);
+  EXPECT_EQ(bin_node->op(), BinaryOperator::PLUS);
 
   auto left_const =
       dynamic_cast<const ConstantIntegerNode *>(&bin_node->left());
@@ -88,7 +88,7 @@ TEST(AstTest, FunctionDeclarations) {
   // Create function body
   AstNodeList body;
   auto return_expr = std::make_unique<BinaryOpNode>(
-      loc, Operator::ADD, std::make_unique<VariableLookupNode>(loc, "x"),
+      loc, BinaryOperator::PLUS, std::make_unique<VariableLookupNode>(loc, "x"),
       std::make_unique<VariableLookupNode>(loc, "y"));
   body.push_back(
       std::make_unique<FunctionReturnNode>(loc, std::move(return_expr)));
