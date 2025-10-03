@@ -196,7 +196,7 @@ int yyerror(const char *msg) {
 // Main parser function (C++ interface)
 namespace cha {
 
-void parse(const char *file, AstNodeList &out) {
+AstNodeList parse(const char *file) {
   current_file = file;
   FILE *f = fopen(file, "r");
   if (f == NULL) {
@@ -206,8 +206,9 @@ void parse(const char *file, AstNodeList &out) {
     );
   }
 
+  AstNodeList result;
   yyin = f;
-  parsed_ast = &out;
+  parsed_ast = &result;
   
   try {
     int ret = yyparse();
@@ -222,6 +223,8 @@ void parse(const char *file, AstNodeList &out) {
         "Parse failed"
       );
     }
+    
+    return result;
   } catch (...) {
     // Clean up and re-throw
     fclose(f);

@@ -13,7 +13,7 @@ int compile(const std::string &file, CompileFormat format,
   AstNodeList ast;
 
   try {
-    parse(file, ast);
+    ast = parse(file);
   } catch (const ParseException &e) {
     log_error(e.message());
     return 1;
