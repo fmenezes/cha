@@ -331,7 +331,8 @@ private:
 
 class BinaryOpNode : public AstNode {
 public:
-  BinaryOpNode(AstLocation loc, BinaryOperator op, AstNodePtr left, AstNodePtr right)
+  BinaryOpNode(AstLocation loc, BinaryOperator op, AstNodePtr left,
+               AstNodePtr right)
       : AstNode(std::move(loc)), op_(op), left_(std::move(left)),
         right_(std::move(right)) {}
 
