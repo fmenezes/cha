@@ -210,8 +210,7 @@ TEST(ValidateTest, BinaryOperations) {
   left->set_result_type(std::make_unique<AstType>(
       make_test_location(), AstType::Primitive(PrimitiveType::CONST_INT)));
 
-  auto right =
-      std::make_unique<ConstantIntegerNode>(make_test_location(), 10);
+  auto right = std::make_unique<ConstantIntegerNode>(make_test_location(), 10);
   right->set_result_type(std::make_unique<AstType>(
       make_test_location(), AstType::Primitive(PrimitiveType::CONST_INT)));
 
@@ -292,8 +291,7 @@ TEST(ValidateTest, FunctionCalls) {
   // Create main function that calls add
   AstNodeList main_body;
   AstNodeList call_args;
-  auto const5 =
-      std::make_unique<ConstantIntegerNode>(make_test_location(), 5);
+  auto const5 = std::make_unique<ConstantIntegerNode>(make_test_location(), 5);
   const5->set_result_type(std::make_unique<AstType>(
       make_test_location(), AstType::Primitive(PrimitiveType::CONST_INT)));
   auto const10 =

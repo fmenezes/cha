@@ -168,8 +168,8 @@ ConstantIntegerNode::ConstantIntegerNode(AstLocation loc, long long value)
       location(), AstType::Primitive{PrimitiveType::CONST_INT}));
 }
 
-ConstantUnsignedIntegerNode::ConstantUnsignedIntegerNode(AstLocation loc,
-                                                         unsigned long long value)
+ConstantUnsignedIntegerNode::ConstantUnsignedIntegerNode(
+    AstLocation loc, unsigned long long value)
     : AstNode(std::move(loc)), value_(value) {
   set_result_type(std::make_unique<AstType>(
       location(), AstType::Primitive{PrimitiveType::CONST_UINT}));
