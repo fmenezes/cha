@@ -162,15 +162,15 @@ AstNodePtr ConstantDeclarationNode::clone() const {
 }
 
 // Constructor implementations with type setting
-ConstantIntegerNode::ConstantIntegerNode(AstLocation loc, std::string value)
-    : AstNode(std::move(loc)), value_(std::move(value)) {
+ConstantIntegerNode::ConstantIntegerNode(AstLocation loc, long long value)
+    : AstNode(std::move(loc)), value_(value) {
   set_result_type(std::make_unique<AstType>(
       location(), AstType::Primitive{PrimitiveType::CONST_INT}));
 }
 
-ConstantUnsignedIntegerNode::ConstantUnsignedIntegerNode(AstLocation loc,
-                                                         std::string value)
-    : AstNode(std::move(loc)), value_(std::move(value)) {
+ConstantUnsignedIntegerNode::ConstantUnsignedIntegerNode(
+    AstLocation loc, unsigned long long value)
+    : AstNode(std::move(loc)), value_(value) {
   set_result_type(std::make_unique<AstType>(
       location(), AstType::Primitive{PrimitiveType::CONST_UINT}));
 }
