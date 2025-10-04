@@ -7,10 +7,10 @@ TEST(AstTest, ConstantNodes) {
   AstLocation loc("test.cha", 1, 1, 1, 10);
 
   // Test integer constant
-  auto int_node = std::make_unique<ConstantIntegerNode>(loc, "42");
+  auto int_node = std::make_unique<ConstantIntegerNode>(loc, 42);
   auto int_const = dynamic_cast<const ConstantIntegerNode *>(int_node.get());
   ASSERT_NE(int_const, nullptr);
-  EXPECT_EQ(int_const->value(), "42");
+  EXPECT_EQ(int_const->value(), 42);
   ASSERT_NE(int_const->result_type(), nullptr);
   EXPECT_TRUE(int_const->result_type()->is_primitive());
   EXPECT_EQ(int_const->result_type()->as_primitive().type,
@@ -32,8 +32,8 @@ TEST(AstTest, ConstantNodes) {
 TEST(AstTest, BinaryOperations) {
   AstLocation loc("test.cha", 2, 1, 2, 10);
 
-  auto left = std::make_unique<ConstantIntegerNode>(loc, "10");
-  auto right = std::make_unique<ConstantIntegerNode>(loc, "20");
+  auto left = std::make_unique<ConstantIntegerNode>(loc, 10);
+  auto right = std::make_unique<ConstantIntegerNode>(loc, 20);
   auto bin_op = std::make_unique<BinaryOpNode>(
       loc, BinaryOperator::PLUS, std::move(left), std::move(right));
 
@@ -46,9 +46,9 @@ TEST(AstTest, BinaryOperations) {
   auto right_const =
       dynamic_cast<const ConstantIntegerNode *>(&bin_node->right());
   ASSERT_NE(left_const, nullptr);
-  EXPECT_EQ(left_const->value(), "10");
+  EXPECT_EQ(left_const->value(), 10);
   ASSERT_NE(right_const, nullptr);
-  EXPECT_EQ(right_const->value(), "20");
+  EXPECT_EQ(right_const->value(), 20);
 }
 
 TEST(AstTest, VariableDeclarations) {
@@ -56,7 +56,7 @@ TEST(AstTest, VariableDeclarations) {
 
   auto type =
       std::make_unique<AstType>(loc, AstType::Primitive{PrimitiveType::INT});
-  auto value = std::make_unique<ConstantIntegerNode>(loc, "100");
+  auto value = std::make_unique<ConstantIntegerNode>(loc, 100);
   auto var_decl = std::make_unique<VariableDeclarationNode>(
       loc, "myVar", std::move(type), std::move(value));
 
@@ -70,7 +70,7 @@ TEST(AstTest, VariableDeclarations) {
   auto value_const =
       dynamic_cast<const ConstantIntegerNode *>(var_node->value());
   ASSERT_NE(value_const, nullptr);
-  EXPECT_EQ(value_const->value(), "100");
+  EXPECT_EQ(value_const->value(), 100);
 }
 
 TEST(AstTest, FunctionDeclarations) {
@@ -111,7 +111,7 @@ TEST(AstTest, FunctionDeclarations) {
 TEST(AstTest, NodeCloning) {
   AstLocation loc("test.cha", 5, 1, 5, 10);
 
-  auto original = std::make_unique<ConstantIntegerNode>(loc, "123");
+  auto original = std::make_unique<ConstantIntegerNode>(loc, 123);
   auto cloned = original->clone();
 
   auto orig_const = dynamic_cast<const ConstantIntegerNode *>(original.get());

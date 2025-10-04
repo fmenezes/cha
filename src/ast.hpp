@@ -279,28 +279,28 @@ private:
 // Concrete node types
 class ConstantIntegerNode : public AstNode {
 public:
-  ConstantIntegerNode(AstLocation loc, std::string value);
+  ConstantIntegerNode(AstLocation loc, long long value);
 
-  const std::string &value() const { return value_; }
+  long long value() const { return value_; }
   AstNodePtr clone() const override;
   void accept(AstVisitor &visitor) const override;
   void accept(AstVisitor &visitor) override;
 
 private:
-  std::string value_;
+  long long value_;
 };
 
 class ConstantUnsignedIntegerNode : public AstNode {
 public:
-  ConstantUnsignedIntegerNode(AstLocation loc, std::string value);
+  ConstantUnsignedIntegerNode(AstLocation loc, unsigned long long value);
 
-  const std::string &value() const { return value_; }
+  unsigned long long value() const { return value_; }
   AstNodePtr clone() const override;
   void accept(AstVisitor &visitor) const override;
   void accept(AstVisitor &visitor) override;
 
 private:
-  std::string value_;
+  unsigned long long value_;
 };
 
 class ConstantFloatNode : public AstNode {

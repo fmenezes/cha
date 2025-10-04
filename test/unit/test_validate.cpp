@@ -162,7 +162,7 @@ TEST(ValidateTest, VariableValidation) {
 
   // Add variable declaration: int x = 42;
   auto const_val =
-      std::make_unique<ConstantIntegerNode>(make_test_location(), "42");
+      std::make_unique<ConstantIntegerNode>(make_test_location(), 42);
   const_val->set_result_type(std::make_unique<AstType>(
       make_test_location(), AstType::Primitive(PrimitiveType::CONST_INT)));
 
@@ -206,12 +206,12 @@ TEST(ValidateTest, BinaryOperations) {
   AstNodeList func_body;
 
   // Create: int result = 5 + 10;
-  auto left = std::make_unique<ConstantIntegerNode>(make_test_location(), "5");
+  auto left = std::make_unique<ConstantIntegerNode>(make_test_location(), 5);
   left->set_result_type(std::make_unique<AstType>(
       make_test_location(), AstType::Primitive(PrimitiveType::CONST_INT)));
 
   auto right =
-      std::make_unique<ConstantIntegerNode>(make_test_location(), "10");
+      std::make_unique<ConstantIntegerNode>(make_test_location(), 10);
   right->set_result_type(std::make_unique<AstType>(
       make_test_location(), AstType::Primitive(PrimitiveType::CONST_INT)));
 
@@ -293,11 +293,11 @@ TEST(ValidateTest, FunctionCalls) {
   AstNodeList main_body;
   AstNodeList call_args;
   auto const5 =
-      std::make_unique<ConstantIntegerNode>(make_test_location(), "5");
+      std::make_unique<ConstantIntegerNode>(make_test_location(), 5);
   const5->set_result_type(std::make_unique<AstType>(
       make_test_location(), AstType::Primitive(PrimitiveType::CONST_INT)));
   auto const10 =
-      std::make_unique<ConstantIntegerNode>(make_test_location(), "10");
+      std::make_unique<ConstantIntegerNode>(make_test_location(), 10);
   const10->set_result_type(std::make_unique<AstType>(
       make_test_location(), AstType::Primitive(PrimitiveType::CONST_INT)));
 
@@ -332,7 +332,7 @@ TEST(ValidateTest, IfStatements) {
 
   AstNodeList then_block;
   auto const_val =
-      std::make_unique<ConstantIntegerNode>(make_test_location(), "5");
+      std::make_unique<ConstantIntegerNode>(make_test_location(), 5);
   const_val->set_result_type(std::make_unique<AstType>(
       make_test_location(), AstType::Primitive(PrimitiveType::CONST_INT)));
 
@@ -360,13 +360,13 @@ TEST(ValidateTest, InvalidIfCondition) {
 
   // Create: if (42) { int x = 5; } (should fail)
   auto condition =
-      std::make_unique<ConstantIntegerNode>(make_test_location(), "42");
+      std::make_unique<ConstantIntegerNode>(make_test_location(), 42);
   condition->set_result_type(std::make_unique<AstType>(
       make_test_location(), AstType::Primitive(PrimitiveType::CONST_INT)));
 
   AstNodeList then_block;
   auto const_val =
-      std::make_unique<ConstantIntegerNode>(make_test_location(), "5");
+      std::make_unique<ConstantIntegerNode>(make_test_location(), 5);
   const_val->set_result_type(std::make_unique<AstType>(
       make_test_location(), AstType::Primitive(PrimitiveType::CONST_INT)));
 

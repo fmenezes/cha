@@ -167,9 +167,36 @@ reftype :
 	;
 
 const_value :
-	INTEGER																			{ $$ = new AstNodePtr(std::make_unique<ConstantIntegerNode>(convert_location(@1, @1), std::string($1))); }
-	| UINTEGER																		{ $$ = new AstNodePtr(std::make_unique<ConstantUnsignedIntegerNode>(convert_location(@1, @1), std::string($1))); }
-	| FLOAT																			{ $$ = new AstNodePtr(std::make_unique<ConstantFloatNode>(convert_location(@1, @1), atof($1))); }
+	INTEGER																			{ 
+		char *endptr;
+		long long value = strtoll($1, &endptr, 0);
+		if (*endptr != '\0' || endptr == $1) {
+			throw ParseException(convert_location(@1, @1), "Invalid integer literal: " + std::string($1));
+		}
+		$$ = new AstNodePtr(std::make_unique<ConstantIntegerNode>(convert_location(@1, @1), value)); 
+	}
+	| UINTEGER																		{ 
+		// Remove the 'u' suffix before parsing
+		std::string str_value = $1;
+		if (!str_value.empty() && str_value.back() == 'u') {
+			str_value.pop_back();
+		}
+		
+		char *endptr;
+		unsigned long long value = strtoull(str_value.c_str(), &endptr, 0);
+		if (*endptr != '\0' || endptr == str_value.c_str()) {
+			throw ParseException(convert_location(@1, @1), "Invalid unsigned integer literal: " + std::string($1));
+		}
+		$$ = new AstNodePtr(std::make_unique<ConstantUnsignedIntegerNode>(convert_location(@1, @1), value)); 
+	}
+	| FLOAT																			{ 
+		char *endptr;
+		double value = strtod($1, &endptr);
+		if (*endptr != '\0' || endptr == $1) {
+			throw ParseException(convert_location(@1, @1), "Invalid float literal: " + std::string($1));
+		}
+		$$ = new AstNodePtr(std::make_unique<ConstantFloatNode>(convert_location(@1, @1), value)); 
+	}
 	| BOOL_TRUE																		{ $$ = new AstNodePtr(std::make_unique<ConstantBoolNode>(convert_location(@1, @1), true)); }
 	| BOOL_FALSE																	{ $$ = new AstNodePtr(std::make_unique<ConstantBoolNode>(convert_location(@1, @1), false)); }
 	;
