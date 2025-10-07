@@ -1,0 +1,43 @@
+// Demo program showcasing unary operators and comments
+fun absoluteValue(x int) int {
+    // Return the absolute value of x
+    if x < 0 {
+        ret -x  // Unary negation
+    } else {
+        ret x
+    }
+}
+
+fun isPositive(value int) bool {
+    // Check if value is positive using unary NOT
+    ret !(value <= 0)
+}
+
+fun signFunction(x int) int {
+    // Mathematical sign function
+    if x > 0 {
+        ret 1
+    }
+    if x < 0 {
+        ret -1  // Unary negation of literal
+    }
+    ret 0  // x == 0
+}
+
+fun main() int {
+    var a int
+    var b int
+    var result int
+    
+    a = -42      // Unary negation in assignment
+    b = absoluteValue(a)  // Should be 42
+    
+    // Test logical operations
+    if !isPositive(a) {
+        result = signFunction(a)  // Should be -1
+    } else {
+        result = 0
+    }
+    
+    ret result
+}

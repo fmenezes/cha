@@ -189,6 +189,8 @@ identifier [_a-zA-Z][_a-zA-Z0-9]{0,31}
 	return KEYWORD_ELSE;
 }
 
+"//".*$ { /* ignore C++ style comments */ }
+
 [ \t\r]+ { /* ignore whitespace */ }
 
 [\n]+ { yycolumn = 1; }

@@ -141,6 +141,14 @@ fun test() int {
               }
             }
           }
+        } else if (auto var_assign = dynamic_cast<const VariableAssignmentNode *>(stmt.get())) {
+          if (auto unary_op = dynamic_cast<const UnaryOpNode *>(&var_assign->value())) {
+            if (unary_op->op() == UnaryOperator::NEGATE) {
+              found_negate = true;
+            } else if (unary_op->op() == UnaryOperator::NOT) {
+              found_not = true;
+            }
+          }
         }
       }
     }

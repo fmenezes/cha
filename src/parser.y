@@ -40,8 +40,13 @@ int yyerror(const char *msg);
 %nterm <node> instruction const_definition function statement arg expr const_value
 %nterm <type> reftype
 
+%left OR  /* lowest precedence */
+%left AND
+%left EQUALS_EQUALS NOT_EQUALS
+%left GREATER_THAN GREATER_THAN_OR_EQUALS LESS_THAN LESS_THAN_OR_EQUALS
 %left PLUS MINUS
 %left STAR SLASH
+%right UMINUS UNOT  /* unary operators have highest precedence */
 
 %start parse
 
@@ -147,8 +152,8 @@ expr :
 	| expr LESS_THAN_OR_EQUALS expr													{ $$ = new AstNodePtr(std::make_unique<BinaryOpNode>(convert_location(@1, @3), BinaryOperator::LESS_THAN_OR_EQUALS, std::move(*$1), std::move(*$3))); delete $1; delete $3; }
 	| expr AND expr																	{ $$ = new AstNodePtr(std::make_unique<BinaryOpNode>(convert_location(@1, @3), BinaryOperator::AND, std::move(*$1), std::move(*$3))); delete $1; delete $3; }
 	| expr OR expr																	{ $$ = new AstNodePtr(std::make_unique<BinaryOpNode>(convert_location(@1, @3), BinaryOperator::OR, std::move(*$1), std::move(*$3))); delete $1; delete $3; }
-	| EXCLAMATION expr																{ $$ = new AstNodePtr(std::make_unique<UnaryOpNode>(convert_location(@1, @2), UnaryOperator::NOT, std::move(*$2))); delete $2; }
-	| MINUS expr																	{ $$ = new AstNodePtr(std::make_unique<UnaryOpNode>(convert_location(@1, @2), UnaryOperator::NEGATE, std::move(*$2))); delete $2; }
+	| EXCLAMATION expr %prec UNOT															{ $$ = new AstNodePtr(std::make_unique<UnaryOpNode>(convert_location(@1, @2), UnaryOperator::NOT, std::move(*$2))); delete $2; }
+	| MINUS expr %prec UMINUS															{ $$ = new AstNodePtr(std::make_unique<UnaryOpNode>(convert_location(@1, @2), UnaryOperator::NEGATE, std::move(*$2))); delete $2; }
 	| OPEN_PAR expr CLOSE_PAR														{ $$ = $2; }
 	;
 

@@ -50,6 +50,12 @@ cha -ll output.ll examples/test.cha
 cha -o output examples/test.cha
 ```
 
+### Example Programs
+
+See the `examples/` directory for sample programs:
+- `examples/test.cha` - Basic function calls and arithmetic
+- `examples/unary_demo.cha` - Demonstrates unary operators and comments
+
 ## cha Programming Language
 
 ### Built-in types
@@ -66,6 +72,8 @@ Type aliases:
 
 ### Operators
 
+#### Binary Operators
+
 | Operator | Example |
 | --- | --- |
 | = | a = 10 |
@@ -81,6 +89,37 @@ Type aliases:
 | <= | a <= 10 |
 | && | a && b |
 | &#124;&#124; | a &#124;&#124; b |
+
+#### Unary Operators
+
+| Operator | Example | Description |
+| --- | --- | --- |
+| - | -42, -a | Numeric negation |
+| ! | !true, !condition | Logical NOT |
+
+#### Operator Precedence
+
+Operators follow standard mathematical precedence (highest to lowest):
+1. Unary operators: `!`, `-` (unary)
+2. Multiplicative: `*`, `/`
+3. Additive: `+`, `-` (binary)
+4. Comparison: `<`, `<=`, `>`, `>=`
+5. Equality: `==`, `!=`
+6. Logical AND: `&&`
+7. Logical OR: `||`
+8. Assignment: `=`
+
+### Comments
+
+cha supports C++-style single-line comments:
+
+```
+// This is a comment
+fun example() int {
+    var x int = 42  // Another comment
+    ret x
+}
+```
 
 ### Functions
 
@@ -111,6 +150,18 @@ fun greaterThanTwo(a int) bool {
     } else {
         result = false
     }
-    return result
+    ret result  // Note: using 'ret' for return
+}
+
+fun absoluteValue(x int) int {
+    if x < 0 {
+        ret -x  // Using unary negation
+    } else {
+        ret x
+    }
+}
+
+fun isNotZero(value int) bool {
+    ret !(value == 0)  // Using unary NOT operator
 }
 ```
