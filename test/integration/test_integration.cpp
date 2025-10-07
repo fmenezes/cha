@@ -232,9 +232,7 @@ TEST_F(IntegrationTest, UnaryNegate) {
   expectCompilationSuccess("unary_negate.cha");
 }
 
-TEST_F(IntegrationTest, UnaryNot) {
-  expectCompilationSuccess("unary_not.cha");
-}
+TEST_F(IntegrationTest, UnaryNot) { expectCompilationSuccess("unary_not.cha"); }
 
 TEST_F(IntegrationTest, UnaryNegateFloat) {
   expectCompilationSuccess("unary_negate_float.cha");

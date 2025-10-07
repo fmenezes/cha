@@ -113,10 +113,7 @@ enum class BinaryOperator {
   OR
 };
 
-enum class UnaryOperator {
-  NEGATE,
-  NOT
-};
+enum class UnaryOperator { NEGATE, NOT };
 
 // Type system
 class AstType {

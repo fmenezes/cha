@@ -492,9 +492,9 @@ void Validator::validate_unary_op(UnaryOpNode &node) {
   case UnaryOperator::NEGATE: {
     // Negate operation requires a numeric type
     if (!TypeUtils::is_numeric(operand_prim)) {
-      add_error(node.location(),
-                "incompatible type for negation: '" +
-                    TypeUtils::type_to_string(operand_prim) + "'");
+      add_error(node.location(), "incompatible type for negation: '" +
+                                     TypeUtils::type_to_string(operand_prim) +
+                                     "'");
       return;
     }
     // Result type is the same as operand type
@@ -505,9 +505,9 @@ void Validator::validate_unary_op(UnaryOpNode &node) {
   case UnaryOperator::NOT: {
     // Logical NOT requires a boolean type
     if (operand_prim != PrimitiveType::BOOL) {
-      add_error(node.location(),
-                "incompatible type for logical NOT: '" +
-                    TypeUtils::type_to_string(operand_prim) + "'");
+      add_error(node.location(), "incompatible type for logical NOT: '" +
+                                     TypeUtils::type_to_string(operand_prim) +
+                                     "'");
       return;
     }
     node.set_result_type(std::make_unique<AstType>(

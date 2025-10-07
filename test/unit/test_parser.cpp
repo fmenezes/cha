@@ -131,9 +131,11 @@ fun test() int {
   for (const auto &node : ast) {
     if (auto func = dynamic_cast<const FunctionDeclarationNode *>(node.get())) {
       for (const auto &stmt : func->body()) {
-        if (auto var_decl = dynamic_cast<const VariableDeclarationNode *>(stmt.get())) {
+        if (auto var_decl =
+                dynamic_cast<const VariableDeclarationNode *>(stmt.get())) {
           if (var_decl->value()) {
-            if (auto unary_op = dynamic_cast<const UnaryOpNode *>(var_decl->value())) {
+            if (auto unary_op =
+                    dynamic_cast<const UnaryOpNode *>(var_decl->value())) {
               if (unary_op->op() == UnaryOperator::NEGATE) {
                 found_negate = true;
               } else if (unary_op->op() == UnaryOperator::NOT) {
@@ -141,8 +143,11 @@ fun test() int {
               }
             }
           }
-        } else if (auto var_assign = dynamic_cast<const VariableAssignmentNode *>(stmt.get())) {
-          if (auto unary_op = dynamic_cast<const UnaryOpNode *>(&var_assign->value())) {
+        } else if (auto var_assign =
+                       dynamic_cast<const VariableAssignmentNode *>(
+                           stmt.get())) {
+          if (auto unary_op =
+                  dynamic_cast<const UnaryOpNode *>(&var_assign->value())) {
             if (unary_op->op() == UnaryOperator::NEGATE) {
               found_negate = true;
             } else if (unary_op->op() == UnaryOperator::NOT) {
@@ -154,6 +159,7 @@ fun test() int {
     }
   }
 
-  EXPECT_TRUE(found_negate) << "Should find NEGATE unary operation in parsed AST";
+  EXPECT_TRUE(found_negate)
+      << "Should find NEGATE unary operation in parsed AST";
   EXPECT_TRUE(found_not) << "Should find NOT unary operation in parsed AST";
 }

@@ -70,7 +70,8 @@ AstNodePtr BinaryOpNode::clone() const {
 }
 
 AstNodePtr UnaryOpNode::clone() const {
-  auto cloned = std::make_unique<UnaryOpNode>(location(), op_, operand_->clone());
+  auto cloned =
+      std::make_unique<UnaryOpNode>(location(), op_, operand_->clone());
   if (result_type()) {
     cloned->set_result_type(result_type()->clone());
   }

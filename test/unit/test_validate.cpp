@@ -237,7 +237,8 @@ TEST(ValidateTest, UnaryOperations) {
   AstNodeList func_body;
 
   // Test NEGATE with integer: int result = -42;
-  auto operand = std::make_unique<ConstantIntegerNode>(make_test_location(), 42);
+  auto operand =
+      std::make_unique<ConstantIntegerNode>(make_test_location(), 42);
   operand->set_result_type(std::make_unique<AstType>(
       make_test_location(), AstType::Primitive(PrimitiveType::CONST_INT)));
 
@@ -263,7 +264,8 @@ TEST(ValidateTest, UnaryNotOperation) {
   AstNodeList func_body;
 
   // Test NOT with boolean: bool result = !true;
-  auto bool_operand = std::make_unique<ConstantBoolNode>(make_test_location(), true);
+  auto bool_operand =
+      std::make_unique<ConstantBoolNode>(make_test_location(), true);
   bool_operand->set_result_type(std::make_unique<AstType>(
       make_test_location(), AstType::Primitive(PrimitiveType::BOOL)));
 
@@ -291,7 +293,8 @@ TEST(ValidateTest, UnaryOperationTypeMismatches) {
     AstNodeList ast;
     AstNodeList func_body;
 
-    auto bool_operand = std::make_unique<ConstantBoolNode>(make_test_location(), true);
+    auto bool_operand =
+        std::make_unique<ConstantBoolNode>(make_test_location(), true);
     bool_operand->set_result_type(std::make_unique<AstType>(
         make_test_location(), AstType::Primitive(PrimitiveType::BOOL)));
 
@@ -315,7 +318,8 @@ TEST(ValidateTest, UnaryOperationTypeMismatches) {
     AstNodeList ast;
     AstNodeList func_body;
 
-    auto int_operand = std::make_unique<ConstantIntegerNode>(make_test_location(), 42);
+    auto int_operand =
+        std::make_unique<ConstantIntegerNode>(make_test_location(), 42);
     int_operand->set_result_type(std::make_unique<AstType>(
         make_test_location(), AstType::Primitive(PrimitiveType::CONST_INT)));
 

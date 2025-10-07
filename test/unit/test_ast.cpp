@@ -56,8 +56,8 @@ TEST(AstTest, UnaryOperations) {
 
   // Test NEGATE operation
   auto operand = std::make_unique<ConstantIntegerNode>(loc, 42);
-  auto negate_op = std::make_unique<UnaryOpNode>(
-      loc, UnaryOperator::NEGATE, std::move(operand));
+  auto negate_op = std::make_unique<UnaryOpNode>(loc, UnaryOperator::NEGATE,
+                                                 std::move(operand));
 
   auto negate_node = dynamic_cast<const UnaryOpNode *>(negate_op.get());
   ASSERT_NE(negate_node, nullptr);
@@ -70,8 +70,8 @@ TEST(AstTest, UnaryOperations) {
 
   // Test NOT operation
   auto bool_operand = std::make_unique<ConstantBoolNode>(loc, true);
-  auto not_op = std::make_unique<UnaryOpNode>(
-      loc, UnaryOperator::NOT, std::move(bool_operand));
+  auto not_op = std::make_unique<UnaryOpNode>(loc, UnaryOperator::NOT,
+                                              std::move(bool_operand));
 
   auto not_node = dynamic_cast<const UnaryOpNode *>(not_op.get());
   ASSERT_NE(not_node, nullptr);
