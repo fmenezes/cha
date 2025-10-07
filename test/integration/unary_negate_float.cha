@@ -1,0 +1,7 @@
+fun test() float64 {
+    var a float64
+    a = 3.14
+    var b float64
+    b = -a
+    ret b
+}

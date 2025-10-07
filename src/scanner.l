@@ -16,9 +16,9 @@ extern const char *current_file;
 %option noyywrap yylineno
 
 /* RegEx */
-integer -?(0[xX][0-9A-Fa-f]+|0|[1-9][0-9]*)
+integer (0[xX][0-9A-Fa-f]+|0|[1-9][0-9]*)
 uinteger (0[xX][0-9A-Fa-f]+|0|[1-9][0-9]*)u
-float -?(([0-9]*\.[0-9]+)|([0-9]+\.))([eE][+-]?[0-9]+)?
+float (([0-9]*\.[0-9]+)|([0-9]+\.))([eE][+-]?[0-9]+)?
 identifier [_a-zA-Z][_a-zA-Z0-9]{0,31}
 %%
 "var" {
@@ -173,6 +173,10 @@ identifier [_a-zA-Z][_a-zA-Z0-9]{0,31}
 	return OR;
 }
 
+"!" {
+	return EXCLAMATION;
+}
+
 "const" {
 	return KEYWORD_CONST;
 }
@@ -184,6 +188,8 @@ identifier [_a-zA-Z][_a-zA-Z0-9]{0,31}
 "else" {
 	return KEYWORD_ELSE;
 }
+
+"//".*$ { /* ignore C++ style comments */ }
 
 [ \t\r]+ { /* ignore whitespace */ }
 

@@ -277,6 +277,9 @@ void Validator::validate_node(const AstNode &node) {
   } else if (auto bin_op =
                  dynamic_cast<BinaryOpNode *>(const_cast<AstNode *>(&node))) {
     validate_binary_op(*bin_op);
+  } else if (auto unary_op =
+                 dynamic_cast<UnaryOpNode *>(const_cast<AstNode *>(&node))) {
+    validate_unary_op(*unary_op);
   } else if (auto func_call = dynamic_cast<FunctionCallNode *>(
                  const_cast<AstNode *>(&node))) {
     validate_function_call(*func_call);
@@ -470,6 +473,50 @@ void Validator::validate_binary_op(BinaryOpNode &node) {
         node.location(), AstType::Primitive(PrimitiveType::BOOL)));
     break;
   }
+  }
+}
+
+void Validator::validate_unary_op(UnaryOpNode &node) {
+  validate_node(node.operand());
+
+  const AstType *operand_type = node.operand().result_type();
+
+  if (!operand_type || !operand_type->is_primitive()) {
+    add_error(node.location(), "invalid operand type for unary operation");
+    return;
+  }
+
+  PrimitiveType operand_prim = operand_type->as_primitive().type;
+
+  switch (node.op()) {
+  case UnaryOperator::NEGATE: {
+    // Negate operation requires a numeric type
+    if (!TypeUtils::is_numeric(operand_prim)) {
+      add_error(node.location(), "incompatible type for negation: '" +
+                                     TypeUtils::type_to_string(operand_prim) +
+                                     "'");
+      return;
+    }
+    // Result type is the same as operand type
+    node.set_result_type(std::make_unique<AstType>(
+        node.location(), AstType::Primitive(operand_prim)));
+    break;
+  }
+  case UnaryOperator::NOT: {
+    // Logical NOT requires a boolean type
+    if (operand_prim != PrimitiveType::BOOL) {
+      add_error(node.location(), "incompatible type for logical NOT: '" +
+                                     TypeUtils::type_to_string(operand_prim) +
+                                     "'");
+      return;
+    }
+    node.set_result_type(std::make_unique<AstType>(
+        node.location(), AstType::Primitive(PrimitiveType::BOOL)));
+    break;
+  }
+  default:
+    add_error(node.location(), "unsupported unary operator");
+    break;
   }
 }
 

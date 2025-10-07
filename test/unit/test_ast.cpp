@@ -51,6 +51,38 @@ TEST(AstTest, BinaryOperations) {
   EXPECT_EQ(right_const->value(), 20);
 }
 
+TEST(AstTest, UnaryOperations) {
+  AstLocation loc("test.cha", 2, 1, 2, 10);
+
+  // Test NEGATE operation
+  auto operand = std::make_unique<ConstantIntegerNode>(loc, 42);
+  auto negate_op = std::make_unique<UnaryOpNode>(loc, UnaryOperator::NEGATE,
+                                                 std::move(operand));
+
+  auto negate_node = dynamic_cast<const UnaryOpNode *>(negate_op.get());
+  ASSERT_NE(negate_node, nullptr);
+  EXPECT_EQ(negate_node->op(), UnaryOperator::NEGATE);
+
+  auto operand_const =
+      dynamic_cast<const ConstantIntegerNode *>(&negate_node->operand());
+  ASSERT_NE(operand_const, nullptr);
+  EXPECT_EQ(operand_const->value(), 42);
+
+  // Test NOT operation
+  auto bool_operand = std::make_unique<ConstantBoolNode>(loc, true);
+  auto not_op = std::make_unique<UnaryOpNode>(loc, UnaryOperator::NOT,
+                                              std::move(bool_operand));
+
+  auto not_node = dynamic_cast<const UnaryOpNode *>(not_op.get());
+  ASSERT_NE(not_node, nullptr);
+  EXPECT_EQ(not_node->op(), UnaryOperator::NOT);
+
+  auto bool_operand_const =
+      dynamic_cast<const ConstantBoolNode *>(&not_node->operand());
+  ASSERT_NE(bool_operand_const, nullptr);
+  EXPECT_EQ(bool_operand_const->value(), true);
+}
+
 TEST(AstTest, VariableDeclarations) {
   AstLocation loc("test.cha", 3, 1, 3, 20);
 

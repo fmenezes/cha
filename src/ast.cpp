@@ -69,6 +69,15 @@ AstNodePtr BinaryOpNode::clone() const {
   return std::move(cloned);
 }
 
+AstNodePtr UnaryOpNode::clone() const {
+  auto cloned =
+      std::make_unique<UnaryOpNode>(location(), op_, operand_->clone());
+  if (result_type()) {
+    cloned->set_result_type(result_type()->clone());
+  }
+  return std::move(cloned);
+}
+
 AstNodePtr VariableDeclarationNode::clone() const {
   auto cloned = std::make_unique<VariableDeclarationNode>(
       location(), identifier_, type_->clone(),
@@ -217,6 +226,10 @@ void ConstantBoolNode::accept(AstVisitor &visitor) { visitor.visit(*this); }
 void BinaryOpNode::accept(AstVisitor &visitor) const { visitor.visit(*this); }
 
 void BinaryOpNode::accept(AstVisitor &visitor) { visitor.visit(*this); }
+
+void UnaryOpNode::accept(AstVisitor &visitor) const { visitor.visit(*this); }
+
+void UnaryOpNode::accept(AstVisitor &visitor) { visitor.visit(*this); }
 
 void VariableDeclarationNode::accept(AstVisitor &visitor) const {
   visitor.visit(*this);

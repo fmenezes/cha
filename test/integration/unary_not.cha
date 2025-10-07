@@ -1,0 +1,7 @@
+fun test() bool {
+    var a bool
+    a = true
+    var b bool
+    b = !a
+    ret b
+}

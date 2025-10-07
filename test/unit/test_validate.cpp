@@ -230,6 +230,115 @@ TEST(ValidateTest, BinaryOperations) {
   EXPECT_NO_THROW(validator.validate(ast));
 }
 
+// Test unary operation validation
+TEST(ValidateTest, UnaryOperations) {
+  Validator validator;
+  AstNodeList ast;
+  AstNodeList func_body;
+
+  // Test NEGATE with integer: int result = -42;
+  auto operand =
+      std::make_unique<ConstantIntegerNode>(make_test_location(), 42);
+  operand->set_result_type(std::make_unique<AstType>(
+      make_test_location(), AstType::Primitive(PrimitiveType::CONST_INT)));
+
+  auto negate_op = std::make_unique<UnaryOpNode>(
+      make_test_location(), UnaryOperator::NEGATE, std::move(operand));
+
+  auto var_decl = std::make_unique<VariableDeclarationNode>(
+      make_test_location(), "result", make_int_type(), std::move(negate_op));
+  func_body.push_back(std::move(var_decl));
+
+  auto func = std::make_unique<FunctionDeclarationNode>(
+      make_test_location(), "test_func", make_int_type(), AstNodeList{},
+      std::move(func_body));
+  ast.push_back(std::move(func));
+
+  EXPECT_NO_THROW(validator.validate(ast));
+}
+
+// Test unary NOT operation validation
+TEST(ValidateTest, UnaryNotOperation) {
+  Validator validator;
+  AstNodeList ast;
+  AstNodeList func_body;
+
+  // Test NOT with boolean: bool result = !true;
+  auto bool_operand =
+      std::make_unique<ConstantBoolNode>(make_test_location(), true);
+  bool_operand->set_result_type(std::make_unique<AstType>(
+      make_test_location(), AstType::Primitive(PrimitiveType::BOOL)));
+
+  auto not_op = std::make_unique<UnaryOpNode>(
+      make_test_location(), UnaryOperator::NOT, std::move(bool_operand));
+
+  auto var_decl = std::make_unique<VariableDeclarationNode>(
+      make_test_location(), "result", make_bool_type(), std::move(not_op));
+  func_body.push_back(std::move(var_decl));
+
+  auto func = std::make_unique<FunctionDeclarationNode>(
+      make_test_location(), "test_func", make_int_type(), AstNodeList{},
+      std::move(func_body));
+  ast.push_back(std::move(func));
+
+  EXPECT_NO_THROW(validator.validate(ast));
+}
+
+// Test unary operation type mismatch errors
+TEST(ValidateTest, UnaryOperationTypeMismatches) {
+  Validator validator;
+
+  // Test NEGATE with boolean (should fail)
+  {
+    AstNodeList ast;
+    AstNodeList func_body;
+
+    auto bool_operand =
+        std::make_unique<ConstantBoolNode>(make_test_location(), true);
+    bool_operand->set_result_type(std::make_unique<AstType>(
+        make_test_location(), AstType::Primitive(PrimitiveType::BOOL)));
+
+    auto negate_op = std::make_unique<UnaryOpNode>(
+        make_test_location(), UnaryOperator::NEGATE, std::move(bool_operand));
+
+    auto var_decl = std::make_unique<VariableDeclarationNode>(
+        make_test_location(), "result", make_int_type(), std::move(negate_op));
+    func_body.push_back(std::move(var_decl));
+
+    auto func = std::make_unique<FunctionDeclarationNode>(
+        make_test_location(), "test_func", make_int_type(), AstNodeList{},
+        std::move(func_body));
+    ast.push_back(std::move(func));
+
+    EXPECT_THROW(validator.validate(ast), MultipleValidationException);
+  }
+
+  // Test NOT with integer (should fail)
+  {
+    AstNodeList ast;
+    AstNodeList func_body;
+
+    auto int_operand =
+        std::make_unique<ConstantIntegerNode>(make_test_location(), 42);
+    int_operand->set_result_type(std::make_unique<AstType>(
+        make_test_location(), AstType::Primitive(PrimitiveType::CONST_INT)));
+
+    auto not_op = std::make_unique<UnaryOpNode>(
+        make_test_location(), UnaryOperator::NOT, std::move(int_operand));
+
+    auto var_decl = std::make_unique<VariableDeclarationNode>(
+        make_test_location(), "result", make_bool_type(), std::move(not_op));
+    func_body.push_back(std::move(var_decl));
+
+    auto func = std::make_unique<FunctionDeclarationNode>(
+        make_test_location(), "test_func", make_int_type(), AstNodeList{},
+        std::move(func_body));
+    ast.push_back(std::move(func));
+
+    EXPECT_THROW(validator.validate(ast), MultipleValidationException);
+  }
+}
+
 // Test type mismatch detection
 TEST(ValidateTest, TypeMismatches) {
   Validator validator;
