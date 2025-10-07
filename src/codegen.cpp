@@ -206,7 +206,7 @@ void CodeGenerator::create_main_wrapper() {
   builder_->SetInsertPoint(bb);
 
   // Return 0
-  builder_->CreateRet(llvm::ConstantInt::get(*context_, llvm::APInt(32, 0)));
+  builder_->CreateRet(llvm::ConstantInt::get(llvm::Type::getInt32Ty(*context_), 0));
 
   functions_["main"] = main_func;
 }
@@ -259,8 +259,16 @@ void CodeGenerator::visit(const ConstantIntegerNode &node) {
     }
   }
 
-  current_value_ = llvm::ConstantInt::get(
-      *context_, llvm::APInt(bit_width, value, is_signed));
+  // Create APInt using the signed value constructor for signed types
+  if (is_signed) {
+    current_value_ = llvm::ConstantInt::getSigned(
+        llvm::IntegerType::get(*context_, bit_width), value);
+  } else {
+    // For unsigned types, ensure we don't have negative values
+    uint64_t unsigned_value = static_cast<uint64_t>(value);
+    current_value_ = llvm::ConstantInt::get(
+        llvm::IntegerType::get(*context_, bit_width), unsigned_value);
+  }
 }
 
 void CodeGenerator::visit(const ConstantUnsignedIntegerNode &node) {
@@ -305,8 +313,8 @@ void CodeGenerator::visit(const ConstantUnsignedIntegerNode &node) {
     }
   }
 
-  current_value_ =
-      llvm::ConstantInt::get(*context_, llvm::APInt(bit_width, value, false));
+  current_value_ = llvm::ConstantInt::get(
+      llvm::IntegerType::get(*context_, bit_width), value);
 }
 
 void CodeGenerator::visit(const ConstantFloatNode &node) {
@@ -316,7 +324,7 @@ void CodeGenerator::visit(const ConstantFloatNode &node) {
 
 void CodeGenerator::visit(const ConstantBoolNode &node) {
   current_value_ =
-      llvm::ConstantInt::get(*context_, llvm::APInt(1, node.value() ? 1 : 0));
+      llvm::ConstantInt::get(llvm::Type::getInt1Ty(*context_), node.value() ? 1 : 0);
 }
 
 void CodeGenerator::visit(const BinaryOpNode &node) {
