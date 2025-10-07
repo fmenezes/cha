@@ -227,3 +227,23 @@ TEST_F(IntegrationTest, TestBin) {
   EXPECT_TRUE(outFile.good()) << "Output file should be created";
   outFile.close();
 }
+
+TEST_F(IntegrationTest, UnaryNegate) {
+  expectCompilationSuccess("unary_negate.cha");
+}
+
+TEST_F(IntegrationTest, UnaryNot) {
+  expectCompilationSuccess("unary_not.cha");
+}
+
+TEST_F(IntegrationTest, UnaryNegateFloat) {
+  expectCompilationSuccess("unary_negate_float.cha");
+}
+
+TEST_F(IntegrationTest, UnaryNegateBoolError) {
+  expectCompilationFailure("unary_negate_bool_error.cha", "incompatible type");
+}
+
+TEST_F(IntegrationTest, UnaryNotIntError) {
+  expectCompilationFailure("unary_not_int_error.cha", "incompatible type");
+}

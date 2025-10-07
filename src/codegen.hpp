@@ -46,6 +46,7 @@ public:
   void visit(const ConstantFloatNode &node) override;
   void visit(const ConstantBoolNode &node) override;
   void visit(const BinaryOpNode &node) override;
+  void visit(const UnaryOpNode &node) override;
   void visit(const VariableDeclarationNode &node) override;
   void visit(const VariableAssignmentNode &node) override;
   void visit(const VariableLookupNode &node) override;

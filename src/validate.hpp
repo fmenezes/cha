@@ -102,6 +102,7 @@ private:
   void validate_variable_lookup(
       VariableLookupNode &node);               // non-const for type setting
   void validate_binary_op(BinaryOpNode &node); // non-const for type setting
+  void validate_unary_op(UnaryOpNode &node);   // non-const for type setting
   void
   validate_function_call(FunctionCallNode &node); // non-const for type setting
   void validate_function_return(const FunctionReturnNode &node);

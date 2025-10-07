@@ -428,6 +428,35 @@ void CodeGenerator::visit(const BinaryOpNode &node) {
   }
 }
 
+void CodeGenerator::visit(const UnaryOpNode &node) {
+  // Generate code for operand
+  visit_node(node.operand());
+  llvm::Value *operand_val = current_value_;
+
+  if (!operand_val) {
+    throw CodeGenerationException(
+        "Failed to generate operand for unary operation");
+  }
+
+  // Generate appropriate LLVM instruction based on operator
+  switch (node.op()) {
+  case UnaryOperator::NEGATE:
+    if (operand_val->getType()->isIntegerTy()) {
+      current_value_ = builder_->CreateNeg(operand_val, "negtmp");
+    } else {
+      current_value_ = builder_->CreateFNeg(operand_val, "negtmp");
+    }
+    break;
+
+  case UnaryOperator::NOT:
+    current_value_ = builder_->CreateNot(operand_val, "nottmp");
+    break;
+
+  default:
+    throw CodeGenerationException("Unsupported unary operator");
+  }
+}
+
 void CodeGenerator::visit(const VariableDeclarationNode &node) {
   // Get LLVM type for the variable
   llvm::Type *var_type = get_llvm_type(node.type());

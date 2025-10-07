@@ -1,0 +1,7 @@
+fun test() int {
+    var a int
+    a = -42
+    var b int
+    b = -a
+    ret b
+}

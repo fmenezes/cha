@@ -113,6 +113,11 @@ enum class BinaryOperator {
   OR
 };
 
+enum class UnaryOperator {
+  NEGATE,
+  NOT
+};
+
 // Type system
 class AstType {
 public:
@@ -172,6 +177,7 @@ class ConstantUnsignedIntegerNode;
 class ConstantFloatNode;
 class ConstantBoolNode;
 class BinaryOpNode;
+class UnaryOpNode;
 class VariableDeclarationNode;
 class VariableAssignmentNode;
 class VariableLookupNode;
@@ -194,6 +200,7 @@ public:
   virtual void visit(const ConstantFloatNode &node) = 0;
   virtual void visit(const ConstantBoolNode &node) = 0;
   virtual void visit(const BinaryOpNode &node) = 0;
+  virtual void visit(const UnaryOpNode &node) = 0;
   virtual void visit(const VariableDeclarationNode &node) = 0;
   virtual void visit(const VariableAssignmentNode &node) = 0;
   virtual void visit(const VariableLookupNode &node) = 0;
@@ -220,6 +227,9 @@ public:
   }
   virtual void visit(BinaryOpNode &node) {
     visit(const_cast<const BinaryOpNode &>(node));
+  }
+  virtual void visit(UnaryOpNode &node) {
+    visit(const_cast<const UnaryOpNode &>(node));
   }
   virtual void visit(VariableDeclarationNode &node) {
     visit(const_cast<const VariableDeclarationNode &>(node));
@@ -347,6 +357,22 @@ private:
   BinaryOperator op_;
   AstNodePtr left_;
   AstNodePtr right_;
+};
+
+class UnaryOpNode : public AstNode {
+public:
+  UnaryOpNode(AstLocation loc, UnaryOperator op, AstNodePtr operand)
+      : AstNode(std::move(loc)), op_(op), operand_(std::move(operand)) {}
+
+  UnaryOperator op() const { return op_; }
+  const AstNode &operand() const { return *operand_; }
+  AstNodePtr clone() const override;
+  void accept(AstVisitor &visitor) const override;
+  void accept(AstVisitor &visitor) override;
+
+private:
+  UnaryOperator op_;
+  AstNodePtr operand_;
 };
 
 class VariableDeclarationNode : public AstNode {
