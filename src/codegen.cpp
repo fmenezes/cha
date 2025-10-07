@@ -206,7 +206,8 @@ void CodeGenerator::create_main_wrapper() {
   builder_->SetInsertPoint(bb);
 
   // Return 0
-  builder_->CreateRet(llvm::ConstantInt::get(llvm::Type::getInt32Ty(*context_), 0));
+  builder_->CreateRet(
+      llvm::ConstantInt::get(llvm::Type::getInt32Ty(*context_), 0));
 
   functions_["main"] = main_func;
 }
@@ -323,8 +324,8 @@ void CodeGenerator::visit(const ConstantFloatNode &node) {
 }
 
 void CodeGenerator::visit(const ConstantBoolNode &node) {
-  current_value_ =
-      llvm::ConstantInt::get(llvm::Type::getInt1Ty(*context_), node.value() ? 1 : 0);
+  current_value_ = llvm::ConstantInt::get(llvm::Type::getInt1Ty(*context_),
+                                          node.value() ? 1 : 0);
 }
 
 void CodeGenerator::visit(const BinaryOpNode &node) {
